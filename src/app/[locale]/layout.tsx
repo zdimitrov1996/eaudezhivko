@@ -3,9 +3,11 @@ import { Cormorant_Garamond, Inter } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { FeedbackButton } from "@/components/FeedbackButton";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { routing } from "@/i18n/routing";
+import { getCurrentUser } from "@/lib/supabase/server";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,6 +38,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
+  const user = await getCurrentUser();
 
   return (
     // suppressHydrationWarning: browser extensions add attributes to <html>/<body>
@@ -46,6 +49,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
+          <FeedbackButton signedIn={Boolean(user)} />
         </NextIntlClientProvider>
       </body>
     </html>

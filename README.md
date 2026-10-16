@@ -9,7 +9,7 @@ Domain (planned): **eaudefragrances.com**
 - [Next.js 16](https://nextjs.org) (App Router, Turbopack) + Tailwind CSS 4
 - [Supabase](https://supabase.com): email and Google sign-in, Postgres with Row Level Security
 - [next-intl](https://next-intl.dev): `/en` and `/bg` routes, texts in `messages/*.json`
-- Hosting: Vercel (planned)
+- Hosting: Vercel
 
 ## Run locally
 
@@ -26,18 +26,20 @@ To connect the database and turn on sign-in, follow **[docs/SETUP.md](docs/SETUP
 
 | Path | What's there |
 | --- | --- |
-| `src/app/[locale]/` | Pages: home, collection, wishlist, login, signup, password reset, account |
+| `src/app/[locale]/` | Pages: home, collection, wishlist, login, signup, password reset, account, admin |
 | `src/app/auth/` | Supabase auth callbacks (Google, email links) |
 | `src/actions/` | Server actions for auth and shelves |
 | `src/components/` | UI: header, perfume cards, add-perfume dialog, auth forms |
 | `src/lib/` | Supabase clients, perfume types and link helpers |
 | `src/proxy.ts` | Locale routing + Supabase session refresh |
 | `messages/` | English and Bulgarian texts |
-| `supabase/migrations/` | Database schema, RLS policies and SQL functions |
+| `supabase/migrations/` | Database schema, RLS policies and SQL functions (run in order) |
 | `docs/` | Setup guide and outreach drafts |
 
 ## Roadmap
 
 1. ✅ Design, accounts (email + Google), collection, wishlist, Fragrantica/Parfumo links
-2. Custom SMTP, privacy policy and terms, domain, deploy to Vercel
-3. Fragrantica/Parfumo ratings (pending their permission) and best prices from Bulgarian shops
+2. ✅ Deployed on Vercel (https://eaudezhivko.vercel.app)
+3. ✅ Admin panel (users and their shelves, catalogue, support sign-in, account deletion, audit log) and a Feedback form
+4. Domain eaudefragrances.com, custom SMTP, privacy policy and terms
+5. Fragrantica/Parfumo ratings (pending their permission) and best prices from Bulgarian shops
