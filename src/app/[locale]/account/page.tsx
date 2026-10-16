@@ -3,7 +3,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { deleteAccount, signOut } from "@/actions/auth";
 import { ConfirmSubmit } from "@/components/ConfirmSubmit";
 import { FormMessage } from "@/components/auth/FormBits";
-import { redirect } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { isAdmin } from "@/lib/admin.server";
 import { getCurrentUser } from "@/lib/supabase/server";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/account">): Promise<Metadata> {
@@ -38,6 +39,13 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
           </button>
         </form>
       </div>
+
+      {(await isAdmin()) && (
+        <Link href="/admin" className="card mt-6 flex items-center justify-between px-6 py-5 hover:border-moss-800">
+          <span className="font-medium">{t("openAdmin")}</span>
+          <span aria-hidden="true" className="text-moss-400">→</span>
+        </Link>
+      )}
 
       <div className="mt-6 rounded-[1.25rem] border border-ember-400/25 px-6 py-5">
         <h2 className="font-medium text-ember-400">{t("dangerTitle")}</h2>

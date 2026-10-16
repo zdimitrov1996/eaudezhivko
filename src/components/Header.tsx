@@ -6,6 +6,7 @@ import { HeartIcon, ShelfIcon, UserIcon } from "./icons";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { Logo } from "./Logo";
 import { NavLink } from "./NavLink";
+import { SupportBanner } from "./SupportBanner";
 
 export async function Header() {
   const t = await getTranslations("Nav");
@@ -26,6 +27,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-ink-700/80 bg-ink-900/85 backdrop-blur-md">
+      {user && <SupportBanner user={user} />}
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/" aria-label="Eau de Fragrances" className="shrink-0 rounded-lg">
           <Logo />

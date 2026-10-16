@@ -10,6 +10,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale,
+    // Dates show in Bulgarian time on every server (Vercel runs in UTC)
+    timeZone: "Europe/Sofia",
     messages: (await import(`../../messages/${locale}.json`)).default,
   };
 });

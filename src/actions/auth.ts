@@ -1,8 +1,10 @@
 "use server";
 
 import { getLocale } from "next-intl/server";
+import { cookies } from "next/headers";
 import { redirect as externalRedirect } from "next/navigation";
 import { redirect } from "@/i18n/navigation";
+import { SUPPORT_SESSION_COOKIE } from "@/lib/impersonation";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { getSiteUrl, safeNextPath } from "@/lib/site-url";
@@ -148,8 +150,10 @@ export async function updatePassword(
 export async function signOut() {
   if (isSupabaseConfigured) {
     const supabase = await createClient();
-    await supabase.auth.signOut();
+    // Only this browser: leaving support mode mustn't sign the user out elsewhere
+    await supabase.auth.signOut({ scope: "local" });
   }
+  (await cookies()).delete(SUPPORT_SESSION_COOKIE);
   return redirect({ href: "/", locale: await getLocale() });
 }
 

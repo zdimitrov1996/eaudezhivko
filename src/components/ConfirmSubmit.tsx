@@ -7,10 +7,12 @@ import { useFormStatus } from "react-dom";
 export function ConfirmSubmit({
   message,
   className,
+  disabled = false,
   children,
 }: {
   message: string;
   className?: string;
+  disabled?: boolean;
   children: ReactNode;
 }) {
   const { pending } = useFormStatus();
@@ -18,7 +20,7 @@ export function ConfirmSubmit({
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || disabled}
       className={className}
       onClick={(event) => {
         if (!window.confirm(message)) event.preventDefault();
