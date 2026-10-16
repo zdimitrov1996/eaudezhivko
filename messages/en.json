@@ -1,0 +1,176 @@
+{
+  "Metadata": {
+    "title": "Eau de Fragrances — your perfume collection",
+    "description": "Catalogue the perfumes you own, keep a wishlist of what to buy next, and jump to Fragrantica and Parfumo for every scent."
+  },
+  "Nav": {
+    "mainNav": "Main navigation",
+    "collection": "Collection",
+    "wishlist": "Wishlist",
+    "account": "Account",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "signOut": "Sign out",
+    "language": "Language"
+  },
+  "Home": {
+    "eyebrow": "For fragrance collectors",
+    "title": "Every bottle you own. Every bottle you want.",
+    "subtitle": "Catalogue your perfume collection, keep a wishlist of what to buy next, and jump straight to Fragrantica and Parfumo for every scent.",
+    "ctaStart": "Start your collection",
+    "ctaSignIn": "I already have an account",
+    "ctaOpen": "Open my collection",
+    "previewLabel": "Example shelf",
+    "featuresTitle": "Built for the way collectors think",
+    "features": {
+      "collection": {
+        "title": "Your collection",
+        "body": "Every bottle in one place, with concentration, year and your own rating."
+      },
+      "wishlist": {
+        "title": "Wishlist",
+        "body": "Save what you want to try or buy next, then move it to your collection the day it arrives."
+      },
+      "ratings": {
+        "title": "Fragrantica & Parfumo",
+        "body": "One click to each perfume on both platforms, plus the average rating from our own community."
+      },
+      "prices": {
+        "title": "Best price in Bulgaria",
+        "body": "Coming soon: the lowest current price across Bulgarian shops for every perfume on your wishlist."
+      }
+    }
+  },
+  "Auth": {
+    "signInTitle": "Welcome back",
+    "signInSubtitle": "Sign in to your collection.",
+    "signUpTitle": "Create your account",
+    "signUpSubtitle": "Free, and it takes less than a minute.",
+    "forgotTitle": "Reset your password",
+    "forgotSubtitle": "We'll email you a link to choose a new one.",
+    "resetTitle": "Choose a new password",
+    "resetSubtitle": "Use at least 8 characters.",
+    "email": "Email",
+    "password": "Password",
+    "newPassword": "New password",
+    "submitSignIn": "Sign in",
+    "submitSignUp": "Create account",
+    "submitForgot": "Send reset link",
+    "submitReset": "Save new password",
+    "google": "Continue with Google",
+    "or": "or",
+    "forgotLink": "Forgot your password?",
+    "noAccount": "New here?",
+    "haveAccount": "Already have an account?",
+    "backToSignIn": "Back to sign in",
+    "terms": "By creating an account you agree to store your collection with us. You can delete your account at any time.",
+    "checkEmail": "Check your inbox: we sent you a link to confirm your email.",
+    "resetSent": "If an account exists for that email, a reset link is on its way.",
+    "passwordUpdated": "Your password has been updated."
+  },
+  "Errors": {
+    "generic": "Something went wrong. Please try again.",
+    "notConfigured": "Accounts aren't switched on yet: the database isn't connected.",
+    "missingFields": "Please fill in all fields.",
+    "invalidEmail": "Please enter a valid email address.",
+    "invalidCredentials": "Wrong email or password.",
+    "emailNotConfirmed": "Please confirm your email first. Check your inbox.",
+    "userExists": "An account with this email already exists.",
+    "weakPassword": "Password is too short. Use at least 8 characters.",
+    "samePassword": "The new password must be different from the old one.",
+    "rateLimited": "Too many attempts. Please wait a minute and try again.",
+    "linkInvalid": "That link is invalid or has expired. Please try again.",
+    "oauth": "Google sign-in didn't complete. Please try again.",
+    "signInRequired": "Please sign in first.",
+    "invalidUrl": "Please paste a full link from {site}.",
+    "brandNameRequired": "Brand and name are required.",
+    "invalidYear": "Year must be between 1700 and 2100.",
+    "alreadyInCollection": "This perfume is already in your collection.",
+    "alreadyInWishlist": "This perfume is already on your wishlist."
+  },
+  "Shelf": {
+    "collectionTitle": "My collection",
+    "collectionSubtitle": "{count, plural, =0 {No bottles yet} one {# bottle} other {# bottles}}",
+    "wishlistTitle": "Wishlist",
+    "wishlistSubtitle": "{count, plural, =0 {Nothing saved yet} one {# perfume to get} other {# perfumes to get}}",
+    "add": "Add perfume",
+    "emptyCollectionTitle": "Your shelf is empty",
+    "emptyCollectionBody": "Add the first bottle you own. You'll get links to Fragrantica and Parfumo straight away.",
+    "emptyWishlistTitle": "No wishes yet",
+    "emptyWishlistBody": "Save perfumes you want to buy or try. Move them to your collection when they arrive.",
+    "demoBanner": "Preview mode: the database isn't connected yet, so this shelf shows example perfumes."
+  },
+  "Perfume": {
+    "fragrantica": "Fragrantica",
+    "parfumo": "Parfumo",
+    "searchHint": "Opens a search on {site}",
+    "community": "Community rating",
+    "noRatings": "No ratings yet",
+    "ratingCount": "{count, plural, one {# rating} other {# ratings}}",
+    "outOfTen": "/10",
+    "yourRating": "Your rating",
+    "notRated": "Not rated",
+    "bestPrice": "Best price in Bulgaria",
+    "comingSoon": "Coming soon",
+    "moveToWishlist": "Move to wishlist",
+    "moveToCollection": "I bought it",
+    "remove": "Remove",
+    "confirmRemove": "Remove {name} from this list?",
+    "actions": "Actions for {name}"
+  },
+  "AddPerfume": {
+    "title": "Add a perfume",
+    "toCollection": "Add to collection",
+    "toWishlist": "Add to wishlist",
+    "searchLabel": "Search the catalogue",
+    "searchPlaceholder": "e.g. Dior Sauvage",
+    "searching": "Searching…",
+    "noMatches": "Not in the catalogue yet. Add it below.",
+    "selected": "Selected",
+    "change": "Change",
+    "orNew": "Or add a new perfume",
+    "brand": "Brand",
+    "name": "Perfume name",
+    "concentration": "Concentration",
+    "concentrationAny": "Not sure",
+    "year": "Year",
+    "fragranticaUrl": "Fragrantica link",
+    "parfumoUrl": "Parfumo link",
+    "optional": "optional",
+    "linkHint": "Paste the perfume's page link if you have it. Otherwise we'll link to a search.",
+    "cancel": "Cancel",
+    "close": "Close",
+    "saving": "Saving…"
+  },
+  "Concentration": {
+    "extrait": "Extrait de Parfum",
+    "parfum": "Parfum",
+    "edp": "Eau de Parfum",
+    "edt": "Eau de Toilette",
+    "edc": "Eau de Cologne",
+    "eau_fraiche": "Eau Fraîche",
+    "other": "Other"
+  },
+  "Account": {
+    "title": "Account",
+    "signedInAs": "Account email",
+    "dangerTitle": "Delete account",
+    "dangerBody": "This permanently deletes your account, your collection and your wishlist. It can't be undone.",
+    "deleteButton": "Delete my account",
+    "confirmDelete": "Delete your account and all your data permanently?",
+    "deleted": "Your account and data have been deleted."
+  },
+  "Config": {
+    "title": "Database not connected",
+    "body": "Sign-in needs the Supabase project's URL and publishable key in .env.local. See docs/SETUP.md."
+  },
+  "Footer": {
+    "tagline": "Your perfume collection, beautifully kept.",
+    "disclaimer": "Not affiliated with Fragrantica or Parfumo."
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "body": "This page has evaporated.",
+    "home": "Back to home"
+  }
+}
