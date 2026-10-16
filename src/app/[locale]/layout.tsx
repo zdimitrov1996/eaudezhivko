@@ -38,8 +38,10 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={`${inter.variable} ${cormorant.variable}`}>
-      <body className="flex min-h-dvh flex-col">
+    // suppressHydrationWarning: browser extensions add attributes to <html>/<body>
+    // before React hydrates; this only silences attribute diffs on these two tags.
+    <html lang={locale} className={`${inter.variable} ${cormorant.variable}`} suppressHydrationWarning>
+      <body className="flex min-h-dvh flex-col" suppressHydrationWarning>
         <NextIntlClientProvider>
           <Header />
           <main className="flex-1">{children}</main>
