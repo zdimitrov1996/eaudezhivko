@@ -8,13 +8,10 @@ export type LegalSection = { heading: string; paragraphs: string[]; list?: strin
 export type LegalDoc = { title: string; intro: string; updated: string; sections: LegalSection[] };
 export type Faq = { title: string; intro: string; items: { q: string; a: string }[] };
 
-/**
- * Optional owner details shown on the legal pages. Leave null until the owner
- * decides what to publish; the pages then point to the Feedback form.
- */
-export const LEGAL_OWNER: { name: string | null; email: string | null } = {
-  name: null,
-  email: null,
+/** The data controller, published on the legal pages at the owner's request. */
+export const LEGAL_OWNER: { name: Record<Locale, string>; email: string } = {
+  name: { bg: "Живко Димитров", en: "Zhivko Dimitrov" },
+  email: "jivko.dimitrov96@gmail.com",
 };
 
 const UPDATED = { en: "17 October 2026", bg: "17 октомври 2026 г." } as const;
@@ -29,8 +26,8 @@ export const privacy: Record<Locale, LegalDoc> = {
       {
         heading: "1. Кой отговаря за данните",
         paragraphs: [
-          "Администратор на личните данни е собственикът на сайта Eau de Fragrances (eaudezhivko.vercel.app, в бъдеще eaudefragrances.com).",
-          "За всякакви въпроси за личните ти данни пиши ни чрез бутона „Feedback“ на всяка страница. Данните за контакт са посочени и в края на тази страница.",
+          "Администратор на личните данни е Живко Димитров, собственик на сайта Eau de Fragrances (eaudezhivko.vercel.app, в бъдеще eaudefragrances.com).",
+          "За всякакви въпроси за личните ти данни пиши на jivko.dimitrov96@gmail.com или чрез бутона „Feedback“ на всяка страница.",
         ],
       },
       {
@@ -130,8 +127,8 @@ export const privacy: Record<Locale, LegalDoc> = {
       {
         heading: "1. Who is responsible for your data",
         paragraphs: [
-          "The data controller is the owner of the Eau de Fragrances website (eaudezhivko.vercel.app, later eaudefragrances.com).",
-          "For any question about your personal data, write to us with the “Feedback” button on every page. Contact details are also listed at the end of this page.",
+          "The data controller is Zhivko Dimitrov, owner of the Eau de Fragrances website (eaudezhivko.vercel.app, later eaudefragrances.com).",
+          "For any question about your personal data, write to jivko.dimitrov96@gmail.com or use the “Feedback” button on every page.",
         ],
       },
       {

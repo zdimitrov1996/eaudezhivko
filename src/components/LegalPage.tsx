@@ -1,12 +1,18 @@
-import { getTranslations } from "next-intl/server";
+import { hasLocale } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { LEGAL_OWNER, type LegalDoc } from "@/content/legal";
+import { routing } from "@/i18n/routing";
 
-/** Turns bare https:// addresses in a text into links that open in a new tab. */
+/** Turns bare https:// addresses (new tab) and email addresses (mailto) in a text into links. */
 export function Linkified({ text }: { text: string }) {
-  const parts = text.split(/(https?:\/\/[^\s,;)]+)/g);
+  const parts = text.split(/(https?:\/\/[^\s,;)]+|[\w.+-]+@[\w-]+\.[\w.]+\w)/g);
   return parts.map((part, index) =>
-    /^https?:\/\//.test(part) ? (
+    /^[\w.+-]+@[\w-]+\.[\w.]+\w$/.test(part) ? (
+      <a key={index} href={`mailto:${part}`} className="text-moss-300 underline underline-offset-4 hover:text-moss-200">
+        {part}
+      </a>
+    ) : /^https?:\/\//.test(part) ? (
       <a
         key={index}
         href={part}
@@ -45,6 +51,8 @@ export function LegalShell({
 
 export async function LegalPage({ doc }: { doc: LegalDoc }) {
   const t = await getTranslations("Legal");
+  const locale = await getLocale();
+  const ownerName = LEGAL_OWNER.name[hasLocale(routing.locales, locale) ? locale : routing.defaultLocale];
 
   return (
     <LegalShell title={doc.title} intro={doc.intro} updated={t("updated", { date: doc.updated })}>
@@ -71,15 +79,13 @@ export async function LegalPage({ doc }: { doc: LegalDoc }) {
 
         <section className="card px-6 py-5">
           <h2 className="font-serif text-2xl font-semibold">{t("contactTitle")}</h2>
-          <p className="mt-2 leading-relaxed text-smoke-300">{t("contactFeedback")}</p>
-          {LEGAL_OWNER.name && <p className="mt-2 text-smoke-300">{LEGAL_OWNER.name}</p>}
-          {LEGAL_OWNER.email && (
-            <p className="mt-1">
-              <a href={`mailto:${LEGAL_OWNER.email}`} className="text-moss-300 underline underline-offset-4">
-                {LEGAL_OWNER.email}
-              </a>
-            </p>
-          )}
+          <p className="mt-2 font-medium text-smoke-100">{ownerName}</p>
+          <p className="mt-1">
+            <a href={`mailto:${LEGAL_OWNER.email}`} className="text-moss-300 underline underline-offset-4">
+              {LEGAL_OWNER.email}
+            </a>
+          </p>
+          <p className="mt-3 leading-relaxed text-smoke-400">{t("contactFeedback")}</p>
         </section>
       </div>
     </LegalShell>
