@@ -70,24 +70,26 @@ export function parseParfumoNotes(html: string): PerfumeNotes | null {
  * Checks og:image, twitter:image, itemprop="image", or media.parfumo CDN flacon links.
  */
 export function parseParfumoImage(html: string): string | null {
-  const metaMatch =
-    html.match(/<meta\s+[^>]*?property=["']og:image["'][^>]*?content=["']([^"']+)["']/i) ??
-    html.match(/<meta\s+[^>]*?content=["']([^"']+)["'][^>]*?property=["']og:image["']/i) ??
-    html.match(/<meta\s+[^>]*?name=["']twitter:image["'][^>]*?content=["']([^"']+)["']/i) ??
-    html.match(/<meta\s+[^>]*?content=["']([^"']+)["'][^>]*?name=["']twitter:image["']/i);
+  const mainImgMatch =
+    html.match(/<img\s+[^>]*?class=["'][^"']*p-main-img[^"']*["'][^>]*?src=["']([^"']+)["']/i) ??
+    html.match(/<img\s+[^>]*?src=["']([^"']+)["'][^>]*?class=["'][^"']*p-main-img[^"']*["']/i) ??
+    html.match(/<img\s+[^>]*?itemprop=["']image["'][^>]*?src=["']([^"']+)["']/i) ??
+    html.match(/<img\s+[^>]*?src=["']([^"']+)["'][^>]*?itemprop=["']image["']/i);
 
-  let raw = metaMatch?.[1];
-
-  if (!raw) {
-    const itemPropMatch =
-      html.match(/<meta\s+[^>]*?itemprop=["']image["'][^>]*?content=["']([^"']+)["']/i) ??
-      html.match(/<img\s+[^>]*?itemprop=["']image["'][^>]*?src=["']([^"']+)["']/i);
-    raw = itemPropMatch?.[1];
-  }
+  let raw = mainImgMatch?.[1];
 
   if (!raw) {
     const cdnMatch = html.match(/src=["'](https?:\/\/[a-z0-9.-]*parfumo\.[a-z.]{2,6}\/perfumes\/[^"']+)["']/i);
     raw = cdnMatch?.[1];
+  }
+
+  if (!raw) {
+    const metaMatch =
+      html.match(/<meta\s+[^>]*?property=["']og:image["'][^>]*?content=["']([^"']+)["']/i) ??
+      html.match(/<meta\s+[^>]*?content=["']([^"']+)["'][^>]*?property=["']og:image["']/i) ??
+      html.match(/<meta\s+[^>]*?name=["']twitter:image["'][^>]*?content=["']([^"']+)["']/i) ??
+      html.match(/<meta\s+[^>]*?content=["']([^"']+)["'][^>]*?name=["']twitter:image["']/i);
+    raw = metaMatch?.[1];
   }
 
   if (!raw) return null;
@@ -140,16 +142,17 @@ export async function fetchParfumoData(url: string): Promise<ParfumoData | null>
 
 /**
  * True when a perfume with a Parfumo link hasn't been read yet (notes are
- * stored as {} once read, even if Parfumo lists none) or was read over a week
- * ago. A perfume Parfumo hasn't rated yet waits for the weekly refresh.
+ * stored as {} once read, even if Parfumo lists none) or is missing its image,
+ * or was read over a week ago.
  */
 export function needsParfumoRefresh(perfume: {
   parfumoUrl: string | null;
   parfumoNotes: PerfumeNotes | null;
+  imageUrl?: string | null;
   ratingsUpdatedAt: string | null;
 }) {
   if (!perfume.parfumoUrl) return false;
-  if (perfume.parfumoNotes === null || !perfume.ratingsUpdatedAt) return true;
+  if (perfume.parfumoNotes === null || !perfume.ratingsUpdatedAt || !perfume.imageUrl) return true;
   const ageMs = Date.now() - new Date(perfume.ratingsUpdatedAt).getTime();
   return ageMs > PARFUMO_REFRESH_DAYS * 24 * 60 * 60 * 1000;
 }

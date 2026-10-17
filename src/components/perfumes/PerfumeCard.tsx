@@ -57,7 +57,7 @@ export function PerfumeCard({
       aria-busy={isPending}
     >
       <div className="flex items-start gap-4 p-5 pb-4">
-        {perfume.imageUrl && !imageError ? (
+        {perfume.imageUrl && perfume.imageUrl !== "https://parfumo.com/no-image" && !imageError ? (
           <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-moss-800/80 bg-ink-900/60 p-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
