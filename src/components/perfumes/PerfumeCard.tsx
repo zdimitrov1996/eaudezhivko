@@ -18,7 +18,7 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
   const [rating, setRating] = useState(entry.rating);
   const [isPending, startTransition] = useTransition();
 
-  const { perfume, stats } = entry;
+  const { perfume } = entry;
   const sitesAverage = externalAverage(perfume);
   const fullName = `${perfume.brand} ${perfume.name}`;
   const details = [
@@ -67,39 +67,25 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
         </div>
       </div>
 
-      {/* Example cards without ratings skip the row; real ones show it with the edit button */}
+      {/* Community rating = average of the Fragrantica and Parfumo ratings people typed in.
+          Example cards without ratings skip the row. */}
       {(sitesAverage !== null || !readOnly) && (
-        <div className="mx-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-ink-600/70 py-3.5">
-          <span className="text-sm whitespace-nowrap text-smoke-400" title={t("sitesAverageHint")}>
-            {t("sitesAverage")}
+        <div className="mx-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-ink-600/70 py-3.5">
+          <span className="min-w-0">
+            <span className="block text-sm text-smoke-300">{t("community")}</span>
+            <span className="block text-xs text-smoke-500">{t("communityHint")}</span>
           </span>
           {sitesAverage !== null ? (
-            <span className="flex items-baseline gap-1.5 text-sm whitespace-nowrap" title={t("sitesAverageHint")}>
+            <span className="flex items-baseline gap-1.5 whitespace-nowrap">
               <StarIcon className="h-4 w-4 self-center fill-moss-400 text-moss-400" />
-              <span className="text-lg font-semibold text-smoke-100">{sitesAverage.toFixed(1)}</span>
-              <span className="text-smoke-400">{t("outOfTen")}</span>
+              <span className="text-xl font-semibold text-smoke-100">{sitesAverage.toFixed(1)}</span>
+              <span className="text-sm text-smoke-400">{t("outOfTen")}</span>
             </span>
           ) : (
-            <span className="text-sm text-smoke-500">{t("noSiteRatings")}</span>
+            <EditPerfumeDialog perfume={perfume} label={t("addRatings")} variant="button" />
           )}
         </div>
       )}
-
-      <div className="mx-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-ink-600/70 py-3.5">
-        <span className="text-sm whitespace-nowrap text-smoke-400">{t("community")}</span>
-        {stats.avgRating !== null ? (
-          <span className="flex items-baseline gap-1.5 text-sm whitespace-nowrap">
-            <StarIcon className="h-4 w-4 self-center text-moss-400" />
-            <span className="text-base font-semibold text-smoke-100">
-              {stats.avgRating.toFixed(1)}
-            </span>
-            <span className="text-smoke-400">{t("outOfTen")}</span>
-            <span className="text-smoke-500">· {t("ratingCount", { count: stats.ratingCount })}</span>
-          </span>
-        ) : (
-          <span className="text-sm text-smoke-500">{t("noRatings")}</span>
-        )}
-      </div>
 
       <div className="mx-5 flex flex-wrap gap-2 pb-4">
         {SITES.map(({ site, label, scale }) => {
@@ -159,10 +145,7 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
 
         {!readOnly && (
           <div className="flex items-center gap-1" role="group" aria-label={t("actions", { name: fullName })}>
-            <EditPerfumeDialog
-              perfume={perfume}
-              label={sitesAverage === null ? t("addRatings") : t("updateRatings")}
-            />
+            {sitesAverage !== null && <EditPerfumeDialog perfume={perfume} label={t("updateRatings")} />}
             <button type="button" onClick={onMove} disabled={isPending} className="btn btn-ghost btn-sm">
               {entry.shelf === "collection" ? (
                 <>

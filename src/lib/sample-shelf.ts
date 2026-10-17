@@ -1,7 +1,6 @@
 import type { Shelf, ShelfEntry } from "./perfumes";
 
 // Example perfumes for the landing page and for preview mode (no database yet).
-// Community numbers are made up for illustration.
 const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
   {
     id: "sample-1",
@@ -18,7 +17,6 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
       parfumoRating: null,
       ratingsUpdatedAt: null,
     },
-    stats: { avgRating: 8.6, ratingCount: 41, collectors: 58, wishers: 23 },
   },
   {
     id: "sample-2",
@@ -35,7 +33,6 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
       parfumoRating: null,
       ratingsUpdatedAt: null,
     },
-    stats: { avgRating: 7.4, ratingCount: 112, collectors: 140, wishers: 12 },
   },
   {
     id: "sample-3",
@@ -52,7 +49,6 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
       parfumoRating: null,
       ratingsUpdatedAt: null,
     },
-    stats: { avgRating: 8.1, ratingCount: 27, collectors: 33, wishers: 49 },
   },
   {
     id: "sample-4",
@@ -69,7 +65,6 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
       parfumoRating: null,
       ratingsUpdatedAt: null,
     },
-    stats: { avgRating: 7.9, ratingCount: 64, collectors: 37, wishers: 88 },
   },
   {
     id: "sample-5",
@@ -86,7 +81,6 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
       parfumoRating: null,
       ratingsUpdatedAt: null,
     },
-    stats: { avgRating: 8.3, ratingCount: 76, collectors: 51, wishers: 70 },
   },
 ];
 

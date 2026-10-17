@@ -90,7 +90,8 @@
     "alreadyInWishlist": "This perfume is already on your wishlist.",
     "feedbackTooShort": "Please write a few more words.",
     "feedbackTooLong": "Please keep it under 2000 characters.",
-    "invalidRating": "Enter a {site} rating within its scale."
+    "invalidRating": "Enter a {site} rating within its scale.",
+    "ratingsNotSaved": "The ratings couldn't be saved. Please try again."
   },
   "Shelf": {
     "collectionTitle": "My collection",
@@ -109,8 +110,6 @@
     "parfumo": "Parfumo",
     "searchHint": "Opens a search on {site}",
     "community": "Community rating",
-    "noRatings": "No ratings yet",
-    "ratingCount": "{count, plural, one {# rating} other {# ratings}}",
     "outOfTen": "/10",
     "yourRating": "Your rating",
     "notRated": "Not rated",
@@ -121,13 +120,11 @@
     "remove": "Remove",
     "confirmRemove": "Remove {name} from this list?",
     "actions": "Actions for {name}",
-    "sitesAverage": "Fragrantica + Parfumo",
-    "sitesAverageHint": "Average of both sites on a 10-point scale",
-    "noSiteRatings": "No site ratings yet",
     "addRatings": "Add ratings",
     "updateRatings": "Update ratings",
     "siteRating": "{site} rating: {value}",
-    "outOfFive": "/5"
+    "outOfFive": "/5",
+    "communityHint": "Average of Fragrantica and Parfumo"
   },
   "AddPerfume": {
     "title": "Add a perfume",

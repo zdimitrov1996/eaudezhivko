@@ -1,12 +1,5 @@
 import { createClient } from "./supabase/server";
-import {
-  EMPTY_STATS,
-  type Concentration,
-  type Perfume,
-  type PerfumeStats,
-  type Shelf,
-  type ShelfEntry,
-} from "./perfumes";
+import { type Concentration, type Perfume, type Shelf, type ShelfEntry } from "./perfumes";
 
 type PerfumeRow = {
   id: string;
@@ -19,14 +12,6 @@ type PerfumeRow = {
   fragrantica_rating: number | string | null;
   parfumo_rating: number | string | null;
   ratings_updated_at: string | null;
-};
-
-type StatsRow = {
-  perfume_id: string;
-  avg_rating: number | string | null;
-  rating_count: number;
-  collectors: number;
-  wishers: number;
 };
 
 export const PERFUME_COLUMNS =
@@ -50,7 +35,7 @@ export function toPerfume(row: PerfumeRow): Perfume {
   };
 }
 
-/** The signed-in user's perfumes on one shelf, newest first, with community stats. */
+/** The signed-in user's perfumes on one shelf, newest first. */
 export async function getShelf(shelf: Shelf): Promise<ShelfEntry[]> {
   const supabase = await createClient();
 
@@ -69,25 +54,6 @@ export async function getShelf(shelf: Shelf): Promise<ShelfEntry[]> {
     perfume: PerfumeRow | null;
   }[];
 
-  const ids = rows.flatMap((row) => (row.perfume ? [row.perfume.id] : []));
-  const stats = new Map<string, PerfumeStats>();
-
-  if (ids.length > 0) {
-    const { data: statRows, error: statsError } = await supabase.rpc("perfume_stats", {
-      p_ids: ids,
-    });
-    if (statsError) throw statsError;
-
-    for (const row of (statRows ?? []) as StatsRow[]) {
-      stats.set(row.perfume_id, {
-        avgRating: row.avg_rating === null ? null : Number(row.avg_rating),
-        ratingCount: row.rating_count,
-        collectors: row.collectors,
-        wishers: row.wishers,
-      });
-    }
-  }
-
   return rows.flatMap((row) =>
     row.perfume
       ? [
@@ -96,7 +62,6 @@ export async function getShelf(shelf: Shelf): Promise<ShelfEntry[]> {
             shelf: row.shelf,
             rating: row.rating,
             perfume: toPerfume(row.perfume),
-            stats: stats.get(row.perfume.id) ?? EMPTY_STATS,
           },
         ]
       : [],
