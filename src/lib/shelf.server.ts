@@ -11,10 +11,11 @@ type PerfumeRow = {
   parfumo_rating: number | string | null;
   parfumo_notes: PerfumeNotes | null;
   ratings_updated_at: string | null;
+  created_by: string | null;
 };
 
 export const PERFUME_COLUMNS =
-  "id, brand, name, concentration, release_year, parfumo_url, parfumo_rating, parfumo_notes, ratings_updated_at";
+  "id, brand, name, concentration, release_year, parfumo_url, parfumo_rating, parfumo_notes, ratings_updated_at, created_by";
 
 // Postgres numeric arrives as a string or number depending on the path
 const toNumber = (value: number | string | null) => (value === null ? null : Number(value));
@@ -30,6 +31,7 @@ export function toPerfume(row: PerfumeRow): Perfume {
     parfumoRating: toNumber(row.parfumo_rating),
     parfumoNotes: row.parfumo_notes,
     ratingsUpdatedAt: row.ratings_updated_at,
+    createdBy: row.created_by,
   };
 }
 

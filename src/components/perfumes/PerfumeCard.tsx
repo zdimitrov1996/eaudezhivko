@@ -5,9 +5,19 @@ import { useState, useTransition } from "react";
 import { moveEntry, rateEntry, removeEntry } from "@/actions/perfumes";
 import { hasNotes, NOTE_LAYERS, parfumoLink, type ShelfEntry } from "@/lib/perfumes";
 import { ArrowIcon, ExternalIcon, HeartIcon, StarIcon, TagIcon, TrashIcon } from "../icons";
+import { EditPerfumeDialog } from "./EditPerfumeDialog";
 import { ParfumoLinkDialog } from "./ParfumoLinkDialog";
 
-export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; readOnly?: boolean }) {
+export function PerfumeCard({
+  entry,
+  readOnly = false,
+  canEdit = false,
+}: {
+  entry: ShelfEntry;
+  readOnly?: boolean;
+  /** The signed-in user added this perfume to the catalogue */
+  canEdit?: boolean;
+}) {
   const t = useTranslations("Perfume");
   const tc = useTranslations("Concentration");
   const [rating, setRating] = useState(entry.rating);
@@ -65,30 +75,6 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
         </div>
       </div>
 
-      {/* Community rating = the rating on the perfume's Parfumo page, read automatically.
-          Example cards without a rating skip the row. */}
-      {(communityRating !== null || !readOnly) && (
-        <div className="mx-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-ink-600/70 py-3.5">
-          <span className="min-w-0">
-            <span className="block text-sm text-smoke-300">{t("community")}</span>
-            <span className="block text-xs text-smoke-500">{t("communitySource")}</span>
-          </span>
-          {communityRating !== null ? (
-            <span className="flex items-baseline gap-1.5 whitespace-nowrap">
-              <StarIcon className="h-4 w-4 self-center fill-moss-400 text-moss-400" />
-              <span className="text-xl font-semibold text-smoke-100">{communityRating.toFixed(1)}</span>
-              <span className="text-sm text-smoke-400">{t("outOfTen")}</span>
-            </span>
-          ) : perfume.parfumoUrl ? (
-            <span className="text-sm text-smoke-500">
-              {awaitingParfumo ? t("readingParfumo") : t("notRatedOnParfumo")}
-            </span>
-          ) : (
-            <ParfumoLinkDialog perfume={perfume} label={t("addParfumoLink")} />
-          )}
-        </div>
-      )}
-
       {hasNotes(perfume.parfumoNotes) && (
         <div className="mx-5 border-t border-ink-600/70 py-3.5">
           <p className="mb-2 text-sm text-smoke-300">{t("notes")}</p>
@@ -113,26 +99,50 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
         </div>
       )}
 
-      <div className="mx-5 flex flex-wrap gap-2 pb-4 pt-1">
-        <a
-          href={link.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          title={link.isSearch ? t("searchHint") : undefined}
-          className="btn btn-secondary btn-sm"
-        >
-          Parfumo
-          {communityRating !== null && (
-            <span className="font-semibold text-smoke-100">
-              {communityRating.toFixed(1)}
-              <span className="font-normal text-smoke-500">{t("outOfTen")}</span>
-            </span>
-          )}
-          <ExternalIcon className="text-smoke-400" />
-        </a>
+      {/* Pinned to the bottom so ratings line up across cards, whatever the notes */}
+      <div className="mt-auto">
+        <div className="mx-5 flex flex-wrap gap-2 pt-1 pb-4">
+          <a
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={link.isSearch ? t("searchHint") : undefined}
+            className="btn btn-secondary btn-sm"
+          >
+            Parfumo
+            {communityRating !== null && (
+              <span className="font-semibold text-smoke-100">
+                {communityRating.toFixed(1)}
+                <span className="font-normal text-smoke-500">{t("outOfTen")}</span>
+              </span>
+            )}
+            <ExternalIcon className="text-smoke-400" />
+          </a>
+        </div>
+
+        {/* Community rating = the rating on the perfume's Parfumo page, read automatically.
+            Example cards without a rating skip the row. */}
+        {(communityRating !== null || !readOnly) && (
+          <div className="mx-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-ink-600/70 py-3.5">
+            <span className="text-sm text-smoke-300">{t("community")}</span>
+            {communityRating !== null ? (
+              <span className="flex items-baseline gap-1.5 whitespace-nowrap">
+                <StarIcon className="h-4 w-4 self-center fill-moss-400 text-moss-400" />
+                <span className="text-xl font-semibold text-smoke-100">{communityRating.toFixed(1)}</span>
+                <span className="text-sm text-smoke-400">{t("outOfTen")}</span>
+              </span>
+            ) : perfume.parfumoUrl ? (
+              <span className="text-sm text-smoke-500">
+                {awaitingParfumo ? t("readingParfumo") : t("notRatedOnParfumo")}
+              </span>
+            ) : (
+              <ParfumoLinkDialog perfume={perfume} label={t("addParfumoLink")} />
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-ink-600/70 bg-ink-900/40 px-5 py-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-600/70 bg-ink-900/40 px-5 py-3.5">
         {entry.shelf === "collection" ? (
           <label className="flex items-center gap-2 text-sm text-smoke-300">
             {t("yourRating")}
@@ -162,6 +172,7 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
 
         {!readOnly && (
           <div className="flex items-center gap-1" role="group" aria-label={t("actions", { name: fullName })}>
+            {canEdit && <EditPerfumeDialog perfume={perfume} />}
             <button type="button" onClick={onMove} disabled={isPending} className="btn btn-ghost btn-sm">
               {entry.shelf === "collection" ? (
                 <>

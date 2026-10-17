@@ -15,6 +15,7 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
       parfumoNotes: null,
       parfumoRating: null,
       ratingsUpdatedAt: null,
+      createdBy: null,
     },
   },
   {
@@ -30,6 +31,7 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
       parfumoNotes: null,
       parfumoRating: null,
       ratingsUpdatedAt: null,
+      createdBy: null,
     },
   },
   {
@@ -45,6 +47,7 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
       parfumoNotes: null,
       parfumoRating: null,
       ratingsUpdatedAt: null,
+      createdBy: null,
     },
   },
   {
@@ -60,6 +63,7 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
       parfumoNotes: null,
       parfumoRating: null,
       ratingsUpdatedAt: null,
+      createdBy: null,
     },
   },
   {
@@ -75,6 +79,7 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
       parfumoNotes: null,
       parfumoRating: null,
       ratingsUpdatedAt: null,
+      createdBy: null,
     },
   },
 ];

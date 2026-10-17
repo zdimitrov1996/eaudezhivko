@@ -23,6 +23,9 @@ Perfume collection site: users keep a collection (owned) and a wishlist, each pe
 - Forms that use `useActionState` submit via `submitKeepingValues` so React doesn't clear fields on errors.
 - Node and gh are installed in `~/.local/bin` (no Homebrew on this Mac).
 
+- Legal pages (`/privacy`, `/terms`, `/faq`) live in `src/content/legal.ts` (both languages). They describe the real data flows: when a feature, provider, cookie or admin power changes, update them and the "updated" date. `LEGAL_OWNER` (name/email) is null until the owner decides what to publish.
+- Only the person who added a catalogue perfume can edit it (RLS + `updatePerfume`); a changed Parfumo link clears and re-reads rating and notes.
+
 ## Admin panel and feedback
 
 - `/admin` (users, catalogue, feedback) is for rows in `public.admins`. Every `admin_*` SQL function checks `is_admin()` itself; page checks only decide what to render. Non-admins get a 404.

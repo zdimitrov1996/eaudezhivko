@@ -34,6 +34,8 @@ export type Perfume = {
   parfumoRating: number | null;
   parfumoNotes: PerfumeNotes | null;
   ratingsUpdatedAt: string | null;
+  /** Who added it to the shared catalogue; only they can edit it */
+  createdBy: string | null;
 };
 
 export type ShelfEntry = {

@@ -28,5 +28,5 @@ export default async function CollectionPage({ params }: PageProps<"/[locale]/co
     return redirect({ href: { pathname: "/login", query: { next: "/collection" } }, locale });
   }
 
-  return <ShelfView shelf="collection" entries={await getShelf("collection")} />;
+  return <ShelfView shelf="collection" entries={await getShelf("collection")} currentUserId={user.id} />;
 }

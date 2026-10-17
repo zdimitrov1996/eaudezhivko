@@ -90,7 +90,20 @@ export function SignUpForm() {
       <PasswordField label={t("password")} autoComplete="new-password" />
       <FormMessage error={state?.error} />
       <SubmitButton pending={pending}>{t("submitSignUp")}</SubmitButton>
-      <p className="text-xs leading-relaxed text-smoke-500">{t("terms")}</p>
+      <p className="text-xs leading-relaxed text-smoke-500">
+        {t.rich("terms", {
+          terms: (chunks) => (
+            <Link href="/terms" target="_blank" className="underline underline-offset-2 hover:text-moss-300">
+              {chunks}
+            </Link>
+          ),
+          privacy: (chunks) => (
+            <Link href="/privacy" target="_blank" className="underline underline-offset-2 hover:text-moss-300">
+              {chunks}
+            </Link>
+          ),
+        })}
+      </p>
     </form>
   );
 }

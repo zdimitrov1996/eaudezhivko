@@ -32,6 +32,33 @@ function literalLike(value: string) {
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
+type PerfumeFields = {
+  brand: string;
+  name: string;
+  concentration: Concentration | null;
+  releaseYear: number | null;
+};
+
+/** Brand, name, concentration and year from the add/edit forms, validated. */
+function readPerfumeFields(formData: FormData): PerfumeFields | { ok: false; error: string } {
+  const brand = String(formData.get("brand") ?? "").trim().slice(0, 100);
+  const name = String(formData.get("name") ?? "").trim().slice(0, 150);
+  if (!brand || !name) return { ok: false, error: "brandNameRequired" };
+
+  const rawConcentration = String(formData.get("concentration") ?? "");
+  const concentration = CONCENTRATIONS.includes(rawConcentration as Concentration)
+    ? (rawConcentration as Concentration)
+    : null;
+
+  const rawYear = String(formData.get("releaseYear") ?? "").trim();
+  const releaseYear = rawYear ? Number(rawYear) : null;
+  if (releaseYear !== null && !(Number.isInteger(releaseYear) && releaseYear >= 1700 && releaseYear <= 2100)) {
+    return { ok: false, error: "invalidYear" };
+  }
+
+  return { brand, name, concentration, releaseYear };
+}
+
 /**
  * Reads the rating and notes from the perfume's Parfumo page and saves them.
  * Returns true when something was saved; failures leave the perfume as is.
@@ -99,20 +126,9 @@ export async function addPerfume(
   if (perfumeId) {
     if (parfumoUrl) await fillParfumoLink(supabase, perfumeId, parfumoUrl);
   } else {
-    const brand = String(formData.get("brand") ?? "").trim().slice(0, 100);
-    const name = String(formData.get("name") ?? "").trim().slice(0, 150);
-    if (!brand || !name) return { ok: false, error: "brandNameRequired" };
-
-    const rawConcentration = String(formData.get("concentration") ?? "");
-    const concentration = CONCENTRATIONS.includes(rawConcentration as Concentration)
-      ? (rawConcentration as Concentration)
-      : null;
-
-    const rawYear = String(formData.get("releaseYear") ?? "").trim();
-    const releaseYear = rawYear ? Number(rawYear) : null;
-    if (releaseYear !== null && !(Number.isInteger(releaseYear) && releaseYear >= 1700 && releaseYear <= 2100)) {
-      return { ok: false, error: "invalidYear" };
-    }
+    const fields = readPerfumeFields(formData);
+    if ("error" in fields) return fields;
+    const { brand, name, concentration, releaseYear } = fields;
 
     const { data: created, error: insertError } = await supabase
       .from("perfumes")
@@ -239,4 +255,50 @@ export async function refreshParfumoData(perfumeIds: string[]): Promise<number> 
   const updated = results.filter(Boolean).length;
   if (updated > 0) revalidateShelves();
   return updated;
+}
+
+/**
+ * Edits a catalogue perfume. Only the person who added it may (the database
+ * enforces this too). A changed Parfumo link clears the old rating and notes
+ * and reads the new page.
+ */
+export async function updatePerfume(
+  _prev: AddPerfumeState,
+  formData: FormData,
+): Promise<AddPerfumeState> {
+  if (!isSupabaseConfigured) return { ok: false, error: "notConfigured" };
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "signInRequired" };
+
+  const perfumeId = String(formData.get("perfumeId") ?? "");
+  const fields = readPerfumeFields(formData);
+  if ("error" in fields) return fields;
+  const parfumoUrl = normalizeParfumoUrl(formData.get("parfumoUrl"));
+  if (parfumoUrl === "invalid") return { ok: false, error: "invalidUrl" };
+
+  const supabase = await createClient();
+  const { data: current } = await supabase.from("perfumes").select(PERFUME_COLUMNS).eq("id", perfumeId).maybeSingle();
+  if (!current) return { ok: false, error: "generic" };
+  const before = toPerfume(current);
+  if (before.createdBy !== user.id) return { ok: false, error: "notYourPerfume" };
+
+  const linkChanged = (before.parfumoUrl ?? null) !== (parfumoUrl ?? null);
+  const { error } = await supabase
+    .from("perfumes")
+    .update({
+      brand: fields.brand,
+      name: fields.name,
+      concentration: fields.concentration,
+      release_year: fields.releaseYear,
+      parfumo_url: parfumoUrl,
+      // A different page means different data: read it again
+      ...(linkChanged ? { parfumo_rating: null, parfumo_notes: null, ratings_updated_at: null } : {}),
+    })
+    .eq("id", perfumeId);
+
+  if (error) return { ok: false, error: error.code === "23505" ? "perfumeExists" : "generic" };
+  if (linkChanged && parfumoUrl) await syncParfumoIfDue(supabase, perfumeId);
+
+  revalidateShelves();
+  return { ok: true, at: Date.now() };
 }

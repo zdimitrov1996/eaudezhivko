@@ -28,5 +28,5 @@ export default async function WishlistPage({ params }: PageProps<"/[locale]/wish
     return redirect({ href: { pathname: "/login", query: { next: "/wishlist" } }, locale });
   }
 
-  return <ShelfView shelf="wishlist" entries={await getShelf("wishlist")} />;
+  return <ShelfView shelf="wishlist" entries={await getShelf("wishlist")} currentUserId={user.id} />;
 }
