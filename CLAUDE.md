@@ -2,11 +2,11 @@
 
 # Eau de Fragrances
 
-Perfume collection site: users keep a collection (owned) and a wishlist, each perfume links to Fragrantica and Parfumo. The owner is non-technical and works in Bulgarian; reply to them in Bulgarian.
+Perfume collection site: users keep a collection (owned) and a wishlist, each perfume links to Parfumo and shows its Parfumo rating and notes. The owner is non-technical and works in Bulgarian; reply to them in Bulgarian.
 
 ## Decisions (2026-10-16, updated 2026-10-17)
 
-- **Ratings:** "Community rating" on a card = average of Fragrantica and Parfumo on a 10-point scale (Fragrantica's /5 doubled, see `externalAverage`). **Parfumo** is read automatically from the saved link (`src/lib/parfumo.server.ts`: robots.txt allows perfume pages, schema.org AggregateRating, own User-Agent, redirects kept on parfumo.*, refreshed at most weekly in the background). **Fragrantica** returns 403 to servers (Cloudflare), so its score is typed in; never try to get around that block. Outreach drafts for official access: `docs/ratings-permission-emails.md`.
+- **Parfumo only (2026-10-17):** Fragrantica was removed from the site at the owner's request (it also returns 403 to servers via Cloudflare; never try to get around that). "Community rating" on a card is the Parfumo rating, and the card shows Parfumo's note pyramid. Both are read automatically from the saved Parfumo link (`src/lib/parfumo.server.ts`: robots.txt allows perfume pages; schema.org AggregateRating; `data-nt` t/m/b/n for top/heart/base/linear notes; note names only, not Parfumo's images; own User-Agent; redirects kept on parfumo.*). Read when a link is saved and refreshed at most weekly in the background (`refreshParfumoData`). The old `fragrantica_*` columns and `set_external_ratings` remain in the database but are unused.
 - **Theme:** dark by default; the header toggle sets the `edf_theme` cookie and `data-theme="light"` on `<html>`, which swaps the colour tokens in `globals.css`. Use the theme tokens (`ink`, `smoke`, `moss`, `ember`, `veil`), never raw white/black overlays.
 - **Prices:** later phase, Bulgarian shops only, in EUR.
 - **Sign-in:** email + Google only (both free). No Facebook or Apple for now.

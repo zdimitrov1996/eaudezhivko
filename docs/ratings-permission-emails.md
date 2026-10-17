@@ -1,40 +1,22 @@
-# Писма до Fragrantica и Parfumo
+# Писмо до Parfumo
 
-Чернови на писма с молба за разрешение да показваме техните оценки на сайта. Изпраща ги собственикът на сайта през формите за контакт или партньорства на двете платформи. Адресите ги вземи от сайтовете им, тук не са посочени нарочно.
+Чернова на писмо до Parfumo: сайтът вече показва оценката и нотките от страниците им (с линк обратно и посочен източник), а писменото им съгласие или официален достъп е по-сигурната основа. Изпраща го собственикът на сайта през формата за контакт или партньорства на Parfumo. Адресът не е посочен тук нарочно.
 
-Преди да ги изпратиш: попълни името си и, ако вече е купен, домейна.
-
----
-
-## Fragrantica
-
-**Subject:** Partnership request: showing Fragrantica ratings on a perfume collection site
-
-Hello Fragrantica team,
-
-I'm building **Eau de Fragrances** (eaudefragrances.com), a free site where perfume lovers catalogue the bottles they own and keep a wishlist of what they want to buy next.
-
-Every perfume on the site links directly to its Fragrantica page. We would also like to show the Fragrantica average rating next to each perfume, with clear attribution and a link back to you, so collectors can see it at a glance and are sent to Fragrantica for the details.
-
-We don't want to scrape your site. Could you tell me whether you offer an API, a data feed or a partnership programme for this kind of use, and on what terms? We'd be happy to follow any attribution or display rules you have.
-
-Thank you for your time,
-[Name]
-Eau de Fragrances
+Преди да го изпратиш: попълни името си и, ако вече е купен, домейна.
 
 ---
 
 ## Parfumo
 
-**Subject:** Request: displaying Parfumo ratings with attribution
+**Subject:** Showing Parfumo ratings and notes on a collector site — request for your OK
 
 Hello Parfumo team,
 
-I'm building **Eau de Fragrances** (eaudefragrances.com), a free site where fragrance collectors keep track of their collection and their wishlist.
+I run **Eau de Fragrances** (eaudezhivko.vercel.app, soon eaudefragrances.com), a free site where fragrance collectors keep track of the bottles they own and the ones they want.
 
-Each perfume on the site already links to its page on Parfumo. We would like to also display the Parfumo community rating next to it, credited to Parfumo and linking back to the perfume's page.
+When a member adds the Parfumo link of a perfume, the card on our site shows that perfume's Parfumo rating and its note pyramid, clearly credited to Parfumo and linking back to the perfume's page on Parfumo. We read each page only when a link is added and at most once a week after that, with our own identifiable User-Agent, and we don't copy images or reviews.
 
-We'd rather do this properly than scrape. Do you offer an API or another way to access ratings for a project like this, and what conditions would apply? We'll gladly follow your attribution guidelines.
+We'd like to make sure you're happy with this. Is there an official API or data feed we should use instead, and are there attribution or display rules you'd like us to follow? We'll gladly adjust or stop if you prefer.
 
 Kind regards,
 [Name]

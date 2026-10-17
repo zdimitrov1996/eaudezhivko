@@ -1,5 +1,5 @@
 import { createClient } from "./supabase/server";
-import { type Concentration, type Perfume, type Shelf, type ShelfEntry } from "./perfumes";
+import { type Concentration, type Perfume, type PerfumeNotes, type Shelf, type ShelfEntry } from "./perfumes";
 
 type PerfumeRow = {
   id: string;
@@ -7,15 +7,14 @@ type PerfumeRow = {
   name: string;
   concentration: Concentration | null;
   release_year: number | null;
-  fragrantica_url: string | null;
   parfumo_url: string | null;
-  fragrantica_rating: number | string | null;
   parfumo_rating: number | string | null;
+  parfumo_notes: PerfumeNotes | null;
   ratings_updated_at: string | null;
 };
 
 export const PERFUME_COLUMNS =
-  "id, brand, name, concentration, release_year, fragrantica_url, parfumo_url, fragrantica_rating, parfumo_rating, ratings_updated_at";
+  "id, brand, name, concentration, release_year, parfumo_url, parfumo_rating, parfumo_notes, ratings_updated_at";
 
 // Postgres numeric arrives as a string or number depending on the path
 const toNumber = (value: number | string | null) => (value === null ? null : Number(value));
@@ -27,10 +26,9 @@ export function toPerfume(row: PerfumeRow): Perfume {
     name: row.name,
     concentration: row.concentration,
     releaseYear: row.release_year,
-    fragranticaUrl: row.fragrantica_url,
     parfumoUrl: row.parfumo_url,
-    fragranticaRating: toNumber(row.fragrantica_rating),
     parfumoRating: toNumber(row.parfumo_rating),
+    parfumoNotes: row.parfumo_notes,
     ratingsUpdatedAt: row.ratings_updated_at,
   };
 }

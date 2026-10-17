@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { refreshParfumoRatings } from "@/actions/perfumes";
+import { refreshParfumoData } from "@/actions/perfumes";
 
 /**
- * After a shelf loads, fetches Parfumo ratings that are missing or a week old
+ * After a shelf loads, fetches Parfumo data that is missing or a week old
  * in the background, then refreshes the page if any changed. Renders nothing.
  */
 export function RatingsRefresher({ perfumeIds }: { perfumeIds: string[] }) {
@@ -15,7 +15,7 @@ export function RatingsRefresher({ perfumeIds }: { perfumeIds: string[] }) {
   useEffect(() => {
     if (!key) return;
     let cancelled = false;
-    refreshParfumoRatings(key.split(",")).then((updated) => {
+    refreshParfumoData(key.split(",")).then((updated) => {
       if (!cancelled && updated > 0) router.refresh();
     });
     return () => {

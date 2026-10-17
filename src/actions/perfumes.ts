@@ -5,20 +5,16 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import {
   CONCENTRATIONS,
-  normalizeSiteUrl,
-  parseSiteRating,
+  normalizeParfumoUrl,
   type Concentration,
   type Perfume,
   type Shelf,
 } from "@/lib/perfumes";
-import { fetchParfumoRating, needsParfumoRefresh } from "@/lib/parfumo.server";
+import { fetchParfumoData, needsParfumoRefresh } from "@/lib/parfumo.server";
 import { PERFUME_COLUMNS, toPerfume } from "@/lib/shelf.server";
 
-/** `error` is a key into the Errors namespace; `site` fills its {site} placeholder. */
-export type AddPerfumeState =
-  | { ok: true; at: number }
-  | { ok: false; error: string; site?: string }
-  | undefined;
+/** `error` is a key into the Errors namespace. */
+export type AddPerfumeState = { ok: true; at: number } | { ok: false; error: string } | undefined;
 
 function revalidateShelves() {
   revalidatePath("/[locale]/collection", "page");
@@ -34,49 +30,42 @@ function literalLike(value: string) {
   return value.replace(/[\\%_]/g, (char) => `\\${char}`);
 }
 
-type Ratings = { fragrantica: number | null; parfumo: number | null };
+type Supabase = Awaited<ReturnType<typeof createClient>>;
 
-function readRatings(formData: FormData): Ratings | { ok: false; error: string; site: string } {
-  const fragrantica = parseSiteRating(formData.get("fragranticaRating"), "fragrantica");
-  if (fragrantica === "invalid") return { ok: false, error: "invalidRating", site: "Fragrantica" };
-  const parfumo = parseSiteRating(formData.get("parfumoRating"), "parfumo");
-  if (parfumo === "invalid") return { ok: false, error: "invalidRating", site: "Parfumo" };
-  return { fragrantica, parfumo };
-}
+/**
+ * Reads the rating and notes from the perfume's Parfumo page and saves them.
+ * Returns true when something was saved; failures leave the perfume as is.
+ */
+async function syncParfumo(supabase: Supabase, perfume: Perfume) {
+  if (!perfume.parfumoUrl) return false;
+  const data = await fetchParfumoData(perfume.parfumoUrl);
+  if (!data) return false;
 
-/** Returns false if the ratings couldn't be saved. */
-async function saveRatings(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  perfumeId: string,
-  ratings: Ratings,
-) {
-  if (ratings.fragrantica === null && ratings.parfumo === null) return true;
-  const { error } = await supabase.rpc("set_external_ratings", {
-    p_perfume_id: perfumeId,
-    p_fragrantica_rating: ratings.fragrantica,
-    p_parfumo_rating: ratings.parfumo,
+  const { error } = await supabase.rpc("set_parfumo_data", {
+    p_perfume_id: perfume.id,
+    p_rating: data.rating,
+    // {} marks "checked, no notes listed" so we don't re-read it on every visit
+    p_notes: data.notes ?? {},
   });
-  if (error) console.error("set_external_ratings failed", error);
+  if (error) console.error("set_parfumo_data failed", error);
   return !error;
 }
 
-/**
- * Reads the Parfumo rating from the perfume's Parfumo link when it has none
- * yet (or an old one) and nobody typed one in. Failures are ignored: the card
- * then shows the "Add ratings" button.
- */
-async function fillParfumoRating(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  perfumeId: string,
-) {
+/** Reads Parfumo data for one perfume if it's missing or a week old. */
+async function syncParfumoIfDue(supabase: Supabase, perfumeId: string) {
   const { data } = await supabase.from("perfumes").select(PERFUME_COLUMNS).eq("id", perfumeId).maybeSingle();
   if (!data) return;
   const perfume = toPerfume(data);
-  if (!perfume.parfumoUrl || !needsParfumoRefresh(perfume)) return;
+  if (needsParfumoRefresh(perfume)) await syncParfumo(supabase, perfume);
+}
 
-  const rating = await fetchParfumoRating(perfume.parfumoUrl);
-  if (rating === null) return;
-  await saveRatings(supabase, perfumeId, { fragrantica: null, parfumo: rating });
+/** Adds a Parfumo link to a perfume that has none (links already set stay). */
+async function fillParfumoLink(supabase: Supabase, perfumeId: string, parfumoUrl: string) {
+  await supabase.rpc("fill_perfume_links", {
+    p_perfume_id: perfumeId,
+    p_fragrantica_url: "",
+    p_parfumo_url: parfumoUrl,
+  });
 }
 
 export async function searchPerfumes(query: string): Promise<Perfume[]> {
@@ -101,27 +90,14 @@ export async function addPerfume(
 
   const shelf = parseShelf(formData.get("shelf"));
 
-  const fragranticaUrl = normalizeSiteUrl(formData.get("fragranticaUrl"), "fragrantica");
-  if (fragranticaUrl === "invalid") {
-    return { ok: false, error: "invalidUrl", site: "Fragrantica" };
-  }
-  const parfumoUrl = normalizeSiteUrl(formData.get("parfumoUrl"), "parfumo");
-  if (parfumoUrl === "invalid") return { ok: false, error: "invalidUrl", site: "Parfumo" };
-
-  const ratings = readRatings(formData);
-  if ("error" in ratings) return ratings;
+  const parfumoUrl = normalizeParfumoUrl(formData.get("parfumoUrl"));
+  if (parfumoUrl === "invalid") return { ok: false, error: "invalidUrl" };
 
   const supabase = await createClient();
   let perfumeId = String(formData.get("perfumeId") ?? "");
 
   if (perfumeId) {
-    if (fragranticaUrl || parfumoUrl) {
-      await supabase.rpc("fill_perfume_links", {
-        p_perfume_id: perfumeId,
-        p_fragrantica_url: fragranticaUrl ?? "",
-        p_parfumo_url: parfumoUrl ?? "",
-      });
-    }
+    if (parfumoUrl) await fillParfumoLink(supabase, perfumeId, parfumoUrl);
   } else {
     const brand = String(formData.get("brand") ?? "").trim().slice(0, 100);
     const name = String(formData.get("name") ?? "").trim().slice(0, 150);
@@ -145,7 +121,6 @@ export async function addPerfume(
         name,
         concentration,
         release_year: releaseYear,
-        fragrantica_url: fragranticaUrl,
         parfumo_url: parfumoUrl,
       })
       .select("id")
@@ -166,22 +141,13 @@ export async function addPerfume(
       if (!existing) return { ok: false, error: "generic" };
       perfumeId = existing.id;
 
-      if (fragranticaUrl || parfumoUrl) {
-        await supabase.rpc("fill_perfume_links", {
-          p_perfume_id: perfumeId,
-          p_fragrantica_url: fragranticaUrl ?? "",
-          p_parfumo_url: parfumoUrl ?? "",
-        });
-      }
+      if (parfumoUrl) await fillParfumoLink(supabase, perfumeId, parfumoUrl);
     } else {
       return { ok: false, error: "generic" };
     }
   }
 
-  if (!(await saveRatings(supabase, perfumeId, ratings))) {
-    return { ok: false, error: "ratingsNotSaved" };
-  }
-  if (ratings.parfumo === null) await fillParfumoRating(supabase, perfumeId);
+  await syncParfumoIfDue(supabase, perfumeId);
 
   const { data: onShelf } = await supabase
     .from("user_perfumes")
@@ -232,8 +198,8 @@ export async function rateEntry(entryId: string, rating: number | null) {
   revalidateShelves();
 }
 
-/** Updates a perfume's site ratings and fills in links it doesn't have yet. */
-export async function updatePerfumeDetails(
+/** Adds a Parfumo link to a perfume that has none, then reads its rating and notes. */
+export async function addParfumoLink(
   _prev: AddPerfumeState,
   formData: FormData,
 ): Promise<AddPerfumeState> {
@@ -243,41 +209,23 @@ export async function updatePerfumeDetails(
   const perfumeId = String(formData.get("perfumeId") ?? "");
   if (!perfumeId) return { ok: false, error: "generic" };
 
-  const fragranticaUrl = normalizeSiteUrl(formData.get("fragranticaUrl"), "fragrantica");
-  if (fragranticaUrl === "invalid") {
-    return { ok: false, error: "invalidUrl", site: "Fragrantica" };
-  }
-  const parfumoUrl = normalizeSiteUrl(formData.get("parfumoUrl"), "parfumo");
-  if (parfumoUrl === "invalid") return { ok: false, error: "invalidUrl", site: "Parfumo" };
-
-  const ratings = readRatings(formData);
-  if ("error" in ratings) return ratings;
-  if (ratings.fragrantica === null && ratings.parfumo === null && !fragranticaUrl && !parfumoUrl) {
-    return { ok: false, error: "nothingToSave" };
-  }
+  const parfumoUrl = normalizeParfumoUrl(formData.get("parfumoUrl"));
+  if (parfumoUrl === "invalid") return { ok: false, error: "invalidUrl" };
+  if (!parfumoUrl) return { ok: false, error: "linkRequired" };
 
   const supabase = await createClient();
-  if (fragranticaUrl || parfumoUrl) {
-    await supabase.rpc("fill_perfume_links", {
-      p_perfume_id: perfumeId,
-      p_fragrantica_url: fragranticaUrl ?? "",
-      p_parfumo_url: parfumoUrl ?? "",
-    });
-  }
-  if (!(await saveRatings(supabase, perfumeId, ratings))) {
-    return { ok: false, error: "ratingsNotSaved" };
-  }
-  if (ratings.parfumo === null) await fillParfumoRating(supabase, perfumeId);
+  await fillParfumoLink(supabase, perfumeId, parfumoUrl);
+  await syncParfumoIfDue(supabase, perfumeId);
 
   revalidateShelves();
   return { ok: true, at: Date.now() };
 }
 
 /**
- * Called by the shelf after it loads, for perfumes whose Parfumo rating is
- * missing or over a week old. Returns how many ratings changed.
+ * Called by the shelf after it loads, for perfumes whose Parfumo data is
+ * missing or over a week old. Returns how many perfumes changed.
  */
-export async function refreshParfumoRatings(perfumeIds: string[]): Promise<number> {
+export async function refreshParfumoData(perfumeIds: string[]): Promise<number> {
   if (!isSupabaseConfigured || !(await getCurrentUser())) return 0;
 
   const ids = perfumeIds.filter((id) => typeof id === "string").slice(0, 6);
@@ -287,14 +235,7 @@ export async function refreshParfumoRatings(perfumeIds: string[]): Promise<numbe
   const { data } = await supabase.from("perfumes").select(PERFUME_COLUMNS).in("id", ids);
   const due = (data ?? []).map(toPerfume).filter(needsParfumoRefresh);
 
-  const results = await Promise.all(
-    due.map(async (perfume) => {
-      const rating = await fetchParfumoRating(perfume.parfumoUrl!);
-      if (rating === null) return false;
-      return saveRatings(supabase, perfume.id, { fragrantica: null, parfumo: rating });
-    }),
-  );
-
+  const results = await Promise.all(due.map((perfume) => syncParfumo(supabase, perfume)));
   const updated = results.filter(Boolean).length;
   if (updated > 0) revalidateShelves();
   return updated;

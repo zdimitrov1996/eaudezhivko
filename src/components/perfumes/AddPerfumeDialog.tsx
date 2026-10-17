@@ -6,7 +6,6 @@ import { addPerfume, searchPerfumes, type AddPerfumeState } from "@/actions/perf
 import { CONCENTRATIONS, type Perfume, type Shelf } from "@/lib/perfumes";
 import { CloseIcon, PlusIcon, SearchIcon } from "../icons";
 import { submitKeepingValues } from "../submit-keeping-values";
-import { RatingFields } from "./RatingFields";
 
 export function AddPerfumeDialog({ shelf }: { shelf: Shelf }) {
   const t = useTranslations("AddPerfume");
@@ -221,19 +220,6 @@ export function AddPerfumeDialog({ shelf }: { shelf: Shelf }) {
 
             <div className="flex flex-col gap-4">
               <div>
-                <label htmlFor="fragranticaUrl" className="field-label">
-                  {t("fragranticaUrl")} <span className="font-normal text-smoke-500">({t("optional")})</span>
-                </label>
-                <input
-                  id="fragranticaUrl"
-                  name="fragranticaUrl"
-                  type="url"
-                  inputMode="url"
-                  placeholder="https://www.fragrantica.com/perfume/…"
-                  className="field"
-                />
-              </div>
-              <div>
                 <label htmlFor="parfumoUrl" className="field-label">
                   {t("parfumoUrl")} <span className="font-normal text-smoke-500">({t("optional")})</span>
                 </label>
@@ -247,18 +233,12 @@ export function AddPerfumeDialog({ shelf }: { shelf: Shelf }) {
                 />
               </div>
               <p className="text-sm text-smoke-500">{t("linkHint")}</p>
-              <RatingFields
-                key={selected?.id ?? "new"}
-                fragrantica={selected?.fragranticaRating}
-                parfumo={selected?.parfumoRating}
-              />
             </div>
-
           </div>
 
           {state && !state.ok && (
             <p role="alert" className="mx-6 mb-1 rounded-xl border border-ember-400/30 bg-ember-900/60 px-4 py-3 text-sm text-ember-400">
-              {te(state.error, { site: state.site ?? "" })}
+              {te(state.error)}
             </p>
           )}
 

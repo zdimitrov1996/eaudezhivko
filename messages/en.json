@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "Eau de Fragrances — your perfume collection",
-    "description": "Catalogue the perfumes you own, keep a wishlist of what to buy next, and jump to Fragrantica and Parfumo for every scent."
+    "description": "Catalogue the perfumes you own, keep a wishlist of what to buy next, and see each scent's Parfumo rating and notes."
   },
   "Nav": {
     "mainNav": "Main navigation",
@@ -16,7 +16,7 @@
   "Home": {
     "eyebrow": "For fragrance collectors",
     "title": "Every bottle you own. Every bottle you want.",
-    "subtitle": "Catalogue your perfume collection, keep a wishlist of what to buy next, and jump straight to Fragrantica and Parfumo for every scent.",
+    "subtitle": "Catalogue your perfume collection, keep a wishlist of what to buy next, and see the rating and notes of every scent, straight from Parfumo.",
     "ctaStart": "Start your collection",
     "ctaSignIn": "I already have an account",
     "ctaOpen": "Open my collection",
@@ -32,8 +32,8 @@
         "body": "Save what you want to try or buy next, then move it to your collection the day it arrives."
       },
       "ratings": {
-        "title": "Fragrantica & Parfumo",
-        "body": "One click to each perfume on both platforms, plus the average rating from our own community."
+        "title": "Ratings and notes",
+        "body": "Every perfume shows its Parfumo rating and its top, heart and base notes, filled in automatically from the link."
       },
       "prices": {
         "title": "Best price in Bulgaria",
@@ -83,16 +83,14 @@
     "linkInvalid": "That link is invalid or has expired. Please try again.",
     "oauth": "Google sign-in didn't complete. Please try again.",
     "signInRequired": "Please sign in first.",
-    "invalidUrl": "Please paste a full link from {site}.",
+    "invalidUrl": "Please paste a full link to a Parfumo page.",
     "brandNameRequired": "Brand and name are required.",
     "invalidYear": "Year must be between 1700 and 2100.",
     "alreadyInCollection": "This perfume is already in your collection.",
     "alreadyInWishlist": "This perfume is already on your wishlist.",
     "feedbackTooShort": "Please write a few more words.",
     "feedbackTooLong": "Please keep it under 2000 characters.",
-    "invalidRating": "Enter a {site} rating within its scale.",
-    "ratingsNotSaved": "The ratings couldn't be saved. Please try again.",
-    "nothingToSave": "Enter at least one rating or link."
+    "linkRequired": "Please paste a link to the perfume's Parfumo page."
   },
   "Shelf": {
     "collectionTitle": "My collection",
@@ -101,15 +99,13 @@
     "wishlistSubtitle": "{count, plural, =0 {Nothing saved yet} one {# perfume to get} other {# perfumes to get}}",
     "add": "Add perfume",
     "emptyCollectionTitle": "Your shelf is empty",
-    "emptyCollectionBody": "Add the first bottle you own. You'll get links to Fragrantica and Parfumo straight away.",
+    "emptyCollectionBody": "Add the first bottle you own. With a Parfumo link, its rating and notes appear by themselves.",
     "emptyWishlistTitle": "No wishes yet",
     "emptyWishlistBody": "Save perfumes you want to buy or try. Move them to your collection when they arrive.",
     "demoBanner": "Preview mode: the database isn't connected yet, so this shelf shows example perfumes."
   },
   "Perfume": {
-    "fragrantica": "Fragrantica",
-    "parfumo": "Parfumo",
-    "searchHint": "Opens a search on {site}",
+    "searchHint": "Opens a Parfumo search",
     "community": "Community rating",
     "outOfTen": "/10",
     "yourRating": "Your rating",
@@ -121,13 +117,17 @@
     "remove": "Remove",
     "confirmRemove": "Remove {name} from this list?",
     "actions": "Actions for {name}",
-    "addRatings": "Add ratings",
-    "updateRatings": "Update ratings",
-    "siteRating": "{site} rating: {value}",
-    "outOfFive": "/5",
-    "communityBoth": "Average of Fragrantica and Parfumo",
-    "communityParfumo": "From Parfumo · add Fragrantica for the average",
-    "communityFragrantica": "From Fragrantica (out of 5, shown on a 10-point scale)"
+    "communitySource": "From Parfumo",
+    "readingParfumo": "Reading from Parfumo…",
+    "notRatedOnParfumo": "Not rated on Parfumo yet",
+    "addParfumoLink": "Add Parfumo link",
+    "notes": "Notes",
+    "noteLayers": {
+      "top": "Top",
+      "heart": "Heart",
+      "base": "Base",
+      "notes": "Notes"
+    }
   },
   "AddPerfume": {
     "title": "Add a perfume",
@@ -145,18 +145,12 @@
     "concentration": "Concentration",
     "concentrationAny": "Not sure",
     "year": "Year",
-    "fragranticaUrl": "Fragrantica link",
     "parfumoUrl": "Parfumo link",
     "optional": "optional",
-    "linkHint": "Paste the perfume's page link if you have it. Otherwise we'll link to a search.",
+    "linkHint": "Paste the perfume's Parfumo page and we'll add its rating and notes automatically.",
     "cancel": "Cancel",
     "close": "Close",
-    "saving": "Saving…",
-    "fragranticaRating": "Fragrantica rating",
-    "outOf5": "out of 5",
-    "fragranticaManualHint": "Fragrantica doesn't allow automatic reading, so type in the score you see there (out of 5). We convert it to a 10-point scale for the average.",
-    "parfumoAuto": "The Parfumo rating is read automatically from the Parfumo link.",
-    "parfumoAutoKnown": "Parfumo rating read automatically: {value}/10."
+    "saving": "Saving…"
   },
   "Concentration": {
     "extrait": "Extrait de Parfum",
@@ -183,7 +177,7 @@
   },
   "Footer": {
     "tagline": "Your perfume collection, beautifully kept.",
-    "disclaimer": "Not affiliated with Fragrantica or Parfumo."
+    "disclaimer": "Ratings and notes from Parfumo. Not affiliated with Parfumo."
   },
   "NotFound": {
     "title": "Page not found",
@@ -298,18 +292,17 @@
     "thanksTitle": "Thank you!",
     "thanksBody": "Your feedback is on its way to us."
   },
-  "EditPerfume": {
-    "title": "Ratings and links",
-    "intro": "Type in the Fragrantica rating. The Parfumo rating is read from its link automatically. Everyone who has this perfume sees them.",
-    "linkSaved": "Link saved",
-    "lastUpdated": "Last updated {date}",
+  "Theme": {
+    "toLight": "Switch to light mode",
+    "toDark": "Switch to dark mode"
+  },
+  "ParfumoLink": {
+    "title": "Parfumo link",
+    "intro": "Paste the perfume's page on Parfumo. Its rating and notes are added automatically.",
+    "label": "Parfumo link",
     "save": "Save",
     "saving": "Saving…",
     "cancel": "Cancel",
     "close": "Close"
-  },
-  "Theme": {
-    "toLight": "Switch to light mode",
-    "toDark": "Switch to dark mode"
   }
 }

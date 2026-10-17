@@ -59,7 +59,6 @@ export type AdminShelfEntry = {
     name: string;
     concentration: Concentration | null;
     releaseYear: number | null;
-    fragranticaUrl: string | null;
     parfumoUrl: string | null;
   };
 };
@@ -70,7 +69,6 @@ export type AdminPerfume = {
   name: string;
   concentration: Concentration | null;
   releaseYear: number | null;
-  fragranticaUrl: string | null;
   parfumoUrl: string | null;
   createdAt: string;
   createdByEmail: string | null;
@@ -157,7 +155,6 @@ export async function getAdminUserShelves(userId: string): Promise<AdminShelfEnt
       name: string;
       concentration: Concentration | null;
       release_year: number | null;
-      fragrantica_url: string | null;
       parfumo_url: string | null;
     }[]
   ).map((row) => ({
@@ -171,7 +168,6 @@ export async function getAdminUserShelves(userId: string): Promise<AdminShelfEnt
       name: row.name,
       concentration: row.concentration,
       releaseYear: row.release_year,
-      fragranticaUrl: row.fragrantica_url,
       parfumoUrl: row.parfumo_url,
     },
   }));
@@ -189,7 +185,6 @@ export async function getAdminPerfumes(): Promise<AdminPerfume[]> {
       name: string;
       concentration: Concentration | null;
       release_year: number | null;
-      fragrantica_url: string | null;
       parfumo_url: string | null;
       created_at: string;
       created_by_email: string | null;
@@ -204,7 +199,6 @@ export async function getAdminPerfumes(): Promise<AdminPerfume[]> {
     name: row.name,
     concentration: row.concentration,
     releaseYear: row.release_year,
-    fragranticaUrl: row.fragrantica_url,
     parfumoUrl: row.parfumo_url,
     createdAt: row.created_at,
     createdByEmail: row.created_by_email,
