@@ -91,7 +91,8 @@
     "feedbackTooShort": "Please write a few more words.",
     "feedbackTooLong": "Please keep it under 2000 characters.",
     "invalidRating": "Enter a {site} rating within its scale.",
-    "ratingsNotSaved": "The ratings couldn't be saved. Please try again."
+    "ratingsNotSaved": "The ratings couldn't be saved. Please try again.",
+    "nothingToSave": "Enter at least one rating or link."
   },
   "Shelf": {
     "collectionTitle": "My collection",

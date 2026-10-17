@@ -231,6 +231,9 @@ export async function updatePerfumeDetails(
 
   const ratings = readRatings(formData);
   if ("error" in ratings) return ratings;
+  if (ratings.fragrantica === null && ratings.parfumo === null && !fragranticaUrl && !parfumoUrl) {
+    return { ok: false, error: "nothingToSave" };
+  }
 
   const supabase = await createClient();
   if (fragranticaUrl || parfumoUrl) {

@@ -31,7 +31,7 @@ export function RatingFields({
             pattern="[0-9]+([.,][0-9]{1,2})?"
             autoComplete="off"
             defaultValue={fragrantica === null ? "" : String(fragrantica)}
-            placeholder="4.25"
+            placeholder="0–5"
             className="field"
           />
         </div>
@@ -49,7 +49,7 @@ export function RatingFields({
             pattern="[0-9]+([.,][0-9]{1,2})?"
             autoComplete="off"
             defaultValue={parfumo === null ? "" : String(parfumo)}
-            placeholder="8.1"
+            placeholder="0–10"
             className="field"
           />
         </div>
