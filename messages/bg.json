@@ -91,7 +91,8 @@
     "feedbackTooShort": "Напиши още няколко думи.",
     "feedbackTooLong": "Моля, до 2000 символа.",
     "invalidRating": "Въведи оценка за {site} в рамките на скалата.",
-    "ratingsNotSaved": "Оценките не се запазиха. Опитай отново."
+    "ratingsNotSaved": "Оценките не се запазиха. Опитай отново.",
+    "nothingToSave": "Въведи поне една оценка или линк."
   },
   "Shelf": {
     "collectionTitle": "Моята колекция",
