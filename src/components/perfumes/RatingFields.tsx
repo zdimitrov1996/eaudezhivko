@@ -3,12 +3,16 @@
 import { useTranslations } from "next-intl";
 import { useId } from "react";
 
-/** Two inputs for the ratings people see on Fragrantica (0–5) and Parfumo (0–10). */
+/**
+ * The Fragrantica rating (0–5), typed in by people because Fragrantica blocks
+ * automated reading. The Parfumo rating is read from its link automatically.
+ */
 export function RatingFields({
   fragrantica = null,
   parfumo = null,
 }: {
   fragrantica?: number | null;
+  /** Shown read-only when already known */
   parfumo?: number | null;
 }) {
   const t = useTranslations("AddPerfume");
@@ -16,45 +20,26 @@ export function RatingFields({
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor={`${id}-fragrantica`} className="field-label">
-            {t("fragranticaRating")} <span className="font-normal text-smoke-500">({t("outOf5")})</span>
-          </label>
-          <input
-            id={`${id}-fragrantica`}
-            name="fragranticaRating"
-            // Text, not number: some Bulgarian-locale browsers drop "4.25" from
-            // number inputs. The server accepts both "4.25" and "4,25".
-            type="text"
-            inputMode="decimal"
-            pattern="[0-9]+([.,][0-9]{1,2})?"
-            autoComplete="off"
-            defaultValue={fragrantica === null ? "" : String(fragrantica)}
-            placeholder="0–5"
-            className="field"
-          />
-        </div>
-        <div>
-          <label htmlFor={`${id}-parfumo`} className="field-label">
-            {t("parfumoRating")} <span className="font-normal text-smoke-500">({t("outOf10")})</span>
-          </label>
-          <input
-            id={`${id}-parfumo`}
-            name="parfumoRating"
-            // Text, not number: some Bulgarian-locale browsers drop "4.25" from
-            // number inputs. The server accepts both "4.25" and "4,25".
-            type="text"
-            inputMode="decimal"
-            pattern="[0-9]+([.,][0-9]{1,2})?"
-            autoComplete="off"
-            defaultValue={parfumo === null ? "" : String(parfumo)}
-            placeholder="0–10"
-            className="field"
-          />
-        </div>
-      </div>
-      <p className="mt-1.5 text-xs text-smoke-500">{t("ratingsHint")}</p>
+      <label htmlFor={`${id}-fragrantica`} className="field-label">
+        {t("fragranticaRating")} <span className="font-normal text-smoke-500">({t("outOf5")})</span>
+      </label>
+      <input
+        id={`${id}-fragrantica`}
+        name="fragranticaRating"
+        // Text, not number: some Bulgarian-locale browsers drop "4.25" from
+        // number inputs. The server accepts both "4.25" and "4,25".
+        type="text"
+        inputMode="decimal"
+        pattern="[0-5]([.,][0-9]{1,2})?"
+        autoComplete="off"
+        defaultValue={fragrantica === null ? "" : String(fragrantica)}
+        placeholder="0–5"
+        className="field sm:max-w-40"
+      />
+      <p className="mt-1.5 text-xs text-smoke-500">{t("fragranticaManualHint")}</p>
+      <p className="mt-1 text-xs text-smoke-500">
+        {parfumo === null ? t("parfumoAuto") : t("parfumoAutoKnown", { value: parfumo.toFixed(1) })}
+      </p>
     </div>
   );
 }

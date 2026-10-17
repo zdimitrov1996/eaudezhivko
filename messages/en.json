@@ -125,7 +125,9 @@
     "updateRatings": "Update ratings",
     "siteRating": "{site} rating: {value}",
     "outOfFive": "/5",
-    "communityHint": "Average of Fragrantica and Parfumo"
+    "communityBoth": "Average of Fragrantica and Parfumo",
+    "communityParfumo": "From Parfumo · add Fragrantica for the average",
+    "communityFragrantica": "From Fragrantica (out of 5, shown on a 10-point scale)"
   },
   "AddPerfume": {
     "title": "Add a perfume",
@@ -151,10 +153,10 @@
     "close": "Close",
     "saving": "Saving…",
     "fragranticaRating": "Fragrantica rating",
-    "parfumoRating": "Parfumo rating",
     "outOf5": "out of 5",
-    "outOf10": "out of 10",
-    "ratingsHint": "Type the ratings you see on each site (Fragrantica 0–5, Parfumo 0–10). We show both and their average."
+    "fragranticaManualHint": "Fragrantica doesn't allow automatic reading, so type in the score you see there (out of 5). We convert it to a 10-point scale for the average.",
+    "parfumoAuto": "The Parfumo rating is read automatically from the Parfumo link.",
+    "parfumoAutoKnown": "Parfumo rating read automatically: {value}/10."
   },
   "Concentration": {
     "extrait": "Extrait de Parfum",
@@ -298,7 +300,7 @@
   },
   "EditPerfume": {
     "title": "Ratings and links",
-    "intro": "Update the ratings shown on Fragrantica and Parfumo. Everyone who has this perfume sees them.",
+    "intro": "Type in the Fragrantica rating. The Parfumo rating is read from its link automatically. Everyone who has this perfume sees them.",
     "linkSaved": "Link saved",
     "lastUpdated": "Last updated {date}",
     "save": "Save",
