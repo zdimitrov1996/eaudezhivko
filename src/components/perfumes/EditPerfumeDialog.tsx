@@ -5,12 +5,21 @@ import { useActionState, useId, useRef, useState } from "react";
 import { updatePerfumeDetails, type AddPerfumeState } from "@/actions/perfumes";
 import type { Perfume } from "@/lib/perfumes";
 import { FormMessage, SubmitButton } from "../auth/FormBits";
-import { CloseIcon, PencilIcon } from "../icons";
+import { CloseIcon, PencilIcon, PlusIcon } from "../icons";
 import { submitKeepingValues } from "../submit-keeping-values";
 import { RatingFields } from "./RatingFields";
 
 /** Small dialog on a perfume card for the site ratings and any missing links. */
-export function EditPerfumeDialog({ perfume, label }: { perfume: Perfume; label: string }) {
+export function EditPerfumeDialog({
+  perfume,
+  label,
+  variant = "icon",
+}: {
+  perfume: Perfume;
+  label: string;
+  /** "icon": pencil button in the card footer; "button": labelled button in the rating row */
+  variant?: "icon" | "button";
+}) {
   const t = useTranslations("EditPerfume");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -19,15 +28,26 @@ export function EditPerfumeDialog({ perfume, label }: { perfume: Perfume; label:
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => dialogRef.current?.showModal()}
-        className="btn btn-ghost btn-sm !px-2.5"
-        aria-label={label}
-        title={label}
-      >
-        <PencilIcon className="h-4 w-4" />
-      </button>
+      {variant === "icon" ? (
+        <button
+          type="button"
+          onClick={() => dialogRef.current?.showModal()}
+          className="btn btn-ghost btn-sm !px-2.5"
+          aria-label={label}
+          title={label}
+        >
+          <PencilIcon className="h-4 w-4" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => dialogRef.current?.showModal()}
+          className="btn btn-secondary btn-sm"
+        >
+          <PlusIcon className="h-4 w-4" />
+          {label}
+        </button>
+      )}
 
       <dialog
         ref={dialogRef}

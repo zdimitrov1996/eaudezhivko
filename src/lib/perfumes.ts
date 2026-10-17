@@ -27,19 +27,11 @@ export type Perfume = {
   ratingsUpdatedAt: string | null;
 };
 
-export type PerfumeStats = {
-  avgRating: number | null;
-  ratingCount: number;
-  collectors: number;
-  wishers: number;
-};
-
 export type ShelfEntry = {
   id: string;
   shelf: Shelf;
   rating: number | null;
   perfume: Perfume;
-  stats: PerfumeStats;
 };
 
 export type LinkSite = "fragrantica" | "parfumo";
@@ -122,9 +114,3 @@ export function parseSiteRating(raw: unknown, site: LinkSite): number | null | "
   return rating;
 }
 
-export const EMPTY_STATS: PerfumeStats = {
-  avgRating: null,
-  ratingCount: 0,
-  collectors: 0,
-  wishers: 0,
-};

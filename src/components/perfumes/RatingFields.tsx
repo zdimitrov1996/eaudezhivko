@@ -24,12 +24,13 @@ export function RatingFields({
           <input
             id={`${id}-fragrantica`}
             name="fragranticaRating"
-            type="number"
+            // Text, not number: some Bulgarian-locale browsers drop "4.25" from
+            // number inputs. The server accepts both "4.25" and "4,25".
+            type="text"
             inputMode="decimal"
-            min={0}
-            max={5}
-            step={0.01}
-            defaultValue={fragrantica ?? ""}
+            pattern="[0-9]+([.,][0-9]{1,2})?"
+            autoComplete="off"
+            defaultValue={fragrantica === null ? "" : String(fragrantica)}
             placeholder="4.25"
             className="field"
           />
@@ -41,12 +42,13 @@ export function RatingFields({
           <input
             id={`${id}-parfumo`}
             name="parfumoRating"
-            type="number"
+            // Text, not number: some Bulgarian-locale browsers drop "4.25" from
+            // number inputs. The server accepts both "4.25" and "4,25".
+            type="text"
             inputMode="decimal"
-            min={0}
-            max={10}
-            step={0.1}
-            defaultValue={parfumo ?? ""}
+            pattern="[0-9]+([.,][0-9]{1,2})?"
+            autoComplete="off"
+            defaultValue={parfumo === null ? "" : String(parfumo)}
             placeholder="8.1"
             className="field"
           />

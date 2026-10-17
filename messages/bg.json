@@ -90,7 +90,8 @@
     "alreadyInWishlist": "Този парфюм вече е в списъка ти с желани.",
     "feedbackTooShort": "Напиши още няколко думи.",
     "feedbackTooLong": "Моля, до 2000 символа.",
-    "invalidRating": "Въведи оценка за {site} в рамките на скалата."
+    "invalidRating": "Въведи оценка за {site} в рамките на скалата.",
+    "ratingsNotSaved": "Оценките не се запазиха. Опитай отново."
   },
   "Shelf": {
     "collectionTitle": "Моята колекция",
@@ -109,8 +110,6 @@
     "parfumo": "Parfumo",
     "searchHint": "Отваря търсене в {site}",
     "community": "Оценка от общността",
-    "noRatings": "Още няма оценки",
-    "ratingCount": "{count, plural, one {# оценка} other {# оценки}}",
     "outOfTen": "/10",
     "yourRating": "Твоята оценка",
     "notRated": "Без оценка",
@@ -121,13 +120,11 @@
     "remove": "Премахни",
     "confirmRemove": "Да премахна ли {name} от списъка?",
     "actions": "Действия за {name}",
-    "sitesAverage": "Fragrantica + Parfumo",
-    "sitesAverageHint": "Средна оценка от двата сайта по скала до 10",
-    "noSiteRatings": "Още няма оценки от сайтовете",
     "addRatings": "Добави оценки",
     "updateRatings": "Обнови оценките",
     "siteRating": "Оценка в {site}: {value}",
-    "outOfFive": "/5"
+    "outOfFive": "/5",
+    "communityHint": "Средно от Fragrantica и Parfumo"
   },
   "AddPerfume": {
     "title": "Добави парфюм",

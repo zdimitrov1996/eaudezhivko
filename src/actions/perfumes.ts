@@ -43,17 +43,20 @@ function readRatings(formData: FormData): Ratings | { ok: false; error: string; 
   return { fragrantica, parfumo };
 }
 
+/** Returns false if the ratings couldn't be saved. */
 async function saveRatings(
   supabase: Awaited<ReturnType<typeof createClient>>,
   perfumeId: string,
   ratings: Ratings,
 ) {
-  if (ratings.fragrantica === null && ratings.parfumo === null) return;
-  await supabase.rpc("set_external_ratings", {
+  if (ratings.fragrantica === null && ratings.parfumo === null) return true;
+  const { error } = await supabase.rpc("set_external_ratings", {
     p_perfume_id: perfumeId,
     p_fragrantica_rating: ratings.fragrantica,
     p_parfumo_rating: ratings.parfumo,
   });
+  if (error) console.error("set_external_ratings failed", error);
+  return !error;
 }
 
 export async function searchPerfumes(query: string): Promise<Perfume[]> {
@@ -155,7 +158,9 @@ export async function addPerfume(
     }
   }
 
-  await saveRatings(supabase, perfumeId, ratings);
+  if (!(await saveRatings(supabase, perfumeId, ratings))) {
+    return { ok: false, error: "ratingsNotSaved" };
+  }
 
   const { data: onShelf } = await supabase
     .from("user_perfumes")
@@ -235,7 +240,9 @@ export async function updatePerfumeDetails(
       p_parfumo_url: parfumoUrl ?? "",
     });
   }
-  await saveRatings(supabase, perfumeId, ratings);
+  if (!(await saveRatings(supabase, perfumeId, ratings))) {
+    return { ok: false, error: "ratingsNotSaved" };
+  }
 
   revalidateShelves();
   return { ok: true, at: Date.now() };
