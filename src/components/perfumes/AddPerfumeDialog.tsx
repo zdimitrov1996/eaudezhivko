@@ -6,6 +6,7 @@ import { addPerfume, searchPerfumes, type AddPerfumeState } from "@/actions/perf
 import { CONCENTRATIONS, type Perfume, type Shelf } from "@/lib/perfumes";
 import { CloseIcon, PlusIcon, SearchIcon } from "../icons";
 import { submitKeepingValues } from "../submit-keeping-values";
+import { RatingFields } from "./RatingFields";
 
 export function AddPerfumeDialog({ shelf }: { shelf: Shelf }) {
   const t = useTranslations("AddPerfume");
@@ -148,7 +149,7 @@ export function AddPerfumeDialog({ shelf }: { shelf: Shelf }) {
                         <button
                           type="button"
                           onClick={() => select(perfume)}
-                          className="flex w-full items-baseline justify-between gap-3 px-4 py-3 text-left hover:bg-white/5"
+                          className="flex w-full items-baseline justify-between gap-3 px-4 py-3 text-left hover:bg-veil"
                         >
                           <span>
                             <span className="text-smoke-400">{perfume.brand}</span>{" "}
@@ -246,6 +247,11 @@ export function AddPerfumeDialog({ shelf }: { shelf: Shelf }) {
                 />
               </div>
               <p className="text-sm text-smoke-500">{t("linkHint")}</p>
+              <RatingFields
+                key={selected?.id ?? "new"}
+                fragrantica={selected?.fragranticaRating}
+                parfumo={selected?.parfumoRating}
+              />
             </div>
 
           </div>

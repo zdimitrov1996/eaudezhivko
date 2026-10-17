@@ -6,6 +6,7 @@ import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import {
   CONCENTRATIONS,
   normalizeSiteUrl,
+  parseSiteRating,
   type Concentration,
   type Perfume,
   type Shelf,
@@ -30,6 +31,29 @@ function parseShelf(value: unknown): Shelf {
 /** Escapes LIKE wildcards so a perfume name is matched literally. */
 function literalLike(value: string) {
   return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
+type Ratings = { fragrantica: number | null; parfumo: number | null };
+
+function readRatings(formData: FormData): Ratings | { ok: false; error: string; site: string } {
+  const fragrantica = parseSiteRating(formData.get("fragranticaRating"), "fragrantica");
+  if (fragrantica === "invalid") return { ok: false, error: "invalidRating", site: "Fragrantica" };
+  const parfumo = parseSiteRating(formData.get("parfumoRating"), "parfumo");
+  if (parfumo === "invalid") return { ok: false, error: "invalidRating", site: "Parfumo" };
+  return { fragrantica, parfumo };
+}
+
+async function saveRatings(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  perfumeId: string,
+  ratings: Ratings,
+) {
+  if (ratings.fragrantica === null && ratings.parfumo === null) return;
+  await supabase.rpc("set_external_ratings", {
+    p_perfume_id: perfumeId,
+    p_fragrantica_rating: ratings.fragrantica,
+    p_parfumo_rating: ratings.parfumo,
+  });
 }
 
 export async function searchPerfumes(query: string): Promise<Perfume[]> {
@@ -60,6 +84,9 @@ export async function addPerfume(
   }
   const parfumoUrl = normalizeSiteUrl(formData.get("parfumoUrl"), "parfumo");
   if (parfumoUrl === "invalid") return { ok: false, error: "invalidUrl", site: "Parfumo" };
+
+  const ratings = readRatings(formData);
+  if ("error" in ratings) return ratings;
 
   const supabase = await createClient();
   let perfumeId = String(formData.get("perfumeId") ?? "");
@@ -128,6 +155,8 @@ export async function addPerfume(
     }
   }
 
+  await saveRatings(supabase, perfumeId, ratings);
+
   const { data: onShelf } = await supabase
     .from("user_perfumes")
     .select("shelf")
@@ -175,4 +204,39 @@ export async function rateEntry(entryId: string, rating: number | null) {
   const supabase = await createClient();
   await supabase.from("user_perfumes").update({ rating: value }).eq("id", entryId);
   revalidateShelves();
+}
+
+/** Updates a perfume's site ratings and fills in links it doesn't have yet. */
+export async function updatePerfumeDetails(
+  _prev: AddPerfumeState,
+  formData: FormData,
+): Promise<AddPerfumeState> {
+  if (!isSupabaseConfigured) return { ok: false, error: "notConfigured" };
+  if (!(await getCurrentUser())) return { ok: false, error: "signInRequired" };
+
+  const perfumeId = String(formData.get("perfumeId") ?? "");
+  if (!perfumeId) return { ok: false, error: "generic" };
+
+  const fragranticaUrl = normalizeSiteUrl(formData.get("fragranticaUrl"), "fragrantica");
+  if (fragranticaUrl === "invalid") {
+    return { ok: false, error: "invalidUrl", site: "Fragrantica" };
+  }
+  const parfumoUrl = normalizeSiteUrl(formData.get("parfumoUrl"), "parfumo");
+  if (parfumoUrl === "invalid") return { ok: false, error: "invalidUrl", site: "Parfumo" };
+
+  const ratings = readRatings(formData);
+  if ("error" in ratings) return ratings;
+
+  const supabase = await createClient();
+  if (fragranticaUrl || parfumoUrl) {
+    await supabase.rpc("fill_perfume_links", {
+      p_perfume_id: perfumeId,
+      p_fragrantica_url: fragranticaUrl ?? "",
+      p_parfumo_url: parfumoUrl ?? "",
+    });
+  }
+  await saveRatings(supabase, perfumeId, ratings);
+
+  revalidateShelves();
+  return { ok: true, at: Date.now() };
 }

@@ -4,13 +4,14 @@
 
 Perfume collection site: users keep a collection (owned) and a wishlist, each perfume links to Fragrantica and Parfumo. The owner is non-technical and works in Bulgarian; reply to them in Bulgarian.
 
-## Decisions (2026-10-16)
+## Decisions (2026-10-16, updated 2026-10-17)
 
-- **Ratings:** Fragrantica and Parfumo have no official API and block bots. Show links (exact page if a user pasted it, otherwise a search link) plus our own users' average rating. Don't scrape; outreach drafts are in `docs/ratings-permission-emails.md`.
+- **Ratings:** Fragrantica and Parfumo have no official API and block bots. Don't scrape. Users type in the ratings they see (Fragrantica /5, Parfumo /10, stored on the shared `perfumes` row via `set_external_ratings`); cards show both and their average on a 10-point scale, plus our own users' average. Outreach drafts for official access are in `docs/ratings-permission-emails.md`.
+- **Theme:** dark by default; the header toggle sets the `edf_theme` cookie and `data-theme="light"` on `<html>`, which swaps the colour tokens in `globals.css`. Use the theme tokens (`ink`, `smoke`, `moss`, `ember`, `veil`), never raw white/black overlays.
 - **Prices:** later phase, Bulgarian shops only, in EUR.
 - **Sign-in:** email + Google only (both free). No Facebook or Apple for now.
 - **Languages:** English (default) and Bulgarian, via next-intl `/en` and `/bg`.
-- **Domain:** eaudefragrances.com (not bought yet). Hosting planned on Vercel.
+- **Domain:** eaudefragrances.com (not bought yet). Hosted on Vercel: https://eaudezhivko.vercel.app (deploys from `main`).
 - **Commits** in this repo use the GitHub noreply email (set in local git config).
 
 ## Conventions

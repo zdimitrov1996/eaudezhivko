@@ -28,8 +28,14 @@ export function Logo() {
   return (
     <span className="flex items-center gap-2.5">
       <BottleMark />
-      <span className="font-serif text-xl font-semibold tracking-wide text-smoke-100 sm:text-2xl">
-        Eau de <span className="text-moss-400">Fragrances</span>
+      {/* Phones: stacked like a bottle label, so the header fits; wider: one line */}
+      <span className="font-serif font-semibold tracking-wide text-smoke-100">
+        <span className="block text-[0.8rem] leading-none sm:inline sm:text-2xl sm:leading-normal">
+          Eau de{" "}
+        </span>
+        <span className="block text-xl leading-none text-moss-400 sm:inline sm:text-2xl sm:leading-normal">
+          Fragrances
+        </span>
       </span>
     </span>
   );

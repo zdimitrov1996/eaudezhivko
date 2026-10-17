@@ -56,7 +56,7 @@ export default async function AdminPerfumesPage({ params }: PageProps<"/[locale]
             </tr>
           )}
           {perfumes.map((perfume) => (
-            <tr key={perfume.id} className="hover:bg-white/[0.03]">
+            <tr key={perfume.id} className="hover:bg-veil-soft">
               <Td>
                 <span className="text-smoke-400">{perfume.brand}</span>{" "}
                 <span className="font-medium text-smoke-100">{perfume.name}</span>
