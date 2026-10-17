@@ -73,6 +73,7 @@ async function syncParfumo(supabase: Supabase, perfume: Perfume) {
     p_rating: data.rating,
     // {} marks "checked, no notes listed" so we don't re-read it on every visit
     p_notes: data.notes ?? {},
+    p_image_url: data.imageUrl ?? null,
   });
   if (error) console.error("set_parfumo_data failed", error);
   return !error;

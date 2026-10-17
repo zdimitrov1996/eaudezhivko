@@ -13,7 +13,11 @@ const MAX_NOTES_PER_LAYER = 30;
 /** Days before stored Parfumo data is read again. */
 export const PARFUMO_REFRESH_DAYS = 7;
 
-export type ParfumoData = { rating: number | null; notes: PerfumeNotes | null };
+export type ParfumoData = {
+  rating: number | null;
+  notes: PerfumeNotes | null;
+  imageUrl: string | null;
+};
 
 /** The Parfumo community rating (0–10) on a perfume page, or null if not found. */
 export function parseParfumoRating(html: string): number | null {
@@ -61,6 +65,45 @@ export function parseParfumoNotes(html: string): PerfumeNotes | null {
   return Object.keys(notes).length > 0 ? notes : null;
 }
 
+/**
+ * The bottle flacon image from the Parfumo page.
+ * Checks og:image, twitter:image, itemprop="image", or media.parfumo CDN flacon links.
+ */
+export function parseParfumoImage(html: string): string | null {
+  const metaMatch =
+    html.match(/<meta\s+[^>]*?property=["']og:image["'][^>]*?content=["']([^"']+)["']/i) ??
+    html.match(/<meta\s+[^>]*?content=["']([^"']+)["'][^>]*?property=["']og:image["']/i) ??
+    html.match(/<meta\s+[^>]*?name=["']twitter:image["'][^>]*?content=["']([^"']+)["']/i) ??
+    html.match(/<meta\s+[^>]*?content=["']([^"']+)["'][^>]*?name=["']twitter:image["']/i);
+
+  let raw = metaMatch?.[1];
+
+  if (!raw) {
+    const itemPropMatch =
+      html.match(/<meta\s+[^>]*?itemprop=["']image["'][^>]*?content=["']([^"']+)["']/i) ??
+      html.match(/<img\s+[^>]*?itemprop=["']image["'][^>]*?src=["']([^"']+)["']/i);
+    raw = itemPropMatch?.[1];
+  }
+
+  if (!raw) {
+    const cdnMatch = html.match(/src=["'](https?:\/\/[a-z0-9.-]*parfumo\.[a-z.]{2,6}\/perfumes\/[^"']+)["']/i);
+    raw = cdnMatch?.[1];
+  }
+
+  if (!raw) return null;
+  const decoded = decodeEntities(raw);
+
+  try {
+    const url = new URL(decoded);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    if (!/([a-z0-9-]+\.)?parfumo\.[a-z.]{2,6}$/i.test(url.hostname)) return null;
+    url.protocol = "https:";
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
 /** Fetches a Parfumo perfume page; null on any failure. */
 export async function fetchParfumoData(url: string): Promise<ParfumoData | null> {
   let next = normalizeParfumoUrl(url);
@@ -82,8 +125,12 @@ export async function fetchParfumoData(url: string): Promise<ParfumoData | null>
       }
       if (!response.ok) return null;
       const html = await response.text();
-      const data = { rating: parseParfumoRating(html), notes: parseParfumoNotes(html) };
-      return data.rating === null && data.notes === null ? null : data;
+      const data = {
+        rating: parseParfumoRating(html),
+        notes: parseParfumoNotes(html),
+        imageUrl: parseParfumoImage(html),
+      };
+      return data.rating === null && data.notes === null && data.imageUrl === null ? null : data;
     } catch {
       return null;
     }

@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { moveEntry, rateEntry, removeEntry } from "@/actions/perfumes";
-import { hasNotes, NOTE_LAYERS, parfumoLink, type ShelfEntry } from "@/lib/perfumes";
+import { hasNotes, NOTE_LAYERS, parfumoLink, pazaruvajSearchUrl, type ShelfEntry } from "@/lib/perfumes";
 import { ArrowIcon, ExternalIcon, HeartIcon, StarIcon, TagIcon, TrashIcon } from "../icons";
 import { EditPerfumeDialog } from "./EditPerfumeDialog";
 import { ParfumoLinkDialog } from "./ParfumoLinkDialog";
@@ -21,6 +21,7 @@ export function PerfumeCard({
   const t = useTranslations("Perfume");
   const tc = useTranslations("Concentration");
   const [rating, setRating] = useState(entry.rating);
+  const [imageError, setImageError] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const { perfume } = entry;
@@ -56,12 +57,26 @@ export function PerfumeCard({
       aria-busy={isPending}
     >
       <div className="flex items-start gap-4 p-5 pb-4">
-        <div
-          aria-hidden="true"
-          className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-moss-800 bg-gradient-to-br from-moss-900 to-ink-850 font-serif text-2xl font-semibold text-moss-300"
-        >
-          {perfume.brand.charAt(0).toUpperCase()}
-        </div>
+        {perfume.imageUrl && !imageError ? (
+          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-moss-800/80 bg-ink-900/60 p-1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={perfume.imageUrl}
+              alt={fullName}
+              referrerPolicy="no-referrer"
+              loading="lazy"
+              onError={() => setImageError(true)}
+              className="h-full w-full object-contain"
+            />
+          </div>
+        ) : (
+          <div
+            aria-hidden="true"
+            className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-moss-800 bg-gradient-to-br from-moss-900 to-ink-850 font-serif text-2xl font-semibold text-moss-300"
+          >
+            {perfume.brand.charAt(0).toUpperCase()}
+          </div>
+        )}
         <div className="min-w-0">
           <p className="truncate text-xs font-semibold tracking-[0.14em] text-smoke-400 uppercase">
             {perfume.brand}
@@ -118,6 +133,16 @@ export function PerfumeCard({
             )}
             <ExternalIcon className="text-smoke-400" />
           </a>
+          <a
+            href={pazaruvajSearchUrl(perfume)}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={t("pazaruvajHint")}
+            className="btn btn-secondary btn-sm"
+          >
+            Pazaruvaj
+            <ExternalIcon className="text-smoke-400" />
+          </a>
         </div>
 
         {/* Community rating = the rating on the perfume's Parfumo page, read automatically.
@@ -164,9 +189,16 @@ export function PerfumeCard({
           <span className="flex items-center gap-2 text-sm text-smoke-400">
             <TagIcon className="h-4 w-4 text-moss-400" />
             {t("bestPrice")}:
-            <span className="rounded-full bg-ink-700 px-2 py-0.5 text-xs whitespace-nowrap text-smoke-300">
-              {t("comingSoon")}
-            </span>
+            <a
+              href={pazaruvajSearchUrl(perfume)}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={t("pazaruvajHint")}
+              className="inline-flex items-center gap-1 rounded-full bg-ink-700 px-2.5 py-0.5 text-xs text-smoke-300 transition-colors hover:bg-ink-600 hover:text-smoke-100"
+            >
+              <span>{t("checkOnPazaruvaj")}</span>
+              <ExternalIcon className="h-3 w-3 text-smoke-400" />
+            </a>
           </span>
         )}
 

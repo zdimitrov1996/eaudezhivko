@@ -29,6 +29,7 @@ export type Perfume = {
   name: string;
   concentration: Concentration | null;
   releaseYear: number | null;
+  imageUrl: string | null;
   parfumoUrl: string | null;
   /** Read from the Parfumo page, out of 10 */
   parfumoRating: number | null;
@@ -75,6 +76,12 @@ export function parfumoLink(perfume: Pick<Perfume, "brand" | "name" | "parfumoUr
   if (perfume.parfumoUrl) return { href: perfume.parfumoUrl, isSearch: false };
   const query = encodeURIComponent(`${perfume.brand} ${perfume.name}`);
   return { href: `https://www.parfumo.com/s_perfumes_x.php?in=1&filter=${query}`, isSearch: true };
+}
+
+/** Direct search link on Pazaruvaj.com for Bulgarian market prices. */
+export function pazaruvajSearchUrl(perfume: Pick<Perfume, "brand" | "name">) {
+  const query = encodeURIComponent(`${perfume.brand} ${perfume.name}`);
+  return `https://www.pazaruvaj.com/CategorySearch.php?st=${query}`;
 }
 
 /** True when the notes object has at least one note. */
