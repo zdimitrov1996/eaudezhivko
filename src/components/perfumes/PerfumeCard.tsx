@@ -3,14 +3,9 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { moveEntry, rateEntry, removeEntry } from "@/actions/perfumes";
-import { externalAverage, perfumeLink, type LinkSite, type ShelfEntry } from "@/lib/perfumes";
+import { hasNotes, NOTE_LAYERS, parfumoLink, type ShelfEntry } from "@/lib/perfumes";
 import { ArrowIcon, ExternalIcon, HeartIcon, StarIcon, TagIcon, TrashIcon } from "../icons";
-import { EditPerfumeDialog } from "./EditPerfumeDialog";
-
-const SITES: { site: LinkSite; label: string; scale: string }[] = [
-  { site: "fragrantica", label: "Fragrantica", scale: "/5" },
-  { site: "parfumo", label: "Parfumo", scale: "/10" },
-];
+import { ParfumoLinkDialog } from "./ParfumoLinkDialog";
 
 export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; readOnly?: boolean }) {
   const t = useTranslations("Perfume");
@@ -19,7 +14,10 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
   const [isPending, startTransition] = useTransition();
 
   const { perfume } = entry;
-  const sitesAverage = externalAverage(perfume);
+  const communityRating = perfume.parfumoRating;
+  const link = parfumoLink(perfume);
+  // Parfumo is read in the background until notes (or {}) and a date are stored
+  const awaitingParfumo = Boolean(perfume.parfumoUrl) && (perfume.parfumoNotes === null || !perfume.ratingsUpdatedAt);
   const fullName = `${perfume.brand} ${perfume.name}`;
   const details = [
     perfume.concentration ? tc(perfume.concentration) : null,
@@ -67,60 +65,71 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
         </div>
       </div>
 
-      {/* Community rating = average of Fragrantica (typed in, /5 doubled) and Parfumo
-          (read from its link). Example cards without ratings skip the row. */}
-      {(sitesAverage !== null || !readOnly) && (
+      {/* Community rating = the rating on the perfume's Parfumo page, read automatically.
+          Example cards without a rating skip the row. */}
+      {(communityRating !== null || !readOnly) && (
         <div className="mx-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-ink-600/70 py-3.5">
           <span className="min-w-0">
             <span className="block text-sm text-smoke-300">{t("community")}</span>
-            <span className="block text-xs text-smoke-500">
-              {perfume.fragranticaRating !== null && perfume.parfumoRating !== null
-                ? t("communityBoth")
-                : perfume.parfumoRating !== null
-                  ? t("communityParfumo")
-                  : perfume.fragranticaRating !== null
-                    ? t("communityFragrantica")
-                    : t("communityBoth")}
-            </span>
+            <span className="block text-xs text-smoke-500">{t("communitySource")}</span>
           </span>
-          {sitesAverage !== null ? (
+          {communityRating !== null ? (
             <span className="flex items-baseline gap-1.5 whitespace-nowrap">
               <StarIcon className="h-4 w-4 self-center fill-moss-400 text-moss-400" />
-              <span className="text-xl font-semibold text-smoke-100">{sitesAverage.toFixed(1)}</span>
+              <span className="text-xl font-semibold text-smoke-100">{communityRating.toFixed(1)}</span>
               <span className="text-sm text-smoke-400">{t("outOfTen")}</span>
             </span>
+          ) : perfume.parfumoUrl ? (
+            <span className="text-sm text-smoke-500">
+              {awaitingParfumo ? t("readingParfumo") : t("notRatedOnParfumo")}
+            </span>
           ) : (
-            <EditPerfumeDialog perfume={perfume} label={t("addRatings")} variant="button" />
+            <ParfumoLinkDialog perfume={perfume} label={t("addParfumoLink")} />
           )}
         </div>
       )}
 
-      <div className="mx-5 flex flex-wrap gap-2 pb-4">
-        {SITES.map(({ site, label, scale }) => {
-          const link = perfumeLink(perfume, site);
-          const rating = site === "fragrantica" ? perfume.fragranticaRating : perfume.parfumoRating;
-          const shown = rating === null ? null : rating.toFixed(site === "fragrantica" ? 2 : 1);
-          return (
-            <a
-              key={site}
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={link.isSearch ? t("searchHint", { site: label }) : undefined}
-              aria-label={shown ? `${label}, ${t("siteRating", { site: label, value: `${shown}${scale}` })}` : undefined}
-              className="btn btn-secondary btn-sm"
-            >
-              {label}
-              {shown && (
-                <span className="font-semibold text-smoke-100">
-                  {shown}
-                  <span className="font-normal text-smoke-500">{scale}</span>
-                </span>
-              )}
-              <ExternalIcon className="text-smoke-400" />
-            </a>
-          );
-        })}
+      {hasNotes(perfume.parfumoNotes) && (
+        <div className="mx-5 border-t border-ink-600/70 py-3.5">
+          <p className="mb-2 text-sm text-smoke-300">{t("notes")}</p>
+          <dl className="flex flex-col gap-2">
+            {NOTE_LAYERS.map((layer) => {
+              const notes = perfume.parfumoNotes?.[layer] ?? [];
+              if (notes.length === 0) return null;
+              return (
+                <div key={layer} className="flex gap-3">
+                  <dt className="w-14 shrink-0 pt-0.5 text-xs text-smoke-500">{t(`noteLayers.${layer}`)}</dt>
+                  <dd className="flex min-w-0 flex-wrap gap-1">
+                    {notes.map((note) => (
+                      <span key={note} className="rounded-full bg-ink-700 px-2 py-0.5 text-xs text-smoke-300">
+                        {note}
+                      </span>
+                    ))}
+                  </dd>
+                </div>
+              );
+            })}
+          </dl>
+        </div>
+      )}
+
+      <div className="mx-5 flex flex-wrap gap-2 pb-4 pt-1">
+        <a
+          href={link.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={link.isSearch ? t("searchHint") : undefined}
+          className="btn btn-secondary btn-sm"
+        >
+          Parfumo
+          {communityRating !== null && (
+            <span className="font-semibold text-smoke-100">
+              {communityRating.toFixed(1)}
+              <span className="font-normal text-smoke-500">{t("outOfTen")}</span>
+            </span>
+          )}
+          <ExternalIcon className="text-smoke-400" />
+        </a>
       </div>
 
       <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-ink-600/70 bg-ink-900/40 px-5 py-3.5">
@@ -153,7 +162,6 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
 
         {!readOnly && (
           <div className="flex items-center gap-1" role="group" aria-label={t("actions", { name: fullName })}>
-            {sitesAverage !== null && <EditPerfumeDialog perfume={perfume} label={t("updateRatings")} />}
             <button type="button" onClick={onMove} disabled={isPending} className="btn btn-ghost btn-sm">
               {entry.shelf === "collection" ? (
                 <>

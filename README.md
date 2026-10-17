@@ -1,6 +1,6 @@
 # Eau de Fragrances
 
-A site for perfume collectors: keep a **collection** of the bottles you own and a **wishlist** of what to buy next. Every perfume links to Fragrantica and Parfumo, and shows the average rating from the site's own users. English and Bulgarian.
+A site for perfume collectors: keep a **collection** of the bottles you own and a **wishlist** of what to buy next. Every perfume links to Parfumo and shows its Parfumo rating and notes, read automatically from the link. English and Bulgarian.
 
 Domain (planned): **eaudefragrances.com**
 
@@ -38,8 +38,9 @@ To connect the database and turn on sign-in, follow **[docs/SETUP.md](docs/SETUP
 
 ## Roadmap
 
-1. ✅ Design, accounts (email + Google), collection, wishlist, Fragrantica/Parfumo links
+1. ✅ Design, accounts (email + Google), collection, wishlist, Parfumo links
 2. ✅ Deployed on Vercel (https://eaudezhivko.vercel.app)
 3. ✅ Admin panel (users and their shelves, catalogue, support sign-in, account deletion, audit log) and a Feedback form
 4. Domain eaudefragrances.com, custom SMTP, privacy policy and terms
-5. Fragrantica/Parfumo ratings (pending their permission) and best prices from Bulgarian shops
+5. ✅ Parfumo rating and notes read automatically; light/dark theme
+6. Best prices from Bulgarian shops

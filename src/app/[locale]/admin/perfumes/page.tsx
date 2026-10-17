@@ -3,12 +3,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { AdminShell, AdminTable, Td, Th } from "@/components/admin/AdminShell";
 import { ExternalIcon } from "@/components/icons";
 import { getAdminPerfumes, requireAdmin } from "@/lib/admin.server";
-import { perfumeLink, type LinkSite } from "@/lib/perfumes";
-
-const SITES: { site: LinkSite; label: string }[] = [
-  { site: "fragrantica", label: "Fragrantica" },
-  { site: "parfumo", label: "Parfumo" },
-];
+import { parfumoLink } from "@/lib/perfumes";
 
 export async function generateMetadata({
   params,
@@ -85,25 +80,17 @@ export default async function AdminPerfumesPage({ params }: PageProps<"/[locale]
                 </span>
               </Td>
               <Td>
-                <div className="flex gap-3">
-                  {SITES.map(({ site, label }) => {
-                    const link = perfumeLink(perfume, site);
-                    return (
-                      <a
-                        key={site}
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`inline-flex items-center gap-1 whitespace-nowrap hover:text-moss-300 ${
-                          link.isSearch ? "text-smoke-500" : "text-smoke-200"
-                        }`}
-                      >
-                        {label}
-                        <ExternalIcon />
-                      </a>
-                    );
-                  })}
-                </div>
+                <a
+                  href={parfumoLink(perfume).href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex items-center gap-1 whitespace-nowrap hover:text-moss-300 ${
+                    perfume.parfumoUrl ? "text-smoke-200" : "text-smoke-500"
+                  }`}
+                >
+                  Parfumo
+                  <ExternalIcon />
+                </a>
               </Td>
             </tr>
           ))}

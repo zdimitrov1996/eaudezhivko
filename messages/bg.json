@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "Eau de Fragrances — твоята колекция от парфюми",
-    "description": "Подреди парфюмите, които имаш, пази списък с желани и отваряй всеки аромат във Fragrantica и Parfumo с един клик."
+    "description": "Подреди парфюмите, които имаш, пази списък с желани и виж оценката и нотките на всеки аромат от Parfumo."
   },
   "Nav": {
     "mainNav": "Основна навигация",
@@ -16,7 +16,7 @@
   "Home": {
     "eyebrow": "За колекционери на парфюми",
     "title": "Всеки флакон, който имаш. Всеки, който искаш.",
-    "subtitle": "Подреди колекцията си от парфюми, пази списък с това, което искаш да купиш, и отваряй всеки аромат директно във Fragrantica и Parfumo.",
+    "subtitle": "Подреди колекцията си от парфюми, пази списък с това, което искаш да купиш, и виж оценката и нотките на всеки аромат директно от Parfumo.",
     "ctaStart": "Започни колекцията си",
     "ctaSignIn": "Вече имам профил",
     "ctaOpen": "Към колекцията ми",
@@ -32,8 +32,8 @@
         "body": "Запази това, което искаш да опиташ или купиш, и го премести в колекцията в деня, в който пристигне."
       },
       "ratings": {
-        "title": "Fragrantica и Parfumo",
-        "body": "Един клик до всеки парфюм в двете платформи, плюс средната оценка от нашата общност."
+        "title": "Оценки и нотки",
+        "body": "Всеки парфюм показва оценката си от Parfumo и нотките (връх, сърце, база), попълнени автоматично от линка."
       },
       "prices": {
         "title": "Най-добра цена в България",
@@ -83,16 +83,14 @@
     "linkInvalid": "Линкът е невалиден или е изтекъл. Опитай отново.",
     "oauth": "Входът с Google не завърши. Опитай отново.",
     "signInRequired": "Първо влез в профила си.",
-    "invalidUrl": "Постави пълен линк от {site}.",
+    "invalidUrl": "Постави пълен линк към страница в Parfumo.",
     "brandNameRequired": "Марката и името са задължителни.",
     "invalidYear": "Годината трябва да е между 1700 и 2100.",
     "alreadyInCollection": "Този парфюм вече е в колекцията ти.",
     "alreadyInWishlist": "Този парфюм вече е в списъка ти с желани.",
     "feedbackTooShort": "Напиши още няколко думи.",
     "feedbackTooLong": "Моля, до 2000 символа.",
-    "invalidRating": "Въведи оценка за {site} в рамките на скалата.",
-    "ratingsNotSaved": "Оценките не се запазиха. Опитай отново.",
-    "nothingToSave": "Въведи поне една оценка или линк."
+    "linkRequired": "Постави линк към страницата на парфюма в Parfumo."
   },
   "Shelf": {
     "collectionTitle": "Моята колекция",
@@ -101,15 +99,13 @@
     "wishlistSubtitle": "{count, plural, =0 {Още няма запазени} one {# парфюм за купуване} other {# парфюма за купуване}}",
     "add": "Добави парфюм",
     "emptyCollectionTitle": "Рафтът ти е празен",
-    "emptyCollectionBody": "Добави първия флакон, който имаш. Веднага ще получиш линкове към Fragrantica и Parfumo.",
+    "emptyCollectionBody": "Добави първия флакон, който имаш. С линк към Parfumo оценката и нотките се появяват сами.",
     "emptyWishlistTitle": "Още няма желани",
     "emptyWishlistBody": "Запази парфюми, които искаш да купиш или опиташ. Премести ги в колекцията, когато пристигнат.",
     "demoBanner": "Преглед: базата данни още не е свързана, затова тук виждаш примерни парфюми."
   },
   "Perfume": {
-    "fragrantica": "Fragrantica",
-    "parfumo": "Parfumo",
-    "searchHint": "Отваря търсене в {site}",
+    "searchHint": "Отваря търсене в Parfumo",
     "community": "Оценка от общността",
     "outOfTen": "/10",
     "yourRating": "Твоята оценка",
@@ -121,13 +117,17 @@
     "remove": "Премахни",
     "confirmRemove": "Да премахна ли {name} от списъка?",
     "actions": "Действия за {name}",
-    "addRatings": "Добави оценки",
-    "updateRatings": "Обнови оценките",
-    "siteRating": "Оценка в {site}: {value}",
-    "outOfFive": "/5",
-    "communityBoth": "Средно от Fragrantica и Parfumo",
-    "communityParfumo": "По Parfumo · добави Fragrantica за средна",
-    "communityFragrantica": "По Fragrantica (от 5, показана в скала до 10)"
+    "communitySource": "По Parfumo",
+    "readingParfumo": "Взимам от Parfumo…",
+    "notRatedOnParfumo": "Още няма оценка в Parfumo",
+    "addParfumoLink": "Добави линк към Parfumo",
+    "notes": "Нотки",
+    "noteLayers": {
+      "top": "Връх",
+      "heart": "Сърце",
+      "base": "База",
+      "notes": "Нотки"
+    }
   },
   "AddPerfume": {
     "title": "Добави парфюм",
@@ -145,18 +145,12 @@
     "concentration": "Концентрация",
     "concentrationAny": "Не знам",
     "year": "Година",
-    "fragranticaUrl": "Линк към Fragrantica",
     "parfumoUrl": "Линк към Parfumo",
     "optional": "по желание",
-    "linkHint": "Постави линка към страницата на парфюма, ако го имаш. Иначе ще сложим линк към търсене.",
+    "linkHint": "Постави линка към страницата на парфюма в Parfumo и ще добавим оценката и нотките автоматично.",
     "cancel": "Отказ",
     "close": "Затвори",
-    "saving": "Запазвам…",
-    "fragranticaRating": "Оценка във Fragrantica",
-    "outOf5": "от 5",
-    "fragranticaManualHint": "Fragrantica не позволява автоматично четене, затова въведи оценката, която виждаш там (от 5). За средната я превръщаме в скала до 10.",
-    "parfumoAuto": "Оценката от Parfumo се взима автоматично от линка към Parfumo.",
-    "parfumoAutoKnown": "Оценка от Parfumo (взета автоматично): {value}/10."
+    "saving": "Запазвам…"
   },
   "Concentration": {
     "extrait": "Extrait de Parfum",
@@ -183,7 +177,7 @@
   },
   "Footer": {
     "tagline": "Твоята колекция от парфюми, подредена с вкус.",
-    "disclaimer": "Не сме свързани с Fragrantica или Parfumo."
+    "disclaimer": "Оценки и нотки от Parfumo. Не сме свързани с Parfumo."
   },
   "NotFound": {
     "title": "Страницата не е намерена",
@@ -298,18 +292,17 @@
     "thanksTitle": "Благодарим!",
     "thanksBody": "Съобщението ти е изпратено."
   },
-  "EditPerfume": {
-    "title": "Оценки и линкове",
-    "intro": "Въведи оценката от Fragrantica. Тази от Parfumo се взима автоматично от линка. Виждат ги всички, които имат този парфюм.",
-    "linkSaved": "Линкът е добавен",
-    "lastUpdated": "Последно обновени: {date}",
+  "Theme": {
+    "toLight": "Светла тема",
+    "toDark": "Тъмна тема"
+  },
+  "ParfumoLink": {
+    "title": "Линк към Parfumo",
+    "intro": "Постави линка към страницата на парфюма в Parfumo. Оценката и нотките ще се добавят автоматично.",
+    "label": "Линк към Parfumo",
     "save": "Запази",
     "saving": "Запазвам…",
     "cancel": "Отказ",
     "close": "Затвори"
-  },
-  "Theme": {
-    "toLight": "Светла тема",
-    "toDark": "Тъмна тема"
   }
 }

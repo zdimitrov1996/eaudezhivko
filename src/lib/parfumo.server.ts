@@ -1,16 +1,19 @@
-import { normalizeSiteUrl } from "./perfumes";
+import { normalizeParfumoUrl, type PerfumeNotes } from "./perfumes";
 
-// Parfumo's robots.txt allows perfume pages, and each page carries its score as
-// schema.org AggregateRating markup. We read one page when a link is saved and
-// refresh it at most weekly. Fragrantica blocks automated requests, so its
-// rating stays typed in by people; never try to get around that block.
+// Parfumo's robots.txt allows perfume pages. Each page carries its score as
+// schema.org AggregateRating markup and lists the note pyramid. We read a page
+// when its link is saved and refresh it at most weekly. Note images belong to
+// Parfumo, so we keep the note names only.
 
 const USER_AGENT = "EauDeFragrances/1.0 (+https://eaudezhivko.vercel.app)";
 const TIMEOUT_MS = 6000;
 const MAX_REDIRECTS = 2;
+const MAX_NOTES_PER_LAYER = 30;
 
-/** Days before a stored Parfumo rating is read again. */
+/** Days before stored Parfumo data is read again. */
 export const PARFUMO_REFRESH_DAYS = 7;
+
+export type ParfumoData = { rating: number | null; notes: PerfumeNotes | null };
 
 /** The Parfumo community rating (0–10) on a perfume page, or null if not found. */
 export function parseParfumoRating(html: string): number | null {
@@ -30,9 +33,37 @@ export function parseParfumoRating(html: string): number | null {
   return Math.round(value * 10) / 10;
 }
 
-/** Fetches a Parfumo perfume page and returns its rating, or null on any failure. */
-export async function fetchParfumoRating(url: string): Promise<number | null> {
-  let next = normalizeSiteUrl(url, "parfumo");
+const ENTITIES: Record<string, string> = { amp: "&", quot: '"', "#39": "'", apos: "'", lt: "<", gt: ">", nbsp: " " };
+
+function decodeEntities(text: string) {
+  return text
+    .replace(/&(amp|quot|#39|apos|lt|gt|nbsp);/g, (_, name: string) => ENTITIES[name])
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
+    .trim();
+}
+
+/**
+ * The note pyramid on a perfume page. Parfumo tags each note with its layer:
+ * t = top, m = heart, b = base, n = notes of a perfume without a pyramid.
+ */
+export function parseParfumoNotes(html: string): PerfumeNotes | null {
+  const layers: Record<string, keyof PerfumeNotes> = { t: "top", m: "heart", b: "base", n: "notes" };
+  const notes: PerfumeNotes = {};
+  const pattern =
+    /data-nt="([tmbn])"[^>]*>\s*<span[^>]*>\s*(?:<img[^>]*?alt="([^"]*)"[^>]*>)?\s*([^<]*)</g;
+
+  for (const [, layer, alt, text] of html.matchAll(pattern)) {
+    const name = decodeEntities(alt || text || "");
+    if (!name || name.length > 60) continue;
+    const list = (notes[layers[layer]] ??= []);
+    if (!list.includes(name) && list.length < MAX_NOTES_PER_LAYER) list.push(name);
+  }
+  return Object.keys(notes).length > 0 ? notes : null;
+}
+
+/** Fetches a Parfumo perfume page; null on any failure. */
+export async function fetchParfumoData(url: string): Promise<ParfumoData | null> {
+  let next = normalizeParfumoUrl(url);
 
   // Follow redirects by hand so a link can never lead the server off Parfumo
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
@@ -46,11 +77,13 @@ export async function fetchParfumoRating(url: string): Promise<number | null> {
       });
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get("location");
-        next = location ? normalizeSiteUrl(new URL(location, next).toString(), "parfumo") : null;
+        next = location ? normalizeParfumoUrl(new URL(location, next).toString()) : null;
         continue;
       }
       if (!response.ok) return null;
-      return parseParfumoRating(await response.text());
+      const html = await response.text();
+      const data = { rating: parseParfumoRating(html), notes: parseParfumoNotes(html) };
+      return data.rating === null && data.notes === null ? null : data;
     } catch {
       return null;
     }
@@ -58,14 +91,18 @@ export async function fetchParfumoRating(url: string): Promise<number | null> {
   return null;
 }
 
-/** True when a perfume with a Parfumo link has no rating yet, or an old one. */
+/**
+ * True when a perfume with a Parfumo link hasn't been read yet (notes are
+ * stored as {} once read, even if Parfumo lists none) or was read over a week
+ * ago. A perfume Parfumo hasn't rated yet waits for the weekly refresh.
+ */
 export function needsParfumoRefresh(perfume: {
   parfumoUrl: string | null;
-  parfumoRating: number | null;
+  parfumoNotes: PerfumeNotes | null;
   ratingsUpdatedAt: string | null;
 }) {
   if (!perfume.parfumoUrl) return false;
-  if (perfume.parfumoRating === null || !perfume.ratingsUpdatedAt) return true;
+  if (perfume.parfumoNotes === null || !perfume.ratingsUpdatedAt) return true;
   const ageMs = Date.now() - new Date(perfume.ratingsUpdatedAt).getTime();
   return ageMs > PARFUMO_REFRESH_DAYS * 24 * 60 * 60 * 1000;
 }
