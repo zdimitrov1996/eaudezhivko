@@ -10,10 +10,13 @@ export async function ShelfView({
   shelf,
   entries,
   demo = false,
+  currentUserId = null,
 }: {
   shelf: Shelf;
   entries: ShelfEntry[];
   demo?: boolean;
+  /** Cards for perfumes this user added get an edit button */
+  currentUserId?: string | null;
 }) {
   const t = await getTranslations("Shelf");
   const isCollection = shelf === "collection";
@@ -49,7 +52,12 @@ export async function ShelfView({
       {entries.length > 0 ? (
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {entries.map((entry) => (
-            <PerfumeCard key={entry.id} entry={entry} readOnly={demo} />
+            <PerfumeCard
+              key={entry.id}
+              entry={entry}
+              readOnly={demo}
+              canEdit={Boolean(currentUserId) && entry.perfume.createdBy === currentUserId}
+            />
           ))}
         </div>
       ) : (

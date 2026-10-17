@@ -64,7 +64,7 @@
     "noAccount": "New here?",
     "haveAccount": "Already have an account?",
     "backToSignIn": "Back to sign in",
-    "terms": "By creating an account you agree to store your collection with us. You can delete your account at any time.",
+    "terms": "By creating an account you accept the <terms>Terms of use</terms> and the <privacy>Privacy policy</privacy>. You can delete your account at any time.",
     "checkEmail": "Check your inbox: we sent you a link to confirm your email.",
     "resetSent": "If an account exists for that email, a reset link is on its way.",
     "passwordUpdated": "Your password has been updated."
@@ -90,7 +90,9 @@
     "alreadyInWishlist": "This perfume is already on your wishlist.",
     "feedbackTooShort": "Please write a few more words.",
     "feedbackTooLong": "Please keep it under 2000 characters.",
-    "linkRequired": "Please paste a link to the perfume's Parfumo page."
+    "linkRequired": "Please paste a link to the perfume's Parfumo page.",
+    "notYourPerfume": "You can only edit perfumes you added.",
+    "perfumeExists": "A perfume with this brand, name and concentration is already in the catalogue."
   },
   "Shelf": {
     "collectionTitle": "My collection",
@@ -117,7 +119,6 @@
     "remove": "Remove",
     "confirmRemove": "Remove {name} from this list?",
     "actions": "Actions for {name}",
-    "communitySource": "From Parfumo",
     "readingParfumo": "Reading from Parfumo…",
     "notRatedOnParfumo": "Not rated on Parfumo yet",
     "addParfumoLink": "Add Parfumo link",
@@ -150,7 +151,9 @@
     "linkHint": "Paste the perfume's Parfumo page and we'll add its rating and notes automatically.",
     "cancel": "Cancel",
     "close": "Close",
-    "saving": "Saving…"
+    "saving": "Saving…",
+    "findOnParfumo": "Find it on Parfumo",
+    "findThisOnParfumo": "Search Parfumo for “{query}”"
   },
   "Concentration": {
     "extrait": "Extrait de Parfum",
@@ -177,7 +180,11 @@
   },
   "Footer": {
     "tagline": "Your perfume collection, beautifully kept.",
-    "disclaimer": "Ratings and notes from Parfumo. Not affiliated with Parfumo."
+    "disclaimer": "Ratings and notes from Parfumo. Not affiliated with Parfumo.",
+    "privacy": "Privacy",
+    "terms": "Terms of use",
+    "faq": "FAQ",
+    "legalNav": "Legal and help"
   },
   "NotFound": {
     "title": "Page not found",
@@ -304,5 +311,20 @@
     "saving": "Saving…",
     "cancel": "Cancel",
     "close": "Close"
+  },
+  "EditPerfume": {
+    "open": "Edit perfume",
+    "title": "Edit perfume",
+    "intro": "Fix the details of a perfume you added. Everyone who has it sees the change.",
+    "linkHint": "Changing the link reads the rating and notes from the new page.",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "Legal": {
+    "updated": "Last updated: {date}",
+    "contactTitle": "Contact",
+    "contactFeedback": "Questions about this page or your data? Use the “Feedback” button at the bottom right of any page and we'll get back to you."
   }
 }

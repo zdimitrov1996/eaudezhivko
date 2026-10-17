@@ -3,8 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useActionState, useEffect, useId, useRef, useState, useTransition } from "react";
 import { addPerfume, searchPerfumes, type AddPerfumeState } from "@/actions/perfumes";
-import { CONCENTRATIONS, type Perfume, type Shelf } from "@/lib/perfumes";
-import { CloseIcon, PlusIcon, SearchIcon } from "../icons";
+import { CONCENTRATIONS, parfumoLink, type Perfume, type Shelf } from "@/lib/perfumes";
+import { CloseIcon, ExternalIcon, PlusIcon, SearchIcon } from "../icons";
 import { submitKeepingValues } from "../submit-keeping-values";
 
 export function AddPerfumeDialog({ shelf }: { shelf: Shelf }) {
@@ -20,6 +20,8 @@ export function AddPerfumeDialog({ shelf }: { shelf: Shelf }) {
   const [results, setResults] = useState<Perfume[]>([]);
   const [searched, setSearched] = useState(false);
   const [selected, setSelected] = useState<Perfume | null>(null);
+  // Brand + name as typed, for the "search Parfumo" link
+  const [draft, setDraft] = useState({ brand: "", name: "" });
   const [isSearching, startSearch] = useTransition();
   const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -64,8 +66,12 @@ export function AddPerfumeDialog({ shelf }: { shelf: Shelf }) {
 
   function reset() {
     formRef.current?.reset();
+    setDraft({ brand: "", name: "" });
     select(null);
   }
+
+  const searchFor = selected ?? draft;
+  const searchQuery = `${searchFor.brand} ${searchFor.name}`.trim();
 
   const submitLabel = shelf === "collection" ? t("toCollection") : t("toWishlist");
 
@@ -179,13 +185,27 @@ export function AddPerfumeDialog({ shelf }: { shelf: Shelf }) {
                     <label htmlFor="brand" className="field-label">
                       {t("brand")}
                     </label>
-                    <input id="brand" name="brand" required maxLength={100} className="field" />
+                    <input
+                      id="brand"
+                      name="brand"
+                      required
+                      maxLength={100}
+                      onChange={(event) => setDraft((d) => ({ ...d, brand: event.target.value }))}
+                      className="field"
+                    />
                   </div>
                   <div>
                     <label htmlFor="name" className="field-label">
                       {t("name")}
                     </label>
-                    <input id="name" name="name" required maxLength={150} className="field" />
+                    <input
+                      id="name"
+                      name="name"
+                      required
+                      maxLength={150}
+                      onChange={(event) => setDraft((d) => ({ ...d, name: event.target.value }))}
+                      className="field"
+                    />
                   </div>
                   <div>
                     <label htmlFor="concentration" className="field-label">
@@ -233,6 +253,19 @@ export function AddPerfumeDialog({ shelf }: { shelf: Shelf }) {
                 />
               </div>
               <p className="text-sm text-smoke-500">{t("linkHint")}</p>
+              <a
+                href={
+                  searchQuery
+                    ? parfumoLink({ brand: searchFor.brand, name: searchFor.name, parfumoUrl: null }).href
+                    : "https://www.parfumo.com/"
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-moss-300 underline-offset-4 hover:underline"
+              >
+                {searchQuery ? t("findThisOnParfumo", { query: searchQuery }) : t("findOnParfumo")}
+                <ExternalIcon />
+              </a>
             </div>
           </div>
 
