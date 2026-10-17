@@ -129,7 +129,7 @@ export default async function AdminPage({ params, searchParams }: PageProps<"/[l
               </tr>
             )}
             {users.map((user) => (
-              <tr key={user.id} className="hover:bg-white/[0.03]">
+              <tr key={user.id} className="hover:bg-veil-soft">
                 <Td>
                   <div className="flex flex-wrap items-center gap-2">
                     <Link

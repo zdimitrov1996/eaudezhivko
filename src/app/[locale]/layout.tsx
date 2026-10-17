@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -8,6 +9,7 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { routing } from "@/i18n/routing";
 import { getCurrentUser } from "@/lib/supabase/server";
+import { parseTheme, THEME_COOKIE } from "@/lib/theme";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -39,11 +41,17 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
   const user = await getCurrentUser();
+  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
 
   return (
     // suppressHydrationWarning: browser extensions add attributes to <html>/<body>
     // before React hydrates; this only silences attribute diffs on these two tags.
-    <html lang={locale} className={`${inter.variable} ${cormorant.variable}`} suppressHydrationWarning>
+    <html
+      lang={locale}
+      data-theme={theme}
+      className={`${inter.variable} ${cormorant.variable}`}
+      suppressHydrationWarning
+    >
       <body className="flex min-h-dvh flex-col" suppressHydrationWarning>
         <NextIntlClientProvider>
           <Header />

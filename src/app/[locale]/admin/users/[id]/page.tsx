@@ -68,7 +68,7 @@ export default async function AdminUserPage({
         </thead>
         <tbody>
           {rows.map((entry) => (
-            <tr key={entry.id} className="hover:bg-white/[0.03]">
+            <tr key={entry.id} className="hover:bg-veil-soft">
               <Td>
                 <span className="text-smoke-400">{entry.perfume.brand}</span>{" "}
                 <span className="font-medium text-smoke-100">{entry.perfume.name}</span>

@@ -21,6 +21,10 @@ export type Perfume = {
   releaseYear: number | null;
   fragranticaUrl: string | null;
   parfumoUrl: string | null;
+  /** Typed in by users from the sites: Fragrantica out of 5, Parfumo out of 10 */
+  fragranticaRating: number | null;
+  parfumoRating: number | null;
+  ratingsUpdatedAt: string | null;
 };
 
 export type PerfumeStats = {
@@ -73,7 +77,10 @@ function searchQuery(perfume: Pick<Perfume, "brand" | "name">) {
 }
 
 /** The perfume's own page if we have it, otherwise a search on the site. */
-export function perfumeLink(perfume: Perfume, site: LinkSite) {
+export function perfumeLink(
+  perfume: Pick<Perfume, "brand" | "name" | "fragranticaUrl" | "parfumoUrl">,
+  site: LinkSite,
+) {
   if (site === "fragrantica") {
     return perfume.fragranticaUrl
       ? { href: perfume.fragranticaUrl, isSearch: false }
@@ -85,6 +92,34 @@ export function perfumeLink(perfume: Perfume, site: LinkSite) {
         href: `https://www.parfumo.com/s_perfumes_x.php?in=1&filter=${searchQuery(perfume)}`,
         isSearch: true,
       };
+}
+
+/** Fragrantica rates out of 5, Parfumo out of 10. */
+export const RATING_SCALES = { fragrantica: 5, parfumo: 10 } as const;
+
+/**
+ * Average of the Fragrantica and Parfumo ratings on a 10-point scale
+ * (Fragrantica doubled), or null when neither is known.
+ */
+export function externalAverage(perfume: Pick<Perfume, "fragranticaRating" | "parfumoRating">) {
+  const scores = [
+    perfume.fragranticaRating === null ? null : perfume.fragranticaRating * 2,
+    perfume.parfumoRating,
+  ].filter((score): score is number => score !== null);
+  if (scores.length === 0) return null;
+  return scores.reduce((sum, score) => sum + score, 0) / scores.length;
+}
+
+/**
+ * Parses a typed rating ("4.2" or "4,2") for a site. Returns null for an empty
+ * value and "invalid" when it isn't a number within the site's scale.
+ */
+export function parseSiteRating(raw: unknown, site: LinkSite): number | null | "invalid" {
+  const value = typeof raw === "string" ? raw.trim().replace(",", ".") : "";
+  if (!value) return null;
+  const rating = Number(value);
+  if (!Number.isFinite(rating) || rating < 0 || rating > RATING_SCALES[site]) return "invalid";
+  return rating;
 }
 
 export const EMPTY_STATS: PerfumeStats = {

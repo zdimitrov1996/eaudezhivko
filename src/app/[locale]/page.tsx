@@ -58,8 +58,9 @@ export default async function HomePage({ params, searchParams }: PageProps<"/[lo
         <div aria-label={t("previewLabel")} role="group" className="relative">
           <div
             aria-hidden="true"
-            className="absolute inset-x-0 -inset-y-8 -z-10 rounded-[3rem] sm:-inset-x-8 bg-[radial-gradient(closest-side,rgb(67_173_118/0.16),transparent)]"
+            className="absolute inset-x-0 -inset-y-8 -z-10 rounded-[3rem] bg-[radial-gradient(closest-side,rgb(67_173_118/0.16),transparent)]"
           />
+          <p className="mb-3 text-xs text-smoke-500 sm:mr-12 sm:text-right">{t("previewNote")}</p>
           <div className="grid gap-4">
             {preview.map((entry, index) => (
               <div key={entry.id} className={index === 1 ? "sm:ml-12" : "sm:mr-12"}>

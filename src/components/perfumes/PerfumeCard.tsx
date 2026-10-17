@@ -3,12 +3,13 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { moveEntry, rateEntry, removeEntry } from "@/actions/perfumes";
-import { perfumeLink, type LinkSite, type ShelfEntry } from "@/lib/perfumes";
+import { externalAverage, perfumeLink, type LinkSite, type ShelfEntry } from "@/lib/perfumes";
 import { ArrowIcon, ExternalIcon, HeartIcon, StarIcon, TagIcon, TrashIcon } from "../icons";
+import { EditPerfumeDialog } from "./EditPerfumeDialog";
 
-const SITES: { site: LinkSite; label: string }[] = [
-  { site: "fragrantica", label: "Fragrantica" },
-  { site: "parfumo", label: "Parfumo" },
+const SITES: { site: LinkSite; label: string; scale: string }[] = [
+  { site: "fragrantica", label: "Fragrantica", scale: "/5" },
+  { site: "parfumo", label: "Parfumo", scale: "/10" },
 ];
 
 export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; readOnly?: boolean }) {
@@ -18,6 +19,7 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
   const [isPending, startTransition] = useTransition();
 
   const { perfume, stats } = entry;
+  const sitesAverage = externalAverage(perfume);
   const fullName = `${perfume.brand} ${perfume.name}`;
   const details = [
     perfume.concentration ? tc(perfume.concentration) : null,
@@ -65,6 +67,24 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
         </div>
       </div>
 
+      {/* Example cards without ratings skip the row; real ones show it with the edit button */}
+      {(sitesAverage !== null || !readOnly) && (
+        <div className="mx-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-ink-600/70 py-3.5">
+          <span className="text-sm whitespace-nowrap text-smoke-400" title={t("sitesAverageHint")}>
+            {t("sitesAverage")}
+          </span>
+          {sitesAverage !== null ? (
+            <span className="flex items-baseline gap-1.5 text-sm whitespace-nowrap" title={t("sitesAverageHint")}>
+              <StarIcon className="h-4 w-4 self-center fill-moss-400 text-moss-400" />
+              <span className="text-lg font-semibold text-smoke-100">{sitesAverage.toFixed(1)}</span>
+              <span className="text-smoke-400">{t("outOfTen")}</span>
+            </span>
+          ) : (
+            <span className="text-sm text-smoke-500">{t("noSiteRatings")}</span>
+          )}
+        </div>
+      )}
+
       <div className="mx-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-ink-600/70 py-3.5">
         <span className="text-sm whitespace-nowrap text-smoke-400">{t("community")}</span>
         {stats.avgRating !== null ? (
@@ -82,8 +102,10 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
       </div>
 
       <div className="mx-5 flex flex-wrap gap-2 pb-4">
-        {SITES.map(({ site, label }) => {
+        {SITES.map(({ site, label, scale }) => {
           const link = perfumeLink(perfume, site);
+          const rating = site === "fragrantica" ? perfume.fragranticaRating : perfume.parfumoRating;
+          const shown = rating === null ? null : rating.toFixed(site === "fragrantica" ? 2 : 1);
           return (
             <a
               key={site}
@@ -91,9 +113,16 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
               target="_blank"
               rel="noopener noreferrer"
               title={link.isSearch ? t("searchHint", { site: label }) : undefined}
+              aria-label={shown ? `${label}, ${t("siteRating", { site: label, value: `${shown}${scale}` })}` : undefined}
               className="btn btn-secondary btn-sm"
             >
               {label}
+              {shown && (
+                <span className="font-semibold text-smoke-100">
+                  {shown}
+                  <span className="font-normal text-smoke-500">{scale}</span>
+                </span>
+              )}
               <ExternalIcon className="text-smoke-400" />
             </a>
           );
@@ -130,6 +159,10 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
 
         {!readOnly && (
           <div className="flex items-center gap-1" role="group" aria-label={t("actions", { name: fullName })}>
+            <EditPerfumeDialog
+              perfume={perfume}
+              label={sitesAverage === null ? t("addRatings") : t("updateRatings")}
+            />
             <button type="button" onClick={onMove} disabled={isPending} className="btn btn-ghost btn-sm">
               {entry.shelf === "collection" ? (
                 <>

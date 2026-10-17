@@ -16,7 +16,7 @@ export async function SupportBanner({ user }: { user: CurrentUser }) {
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm sm:px-6">
         <span>{t("banner", { email: user.email ?? user.id })}</span>
         <form action={signOut}>
-          <button type="submit" className="btn btn-sm !min-h-8 border-ember-400/40 text-ember-400 hover:bg-white/5">
+          <button type="submit" className="btn btn-sm !min-h-8 border-ember-400/40 text-ember-400 hover:bg-veil">
             {t("exit")}
           </button>
         </form>

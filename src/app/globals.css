@@ -27,12 +27,54 @@
   --color-ember-400: #f2777b;
   --color-ember-900: #2e1214;
 
+  /* Hover/row tints that lighten on dark and darken on light */
+  --color-veil: rgb(255 255 255 / 0.05);
+  --color-veil-soft: rgb(255 255 255 / 0.03);
+
   --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
   color-scheme: dark;
+  --backdrop: rgb(3 5 4 / 0.72);
+  --card-shadow: none;
+}
+
+/* Light theme: same token names, so "ink" becomes the light surfaces and
+   "smoke" the dark text. Chosen with the header toggle (theme cookie). */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --backdrop: rgb(16 20 18 / 0.35);
+  --card-shadow: 0 1px 2px rgb(16 24 20 / 0.05), 0 4px 16px rgb(16 24 20 / 0.04);
+
+  --color-ink-950: #ffffff;
+  --color-ink-900: #f4f6f4;
+  --color-ink-850: #ffffff;
+  --color-ink-800: #ffffff;
+  --color-ink-700: #e7ebe8;
+  --color-ink-600: #d6ddd8;
+  --color-ink-500: #b7c1bb;
+
+  --color-smoke-500: #66716b;
+  --color-smoke-400: #515c56;
+  --color-smoke-300: #3a453f;
+  --color-smoke-200: #27302b;
+  --color-smoke-100: #121714;
+
+  --color-moss-200: #1b5638;
+  --color-moss-300: #1f6e45;
+  --color-moss-400: #1e6b42;
+  --color-moss-500: #237a4c;
+  --color-moss-600: #1a5c39;
+  --color-moss-800: #bfe0cc;
+  --color-moss-900: #e6f4ec;
+
+  --color-ember-400: #b42d33;
+  --color-ember-900: #fcebec;
+
+  --color-veil: rgb(18 23 20 / 0.05);
+  --color-veil-soft: rgb(18 23 20 / 0.03);
 }
 
 html {
@@ -90,18 +132,18 @@ body {
   .btn-secondary {
     border-color: var(--color-ink-500);
     color: var(--color-smoke-100);
-    background: rgb(255 255 255 / 0.02);
+    background: var(--color-veil-soft);
   }
   .btn-secondary:hover:not(:disabled) {
     border-color: var(--color-smoke-500);
-    background: rgb(255 255 255 / 0.05);
+    background: var(--color-veil);
   }
   .btn-ghost {
     color: var(--color-smoke-300);
   }
   .btn-ghost:hover:not(:disabled) {
     color: var(--color-smoke-100);
-    background: rgb(255 255 255 / 0.05);
+    background: var(--color-veil);
   }
   .btn-sm {
     min-height: 2.25rem;
@@ -150,6 +192,7 @@ body {
     border: 1px solid var(--color-ink-600);
     border-radius: 1.25rem;
     background: linear-gradient(180deg, var(--color-ink-800), var(--color-ink-850));
+    box-shadow: var(--card-shadow);
   }
 
   .eyebrow {
@@ -162,6 +205,6 @@ body {
 }
 
 dialog::backdrop {
-  background: rgb(3 5 4 / 0.72);
+  background: var(--backdrop);
   backdrop-filter: blur(4px);
 }

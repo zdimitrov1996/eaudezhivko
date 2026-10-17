@@ -39,7 +39,8 @@
         "title": "Най-добра цена в България",
         "body": "Очаквай скоро: най-ниската текуща цена в българските магазини за всеки парфюм от списъка ти с желани."
       }
-    }
+    },
+    "previewNote": "Примерни парфюми. Числата са илюстративни."
   },
   "Auth": {
     "signInTitle": "Радваме се да те видим отново",
@@ -88,7 +89,8 @@
     "alreadyInCollection": "Този парфюм вече е в колекцията ти.",
     "alreadyInWishlist": "Този парфюм вече е в списъка ти с желани.",
     "feedbackTooShort": "Напиши още няколко думи.",
-    "feedbackTooLong": "Моля, до 2000 символа."
+    "feedbackTooLong": "Моля, до 2000 символа.",
+    "invalidRating": "Въведи оценка за {site} в рамките на скалата."
   },
   "Shelf": {
     "collectionTitle": "Моята колекция",
@@ -118,7 +120,14 @@
     "moveToCollection": "Купих го",
     "remove": "Премахни",
     "confirmRemove": "Да премахна ли {name} от списъка?",
-    "actions": "Действия за {name}"
+    "actions": "Действия за {name}",
+    "sitesAverage": "Fragrantica + Parfumo",
+    "sitesAverageHint": "Средна оценка от двата сайта по скала до 10",
+    "noSiteRatings": "Още няма оценки от сайтовете",
+    "addRatings": "Добави оценки",
+    "updateRatings": "Обнови оценките",
+    "siteRating": "Оценка в {site}: {value}",
+    "outOfFive": "/5"
   },
   "AddPerfume": {
     "title": "Добави парфюм",
@@ -142,7 +151,12 @@
     "linkHint": "Постави линка към страницата на парфюма, ако го имаш. Иначе ще сложим линк към търсене.",
     "cancel": "Отказ",
     "close": "Затвори",
-    "saving": "Запазвам…"
+    "saving": "Запазвам…",
+    "fragranticaRating": "Оценка във Fragrantica",
+    "parfumoRating": "Оценка в Parfumo",
+    "outOf5": "от 5",
+    "outOf10": "от 10",
+    "ratingsHint": "Въведи оценките, които виждаш в двата сайта (Fragrantica 0–5, Parfumo 0–10). Показваме ги заедно със средната."
   },
   "Concentration": {
     "extrait": "Extrait de Parfum",
@@ -283,5 +297,19 @@
     "close": "Затвори",
     "thanksTitle": "Благодарим!",
     "thanksBody": "Съобщението ти е изпратено."
+  },
+  "EditPerfume": {
+    "title": "Оценки и линкове",
+    "intro": "Обнови оценките от Fragrantica и Parfumo. Виждат ги всички, които имат този парфюм.",
+    "linkSaved": "Линкът е добавен",
+    "lastUpdated": "Последно обновени: {date}",
+    "save": "Запази",
+    "saving": "Запазвам…",
+    "cancel": "Отказ",
+    "close": "Затвори"
+  },
+  "Theme": {
+    "toLight": "Светла тема",
+    "toDark": "Тъмна тема"
   }
 }

@@ -39,7 +39,8 @@
         "title": "Best price in Bulgaria",
         "body": "Coming soon: the lowest current price across Bulgarian shops for every perfume on your wishlist."
       }
-    }
+    },
+    "previewNote": "Example perfumes. Numbers are for illustration."
   },
   "Auth": {
     "signInTitle": "Welcome back",
@@ -88,7 +89,8 @@
     "alreadyInCollection": "This perfume is already in your collection.",
     "alreadyInWishlist": "This perfume is already on your wishlist.",
     "feedbackTooShort": "Please write a few more words.",
-    "feedbackTooLong": "Please keep it under 2000 characters."
+    "feedbackTooLong": "Please keep it under 2000 characters.",
+    "invalidRating": "Enter a {site} rating within its scale."
   },
   "Shelf": {
     "collectionTitle": "My collection",
@@ -118,7 +120,14 @@
     "moveToCollection": "I bought it",
     "remove": "Remove",
     "confirmRemove": "Remove {name} from this list?",
-    "actions": "Actions for {name}"
+    "actions": "Actions for {name}",
+    "sitesAverage": "Fragrantica + Parfumo",
+    "sitesAverageHint": "Average of both sites on a 10-point scale",
+    "noSiteRatings": "No site ratings yet",
+    "addRatings": "Add ratings",
+    "updateRatings": "Update ratings",
+    "siteRating": "{site} rating: {value}",
+    "outOfFive": "/5"
   },
   "AddPerfume": {
     "title": "Add a perfume",
@@ -142,7 +151,12 @@
     "linkHint": "Paste the perfume's page link if you have it. Otherwise we'll link to a search.",
     "cancel": "Cancel",
     "close": "Close",
-    "saving": "Saving…"
+    "saving": "Saving…",
+    "fragranticaRating": "Fragrantica rating",
+    "parfumoRating": "Parfumo rating",
+    "outOf5": "out of 5",
+    "outOf10": "out of 10",
+    "ratingsHint": "Type the ratings you see on each site (Fragrantica 0–5, Parfumo 0–10). We show both and their average."
   },
   "Concentration": {
     "extrait": "Extrait de Parfum",
@@ -283,5 +297,19 @@
     "close": "Close",
     "thanksTitle": "Thank you!",
     "thanksBody": "Your feedback is on its way to us."
+  },
+  "EditPerfume": {
+    "title": "Ratings and links",
+    "intro": "Update the ratings shown on Fragrantica and Parfumo. Everyone who has this perfume sees them.",
+    "linkSaved": "Link saved",
+    "lastUpdated": "Last updated {date}",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "Theme": {
+    "toLight": "Switch to light mode",
+    "toDark": "Switch to dark mode"
   }
 }
