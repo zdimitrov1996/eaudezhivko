@@ -6,7 +6,7 @@ Perfume collection site: users keep a collection (owned) and a wishlist, each pe
 
 ## Decisions (2026-10-16, updated 2026-10-17)
 
-- **Ratings:** Fragrantica and Parfumo have no official API and block bots. Don't scrape. Users type in the ratings they see (Fragrantica /5, Parfumo /10, stored on the shared `perfumes` row via `set_external_ratings`); cards show both and their average on a 10-point scale, plus our own users' average. Outreach drafts for official access are in `docs/ratings-permission-emails.md`.
+- **Ratings:** "Community rating" on a card = average of Fragrantica and Parfumo on a 10-point scale (Fragrantica's /5 doubled, see `externalAverage`). **Parfumo** is read automatically from the saved link (`src/lib/parfumo.server.ts`: robots.txt allows perfume pages, schema.org AggregateRating, own User-Agent, redirects kept on parfumo.*, refreshed at most weekly in the background). **Fragrantica** returns 403 to servers (Cloudflare), so its score is typed in; never try to get around that block. Outreach drafts for official access: `docs/ratings-permission-emails.md`.
 - **Theme:** dark by default; the header toggle sets the `edf_theme` cookie and `data-theme="light"` on `<html>`, which swaps the colour tokens in `globals.css`. Use the theme tokens (`ink`, `smoke`, `moss`, `ember`, `veil`), never raw white/black overlays.
 - **Prices:** later phase, Bulgarian shops only, in EUR.
 - **Sign-in:** email + Google only (both free). No Facebook or Apple for now.

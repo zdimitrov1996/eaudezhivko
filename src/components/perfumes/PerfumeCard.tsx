@@ -67,13 +67,21 @@ export function PerfumeCard({ entry, readOnly = false }: { entry: ShelfEntry; re
         </div>
       </div>
 
-      {/* Community rating = average of the Fragrantica and Parfumo ratings people typed in.
-          Example cards without ratings skip the row. */}
+      {/* Community rating = average of Fragrantica (typed in, /5 doubled) and Parfumo
+          (read from its link). Example cards without ratings skip the row. */}
       {(sitesAverage !== null || !readOnly) && (
         <div className="mx-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-ink-600/70 py-3.5">
           <span className="min-w-0">
             <span className="block text-sm text-smoke-300">{t("community")}</span>
-            <span className="block text-xs text-smoke-500">{t("communityHint")}</span>
+            <span className="block text-xs text-smoke-500">
+              {perfume.fragranticaRating !== null && perfume.parfumoRating !== null
+                ? t("communityBoth")
+                : perfume.parfumoRating !== null
+                  ? t("communityParfumo")
+                  : perfume.fragranticaRating !== null
+                    ? t("communityFragrantica")
+                    : t("communityBoth")}
+            </span>
           </span>
           {sitesAverage !== null ? (
             <span className="flex items-baseline gap-1.5 whitespace-nowrap">

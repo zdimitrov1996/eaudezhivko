@@ -11,7 +11,8 @@ import {
   type Perfume,
   type Shelf,
 } from "@/lib/perfumes";
-import { toPerfume } from "@/lib/shelf.server";
+import { fetchParfumoRating, needsParfumoRefresh } from "@/lib/parfumo.server";
+import { PERFUME_COLUMNS, toPerfume } from "@/lib/shelf.server";
 
 /** `error` is a key into the Errors namespace; `site` fills its {site} placeholder. */
 export type AddPerfumeState =
@@ -57,6 +58,25 @@ async function saveRatings(
   });
   if (error) console.error("set_external_ratings failed", error);
   return !error;
+}
+
+/**
+ * Reads the Parfumo rating from the perfume's Parfumo link when it has none
+ * yet (or an old one) and nobody typed one in. Failures are ignored: the card
+ * then shows the "Add ratings" button.
+ */
+async function fillParfumoRating(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  perfumeId: string,
+) {
+  const { data } = await supabase.from("perfumes").select(PERFUME_COLUMNS).eq("id", perfumeId).maybeSingle();
+  if (!data) return;
+  const perfume = toPerfume(data);
+  if (!perfume.parfumoUrl || !needsParfumoRefresh(perfume)) return;
+
+  const rating = await fetchParfumoRating(perfume.parfumoUrl);
+  if (rating === null) return;
+  await saveRatings(supabase, perfumeId, { fragrantica: null, parfumo: rating });
 }
 
 export async function searchPerfumes(query: string): Promise<Perfume[]> {
@@ -161,6 +181,7 @@ export async function addPerfume(
   if (!(await saveRatings(supabase, perfumeId, ratings))) {
     return { ok: false, error: "ratingsNotSaved" };
   }
+  if (ratings.parfumo === null) await fillParfumoRating(supabase, perfumeId);
 
   const { data: onShelf } = await supabase
     .from("user_perfumes")
@@ -246,7 +267,35 @@ export async function updatePerfumeDetails(
   if (!(await saveRatings(supabase, perfumeId, ratings))) {
     return { ok: false, error: "ratingsNotSaved" };
   }
+  if (ratings.parfumo === null) await fillParfumoRating(supabase, perfumeId);
 
   revalidateShelves();
   return { ok: true, at: Date.now() };
+}
+
+/**
+ * Called by the shelf after it loads, for perfumes whose Parfumo rating is
+ * missing or over a week old. Returns how many ratings changed.
+ */
+export async function refreshParfumoRatings(perfumeIds: string[]): Promise<number> {
+  if (!isSupabaseConfigured || !(await getCurrentUser())) return 0;
+
+  const ids = perfumeIds.filter((id) => typeof id === "string").slice(0, 6);
+  if (ids.length === 0) return 0;
+
+  const supabase = await createClient();
+  const { data } = await supabase.from("perfumes").select(PERFUME_COLUMNS).in("id", ids);
+  const due = (data ?? []).map(toPerfume).filter(needsParfumoRefresh);
+
+  const results = await Promise.all(
+    due.map(async (perfume) => {
+      const rating = await fetchParfumoRating(perfume.parfumoUrl!);
+      if (rating === null) return false;
+      return saveRatings(supabase, perfume.id, { fragrantica: null, parfumo: rating });
+    }),
+  );
+
+  const updated = results.filter(Boolean).length;
+  if (updated > 0) revalidateShelves();
+  return updated;
 }

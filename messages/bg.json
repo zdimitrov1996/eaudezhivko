@@ -125,7 +125,9 @@
     "updateRatings": "Обнови оценките",
     "siteRating": "Оценка в {site}: {value}",
     "outOfFive": "/5",
-    "communityHint": "Средно от Fragrantica и Parfumo"
+    "communityBoth": "Средно от Fragrantica и Parfumo",
+    "communityParfumo": "По Parfumo · добави Fragrantica за средна",
+    "communityFragrantica": "По Fragrantica (от 5, показана в скала до 10)"
   },
   "AddPerfume": {
     "title": "Добави парфюм",
@@ -151,10 +153,10 @@
     "close": "Затвори",
     "saving": "Запазвам…",
     "fragranticaRating": "Оценка във Fragrantica",
-    "parfumoRating": "Оценка в Parfumo",
     "outOf5": "от 5",
-    "outOf10": "от 10",
-    "ratingsHint": "Въведи оценките, които виждаш в двата сайта (Fragrantica 0–5, Parfumo 0–10). Показваме ги заедно със средната."
+    "fragranticaManualHint": "Fragrantica не позволява автоматично четене, затова въведи оценката, която виждаш там (от 5). За средната я превръщаме в скала до 10.",
+    "parfumoAuto": "Оценката от Parfumo се взима автоматично от линка към Parfumo.",
+    "parfumoAutoKnown": "Оценка от Parfumo (взета автоматично): {value}/10."
   },
   "Concentration": {
     "extrait": "Extrait de Parfum",
@@ -298,7 +300,7 @@
   },
   "EditPerfume": {
     "title": "Оценки и линкове",
-    "intro": "Обнови оценките от Fragrantica и Parfumo. Виждат ги всички, които имат този парфюм.",
+    "intro": "Въведи оценката от Fragrantica. Тази от Parfumo се взима автоматично от линка. Виждат ги всички, които имат този парфюм.",
     "linkSaved": "Линкът е добавен",
     "lastUpdated": "Последно обновени: {date}",
     "save": "Запази",
