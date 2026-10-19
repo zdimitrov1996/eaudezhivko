@@ -1,4 +1,4 @@
-import { SHOWCASE, type ShowcasePerfume } from "./showcase";
+import { canShowcase, SHOWCASE, type ShowcasePerfume } from "./showcase";
 import { isSupabaseConfigured } from "./supabase/config";
 import { PERFUME_COLUMNS, toPerfume, type PerfumeRow } from "./shelf.server";
 import { createClient } from "./supabase/server";
@@ -20,7 +20,7 @@ export async function getShowcase(): Promise<ShowcasePerfume[]> {
   const perfumes = (data as unknown as { perfume: PerfumeRow | null }[]).flatMap(({ perfume: row }) => {
     if (!row) return [];
     const perfume = toPerfume(row);
-    if (!perfume.parfumoUrl || !perfume.imageUrl) return [];
+    if (!canShowcase(perfume) || !perfume.parfumoUrl || !perfume.imageUrl) return [];
     return [
       {
         id: perfume.id,

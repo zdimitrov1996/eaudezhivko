@@ -4,6 +4,7 @@ import { redirect } from "@/i18n/navigation";
 import type { FeedbackCategory } from "./feedback";
 import type { Concentration, Perfume, Shelf } from "./perfumes";
 import { PERFUME_COLUMNS, toPerfume, type PerfumeRow } from "./shelf.server";
+import { NO_IMAGE_URL } from "./showcase";
 import { isSupabaseConfigured } from "./supabase/config";
 import { createClient, getCurrentUser } from "./supabase/server";
 
@@ -343,6 +344,21 @@ export async function getAdminShowcase(): Promise<Perfume[]> {
   return (data as unknown as { perfume: PerfumeRow | null }[]).flatMap(({ perfume }) =>
     perfume ? [toPerfume(perfume)] : [],
   );
+}
+
+/** Newest catalogue perfumes with a Parfumo link and picture, to suggest for the carousel. */
+export async function getPicturedPerfumes(limit: number): Promise<Perfume[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("perfumes")
+    .select(PERFUME_COLUMNS)
+    .not("parfumo_url", "is", null)
+    .not("image_url", "is", null)
+    .neq("image_url", NO_IMAGE_URL)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data as PerfumeRow[]).map(toPerfume);
 }
 
 /** Catalogue search for perfumes to add to the carousel. */

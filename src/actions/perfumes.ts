@@ -12,6 +12,7 @@ import {
 } from "@/lib/perfumes";
 import { fetchParfumoData, needsParfumoRefresh } from "@/lib/parfumo.server";
 import { PERFUME_COLUMNS, toPerfume } from "@/lib/shelf.server";
+import { NO_IMAGE_URL } from "@/lib/showcase";
 
 /** `error` is a key into the Errors namespace. */
 export type AddPerfumeState = { ok: true; at: number } | { ok: false; error: string } | undefined;
@@ -73,7 +74,7 @@ async function syncParfumo(supabase: Supabase, perfume: Perfume) {
     p_rating: data.rating,
     // {} marks "checked, no notes listed" so we don't re-read it on every visit
     p_notes: data.notes ?? {},
-    p_image_url: data.imageUrl ?? "https://parfumo.com/no-image",
+    p_image_url: data.imageUrl ?? NO_IMAGE_URL,
   });
   if (error) console.error("set_parfumo_data failed", error);
   return !error;

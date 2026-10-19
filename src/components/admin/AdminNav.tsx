@@ -16,7 +16,8 @@ export function AdminNav() {
   ];
 
   return (
-    <nav aria-label={t("title")} className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-ink-600 p-1">
+    // Wraps onto a second line on narrow screens, so no section hides off to the side
+    <nav aria-label={t("title")} className="flex max-w-full flex-wrap gap-1 rounded-[1.25rem] border border-ink-600 p-1">
       {tabs.map((tab) => (
         <Link
           key={tab.href}
