@@ -54,7 +54,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     >
       <body className="flex min-h-dvh flex-col" suppressHydrationWarning>
         <NextIntlClientProvider>
-          <Header />
+          <Header theme={theme} />
           <main className="flex-1">{children}</main>
           <Footer />
           <FeedbackButton signedIn={Boolean(user)} />

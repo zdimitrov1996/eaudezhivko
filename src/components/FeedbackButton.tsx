@@ -1,63 +1,39 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState, useId, useRef, useState } from "react";
+import { useActionState } from "react";
 import { submitFeedback, type FeedbackState } from "@/actions/feedback";
 import { usePathname } from "@/i18n/navigation";
 import { FEEDBACK_CATEGORIES } from "@/lib/feedback";
 import { FormMessage, SubmitButton } from "./auth/FormBits";
-import { ChatIcon, CloseIcon } from "./icons";
+import { ChatIcon } from "./icons";
+import { Modal } from "./Modal";
 import { submitKeepingValues } from "./submit-keeping-values";
 
 /** Floating "Feedback" button with a short form, on every page except the admin panel. */
 export function FeedbackButton({ signedIn }: { signedIn: boolean }) {
   const t = useTranslations("Feedback");
   const pathname = usePathname();
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const titleId = useId();
-  // Remounting the form on close clears it and its result
-  const [formKey, setFormKey] = useState(0);
 
   if (pathname.startsWith("/admin")) return null;
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => dialogRef.current?.showModal()}
-        className="btn btn-sm fixed right-4 bottom-4 z-40 border-ink-500 bg-ink-800 text-smoke-100 shadow-lg shadow-black/40 hover:border-moss-600 hover:text-moss-200"
-      >
-        <ChatIcon className="h-4 w-4 text-moss-400" />
-        {t("button")}
-      </button>
-
-      <dialog
-        ref={dialogRef}
-        aria-labelledby={titleId}
-        onClose={() => setFormKey((key) => key + 1)}
-        className="m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl border border-ink-600 bg-ink-850 p-0 text-smoke-100 shadow-2xl shadow-black/60"
-      >
-        <div className="flex items-center justify-between border-b border-ink-700 px-6 py-4">
-          <h2 id={titleId} className="font-serif text-2xl font-semibold">
-            {t("title")}
-          </h2>
-          <button
-            type="button"
-            onClick={() => dialogRef.current?.close()}
-            aria-label={t("close")}
-            className="btn btn-ghost btn-sm !px-2.5"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-        <FeedbackForm
-          key={formKey}
-          signedIn={signedIn}
-          page={pathname}
-          onDone={() => dialogRef.current?.close()}
-        />
-      </dialog>
-    </>
+    <Modal
+      title={t("title")}
+      closeLabel={t("close")}
+      trigger={(open) => (
+        <button
+          type="button"
+          onClick={open}
+          className="btn btn-sm fixed right-4 bottom-4 z-40 border-ink-500 bg-ink-800 text-smoke-100 shadow-lg shadow-black/40 hover:border-moss-600 hover:text-moss-200"
+        >
+          <ChatIcon className="h-4 w-4 text-moss-400" />
+          {t("button")}
+        </button>
+      )}
+    >
+      {(close) => <FeedbackForm signedIn={signedIn} page={pathname} onDone={close} />}
+    </Modal>
   );
 }
 

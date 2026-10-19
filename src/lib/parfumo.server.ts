@@ -20,7 +20,7 @@ export type ParfumoData = {
 };
 
 /** The Parfumo community rating (0–10) on a perfume page, or null if not found. */
-export function parseParfumoRating(html: string): number | null {
+function parseParfumoRating(html: string): number | null {
   const start = html.indexOf('itemprop="aggregateRating"');
   if (start === -1) return null;
   const block = html.slice(start, start + 2000);
@@ -50,7 +50,7 @@ function decodeEntities(text: string) {
  * The note pyramid on a perfume page. Parfumo tags each note with its layer:
  * t = top, m = heart, b = base, n = notes of a perfume without a pyramid.
  */
-export function parseParfumoNotes(html: string): PerfumeNotes | null {
+function parseParfumoNotes(html: string): PerfumeNotes | null {
   const layers: Record<string, keyof PerfumeNotes> = { t: "top", m: "heart", b: "base", n: "notes" };
   const notes: PerfumeNotes = {};
   const pattern =
@@ -69,7 +69,7 @@ export function parseParfumoNotes(html: string): PerfumeNotes | null {
  * The bottle flacon image from the Parfumo page.
  * Checks og:image, twitter:image, itemprop="image", or media.parfumo CDN flacon links.
  */
-export function parseParfumoImage(html: string): string | null {
+function parseParfumoImage(html: string): string | null {
   const mainImgMatch =
     html.match(/<img\s+[^>]*?class=["'][^"']*p-main-img[^"']*["'][^>]*?src=["']([^"']+)["']/i) ??
     html.match(/<img\s+[^>]*?src=["']([^"']+)["'][^>]*?class=["'][^"']*p-main-img[^"']*["']/i) ??

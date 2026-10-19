@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "@/i18n/navigation";
 import { isAdmin, isOwner } from "@/lib/admin.server";
+import { EMAIL_PATTERN } from "@/lib/email";
 import { SUPPORT_SESSION_COOKIE } from "@/lib/impersonation";
 import { fetchParfumoData, PARFUMO_REFRESH_DAYS } from "@/lib/parfumo.server";
 import { CONCENTRATIONS, normalizeParfumoUrl } from "@/lib/perfumes";
@@ -203,8 +204,6 @@ export async function moveInShowcase(id: string, offset: -1 | 1) {
 // ---------------------------------------------------------------------------
 // Admins (owner only; the database checks it too)
 // ---------------------------------------------------------------------------
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** `error` is a key into Admin.grantErrors. */
 export type GrantAdminState = { ok: true; email: string; at: number } | { ok: false; error: string } | undefined;

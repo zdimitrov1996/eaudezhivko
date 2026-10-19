@@ -38,5 +38,13 @@ Perfume collection site: users keep a collection (owned) and a wishlist, each pe
 
 ## Commands
 
-- `npm run dev` — local server on http://localhost:3000
-- `npx tsc --noEmit`, `npm run lint`, `npm run build` — checks before committing
+- `npm run dev` — local server on http://localhost:3000. With the values in `.env.local` it uses the real Supabase project, so don't submit forms there while testing.
+- `npm run typecheck`, `npm run lint`, `npm run test:db`, `npm run build` — the same checks GitHub runs on every PR (`.github/workflows/checks.yml`)
+- `npm run test:db` runs every migration on an in-memory Postgres (PGlite) with stand-ins for Supabase's roles and `auth`, then checks who may read and change what (`supabase/tests/run.mjs`). Add checks there with every migration.
+
+## Before every PR
+
+1. `npm run typecheck`, `npm run lint`, `npm run test:db`, `npm run build` all pass.
+2. Read the whole diff once more for bugs, security (RLS, `is_admin()`/`is_owner()` in every `admin_*` function, auth checks in server actions) and leftovers: unused code, exports, texts or files.
+3. Check anything visible in the browser, phone width and both themes included.
+4. Update the docs in the same PR when behaviour changes: CLAUDE.md, the legal pages, `docs/`.

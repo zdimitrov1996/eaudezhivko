@@ -1,55 +1,31 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState, useId, useRef, useState } from "react";
+import { useActionState, useId } from "react";
 import { updatePerfume, type AddPerfumeState } from "@/actions/perfumes";
 import { CONCENTRATIONS, type Perfume } from "@/lib/perfumes";
 import { FormMessage, SubmitButton } from "../auth/FormBits";
-import { CloseIcon, PencilIcon } from "../icons";
+import { PencilIcon } from "../icons";
+import { Modal } from "../Modal";
 import { submitKeepingValues } from "../submit-keeping-values";
 
 /** Pencil button on a card: fix the brand, name, concentration, year or Parfumo link. */
 export function EditPerfumeDialog({ perfume }: { perfume: Perfume }) {
   const t = useTranslations("EditPerfume");
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const titleId = useId();
-  // Remounting the form on close drops unsaved edits and old errors
-  const [formKey, setFormKey] = useState(0);
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => dialogRef.current?.showModal()}
-        aria-label={t("open")}
-        title={t("open")}
-        className="btn btn-ghost btn-sm !px-2.5"
-      >
-        <PencilIcon className="h-4 w-4" />
-      </button>
-
-      <dialog
-        ref={dialogRef}
-        aria-labelledby={titleId}
-        onClose={() => setFormKey((key) => key + 1)}
-        className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-3xl border border-ink-600 bg-ink-850 p-0 text-smoke-100 shadow-2xl shadow-black/40"
-      >
-        <div className="flex items-center justify-between border-b border-ink-700 px-6 py-4">
-          <h2 id={titleId} className="font-serif text-2xl font-semibold">
-            {t("title")}
-          </h2>
-          <button
-            type="button"
-            onClick={() => dialogRef.current?.close()}
-            aria-label={t("close")}
-            className="btn btn-ghost btn-sm !px-2.5"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-        <EditForm key={formKey} perfume={perfume} onDone={() => dialogRef.current?.close()} />
-      </dialog>
-    </>
+    <Modal
+      wide
+      title={t("title")}
+      closeLabel={t("close")}
+      trigger={(open) => (
+        <button type="button" onClick={open} aria-label={t("open")} title={t("open")} className="btn btn-ghost btn-sm !px-2.5">
+          <PencilIcon className="h-4 w-4" />
+        </button>
+      )}
+    >
+      {(close) => <EditForm perfume={perfume} onDone={close} />}
+    </Modal>
   );
 }
 

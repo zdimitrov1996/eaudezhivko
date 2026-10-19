@@ -1,70 +1,46 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState, useId, useRef, useState } from "react";
+import { useActionState, useId } from "react";
 import { saveShowcasePerfume, type ShowcaseFormState } from "@/actions/admin";
 import { CONCENTRATIONS } from "@/lib/perfumes";
 import type { ShowcasePerfume } from "@/lib/showcase";
 import { FormMessage, SubmitButton } from "../auth/FormBits";
-import { CloseIcon, PencilIcon, PlusIcon } from "../icons";
+import { PencilIcon, PlusIcon } from "../icons";
+import { Modal } from "../Modal";
 import { submitKeepingValues } from "../submit-keeping-values";
 
 /** "Add a perfume" button, or a pencil when given a perfume to edit; both open the same form. */
 export function ShowcaseDialog({ perfume, disabled = false }: { perfume?: ShowcasePerfume; disabled?: boolean }) {
   const t = useTranslations("Admin");
   const tp = useTranslations("AddPerfume");
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const titleId = useId();
-  // Remounting the form on close drops unsaved edits and old errors
-  const [formKey, setFormKey] = useState(0);
-  const title = perfume ? t("showcaseEditTitle") : t("showcaseAddTitle");
 
   return (
-    <>
-      {perfume ? (
-        <button
-          type="button"
-          onClick={() => dialogRef.current?.showModal()}
-          aria-label={t("showcaseEdit", { name: `${perfume.brand} ${perfume.name}` })}
-          title={t("showcaseEditTitle")}
-          className="btn btn-ghost btn-sm !px-2"
-        >
-          <PencilIcon className="h-4 w-4" />
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={() => dialogRef.current?.showModal()}
-          disabled={disabled}
-          className="btn btn-primary btn-sm"
-        >
-          <PlusIcon width="16" height="16" />
-          {t("showcaseAddTitle")}
-        </button>
-      )}
-
-      <dialog
-        ref={dialogRef}
-        aria-labelledby={titleId}
-        onClose={() => setFormKey((key) => key + 1)}
-        className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-3xl border border-ink-600 bg-ink-850 p-0 text-smoke-100 shadow-2xl shadow-black/40"
-      >
-        <div className="flex items-center justify-between border-b border-ink-700 px-6 py-4">
-          <h2 id={titleId} className="font-serif text-2xl font-semibold">
-            {title}
-          </h2>
+    <Modal
+      wide
+      title={perfume ? t("showcaseEditTitle") : t("showcaseAddTitle")}
+      closeLabel={tp("close")}
+      trigger={(open) =>
+        perfume ? (
           <button
             type="button"
-            onClick={() => dialogRef.current?.close()}
-            aria-label={tp("close")}
-            className="btn btn-ghost btn-sm !px-2.5"
+            onClick={open}
+            aria-label={t("showcaseEdit", { name: `${perfume.brand} ${perfume.name}` })}
+            title={t("showcaseEditTitle")}
+            className="btn btn-ghost btn-sm !px-2"
           >
-            <CloseIcon />
+            <PencilIcon className="h-4 w-4" />
           </button>
-        </div>
-        <ShowcaseForm key={formKey} perfume={perfume} onDone={() => dialogRef.current?.close()} />
-      </dialog>
-    </>
+        ) : (
+          <button type="button" onClick={open} disabled={disabled} className="btn btn-primary btn-sm">
+            <PlusIcon width="16" height="16" />
+            {t("showcaseAddTitle")}
+          </button>
+        )
+      }
+    >
+      {(close) => <ShowcaseForm perfume={perfume} onDone={close} />}
+    </Modal>
   );
 }
 

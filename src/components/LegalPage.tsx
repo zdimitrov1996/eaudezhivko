@@ -1,11 +1,10 @@
-import { hasLocale } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { LEGAL_OWNER, type LegalDoc } from "@/content/legal";
-import { routing } from "@/i18n/routing";
+import { pick } from "@/i18n/routing";
 
 /** Turns bare https:// addresses (new tab) and email addresses (mailto) in a text into links. */
-export function Linkified({ text }: { text: string }) {
+function Linkified({ text }: { text: string }) {
   const parts = text.split(/(https?:\/\/[^\s,;)]+|[\w.+-]+@[\w-]+\.[\w.]+\w)/g);
   return parts.map((part, index) =>
     /^[\w.+-]+@[\w-]+\.[\w.]+\w$/.test(part) ? (
@@ -52,7 +51,7 @@ export function LegalShell({
 export async function LegalPage({ doc }: { doc: LegalDoc }) {
   const t = await getTranslations("Legal");
   const locale = await getLocale();
-  const ownerName = LEGAL_OWNER.name[hasLocale(routing.locales, locale) ? locale : routing.defaultLocale];
+  const ownerName = pick(LEGAL_OWNER.name, locale);
 
   return (
     <LegalShell title={doc.title} intro={doc.intro} updated={t("updated", { date: doc.updated })}>
