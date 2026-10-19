@@ -1,9 +1,8 @@
 import { getTranslations } from "next-intl/server";
-import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { Link } from "@/i18n/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
-import { parseTheme, THEME_COOKIE } from "@/lib/theme";
+import type { Theme } from "@/lib/theme";
 import { HeartIcon, ShelfIcon, UserIcon } from "./icons";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { Logo } from "./Logo";
@@ -11,10 +10,9 @@ import { NavLink } from "./NavLink";
 import { SupportBanner } from "./SupportBanner";
 import { ThemeToggle } from "./ThemeToggle";
 
-export async function Header() {
+export async function Header({ theme }: { theme: Theme }) {
   const t = await getTranslations("Nav");
   const user = await getCurrentUser();
-  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
 
   const nav = (
     <>

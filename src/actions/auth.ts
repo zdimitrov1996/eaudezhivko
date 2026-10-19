@@ -4,6 +4,7 @@ import { getLocale } from "next-intl/server";
 import { cookies } from "next/headers";
 import { redirect as externalRedirect } from "next/navigation";
 import { redirect } from "@/i18n/navigation";
+import { EMAIL_PATTERN } from "@/lib/email";
 import { SUPPORT_SESSION_COOKIE } from "@/lib/impersonation";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
@@ -13,7 +14,6 @@ import { getSiteUrl, safeNextPath } from "@/lib/site-url";
 export type AuthState = { error?: string; message?: string } | undefined;
 
 const MIN_PASSWORD_LENGTH = 8;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const ERROR_KEYS: Record<string, string> = {
   invalid_credentials: "invalidCredentials",

@@ -2,14 +2,13 @@
 
 import { getLocale } from "next-intl/server";
 import { headers } from "next/headers";
+import { EMAIL_PATTERN } from "@/lib/email";
 import { FEEDBACK_CATEGORIES } from "@/lib/feedback";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
 /** `error` is a key into the Errors namespace. */
 export type FeedbackState = { ok: true; at: number } | { ok: false; error: string } | undefined;
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function submitFeedback(
   _prev: FeedbackState,

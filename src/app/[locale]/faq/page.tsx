@@ -1,23 +1,17 @@
 import type { Metadata } from "next";
-import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { LegalShell } from "@/components/LegalPage";
 import { faq } from "@/content/legal";
-import { routing } from "@/i18n/routing";
-
-function faqFor(locale: string) {
-  return faq[hasLocale(routing.locales, locale) ? locale : routing.defaultLocale];
-}
+import { pick } from "@/i18n/routing";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/faq">): Promise<Metadata> {
-  const { locale } = await params;
-  return { title: faqFor(locale).title };
+  return { title: pick(faq, (await params).locale).title };
 }
 
 export default async function FaqPage({ params }: PageProps<"/[locale]/faq">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const content = faqFor(locale);
+  const content = pick(faq, locale);
 
   return (
     <LegalShell title={content.title} intro={content.intro}>

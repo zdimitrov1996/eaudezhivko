@@ -16,7 +16,7 @@ export type ShowcaseRow = {
   parfumo_read_at: string | null;
 };
 
-export function toShowcasePerfume(row: ShowcaseRow): ShowcasePerfume {
+function toShowcasePerfume(row: ShowcaseRow): ShowcasePerfume {
   return {
     id: row.id,
     brand: row.brand,

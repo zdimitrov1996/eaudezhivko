@@ -12,11 +12,14 @@ export async function getSiteUrl() {
   return `${proto}://${host}`;
 }
 
-/** Only allow same-site relative paths, so `?next=` can't redirect off-site. */
+/**
+ * Only allow same-site paths, so `?next=` can't redirect off-site. Resolving
+ * against a dummy origin catches every trick browsers accept ("//", "/\\",
+ * tabs or newlines that URL parsing drops).
+ */
 export function safeNextPath(value: unknown, fallback = "/") {
-  if (typeof value !== "string") return fallback;
-  if (!value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) {
-    return fallback;
-  }
-  return value;
+  if (typeof value !== "string" || !value.startsWith("/")) return fallback;
+  const url = new URL(value, "https://same.site");
+  if (url.origin !== "https://same.site") return fallback;
+  return `${url.pathname}${url.search}${url.hash}`;
 }

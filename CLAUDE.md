@@ -17,7 +17,7 @@ Perfume collection site: users keep a collection (owned) and a wishlist, each pe
 ## Conventions
 
 - Every user-facing string goes in both `messages/en.json` and `messages/bg.json`. Bulgarian copy uses informal "ти" and gender-neutral phrasing.
-- Database changes go in a new file under `supabase/migrations/`; RLS must stay on for every table. The owner runs SQL in the Supabase SQL Editor: when a script is final, copy it to their clipboard (`pbcopy < file.sql`) and say whether to run it before or after merging.
+- Database changes go in a new file under `supabase/migrations/`; RLS must stay on for every table. The owner runs SQL in the Supabase SQL Editor: when a script is final, copy it to their clipboard with `LC_ALL=en_US.UTF-8 pbcopy < file.sql` and say whether to run it before or after merging. Without the UTF-8 locale pbcopy reads the file as Mac Roman and garbles letters like ô or ° (it happened once), so also keep data in SQL ASCII-only with `U&'...'` escapes.
 - Everything except admin support sign-in uses only the publishable key (`NEXT_PUBLIC_*`) and RLS. The secret key is read from the environment in `src/lib/supabase/admin.ts` only; never put it in code or a `NEXT_PUBLIC_` variable, and never ask for it in chat.
 - Without `.env.local` the site runs in preview mode (`isSupabaseConfigured` false): sample shelves, auth disabled.
 - Forms that use `useActionState` submit via `submitKeepingValues` so React doesn't clear fields on errors.
@@ -38,5 +38,13 @@ Perfume collection site: users keep a collection (owned) and a wishlist, each pe
 
 ## Commands
 
-- `npm run dev` — local server on http://localhost:3000
-- `npx tsc --noEmit`, `npm run lint`, `npm run build` — checks before committing
+- `npm run dev` — local server on http://localhost:3000. With the values in `.env.local` it uses the real Supabase project, so don't submit forms there while testing.
+- `npm run typecheck`, `npm run lint`, `npm run test:db`, `npm run build` — the same checks GitHub runs on every PR (`.github/workflows/checks.yml`)
+- `npm run test:db` runs every migration on an in-memory Postgres (PGlite) with stand-ins for Supabase's roles and `auth`, then checks who may read and change what (`supabase/tests/run.mjs`). Add checks there with every migration.
+
+## Before every PR
+
+1. `npm run typecheck`, `npm run lint`, `npm run test:db`, `npm run build` all pass.
+2. Read the whole diff once more for bugs, security (RLS, `is_admin()`/`is_owner()` in every `admin_*` function, auth checks in server actions) and leftovers: unused code, exports, texts or files.
+3. Check anything visible in the browser, phone width and both themes included.
+4. Update the docs in the same PR when behaviour changes: CLAUDE.md, the legal pages, `docs/`.

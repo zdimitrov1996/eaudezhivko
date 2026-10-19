@@ -1,55 +1,32 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState, useId, useRef, useState } from "react";
+import { useActionState, useId } from "react";
 import { addParfumoLink, type AddPerfumeState } from "@/actions/perfumes";
 import type { Perfume } from "@/lib/perfumes";
 import { FormMessage, SubmitButton } from "../auth/FormBits";
-import { CloseIcon, PlusIcon } from "../icons";
+import { PlusIcon } from "../icons";
+import { Modal } from "../Modal";
 import { submitKeepingValues } from "../submit-keeping-values";
 
 /** For a perfume without a Parfumo link: add one, and the rating and notes follow. */
 export function ParfumoLinkDialog({ perfume, label }: { perfume: Perfume; label: string }) {
   const t = useTranslations("ParfumoLink");
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const titleId = useId();
-  // Remounting the form on close drops unsaved input and old errors
-  const [formKey, setFormKey] = useState(0);
 
   return (
-    <>
-      <button type="button" onClick={() => dialogRef.current?.showModal()} className="btn btn-secondary btn-sm">
-        <PlusIcon className="h-4 w-4" />
-        {label}
-      </button>
-
-      <dialog
-        ref={dialogRef}
-        aria-labelledby={titleId}
-        onClose={() => setFormKey((key) => key + 1)}
-        className="m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl border border-ink-600 bg-ink-850 p-0 text-smoke-100 shadow-2xl shadow-black/40"
-      >
-        <div className="flex items-center justify-between border-b border-ink-700 px-6 py-4">
-          <div className="min-w-0">
-            <h2 id={titleId} className="font-serif text-2xl font-semibold">
-              {t("title")}
-            </h2>
-            <p className="truncate text-sm text-smoke-400">
-              {perfume.brand} {perfume.name}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => dialogRef.current?.close()}
-            aria-label={t("close")}
-            className="btn btn-ghost btn-sm !px-2.5"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-        <LinkForm key={formKey} perfume={perfume} onDone={() => dialogRef.current?.close()} />
-      </dialog>
-    </>
+    <Modal
+      title={t("title")}
+      subtitle={`${perfume.brand} ${perfume.name}`}
+      closeLabel={t("close")}
+      trigger={(open) => (
+        <button type="button" onClick={open} className="btn btn-secondary btn-sm">
+          <PlusIcon className="h-4 w-4" />
+          {label}
+        </button>
+      )}
+    >
+      {(close) => <LinkForm perfume={perfume} onDone={close} />}
+    </Modal>
   );
 }
 
