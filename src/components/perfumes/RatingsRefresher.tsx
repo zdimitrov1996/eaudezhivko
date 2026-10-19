@@ -2,26 +2,25 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { refreshParfumoData } from "@/actions/perfumes";
 
 /**
- * After a shelf loads, fetches Parfumo data that is missing or a week old
- * in the background, then refreshes the page if any changed. Renders nothing.
+ * After a page loads, asks the server to re-read Parfumo for `ids` whose data
+ * is missing or a week old, then refreshes the page if any changed. Renders nothing.
  */
-export function RatingsRefresher({ perfumeIds }: { perfumeIds: string[] }) {
+export function RatingsRefresher({ ids, refresh }: { ids: string[]; refresh: (ids: string[]) => Promise<number> }) {
   const router = useRouter();
-  const key = perfumeIds.join(",");
+  const key = ids.join(",");
 
   useEffect(() => {
     if (!key) return;
     let cancelled = false;
-    refreshParfumoData(key.split(",")).then((updated) => {
+    refresh(key.split(",")).then((updated) => {
       if (!cancelled && updated > 0) router.refresh();
     });
     return () => {
       cancelled = true;
     };
-  }, [key, router]);
+  }, [key, refresh, router]);
 
   return null;
 }

@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { refreshParfumoData } from "@/actions/perfumes";
 import { needsParfumoRefresh } from "@/lib/parfumo.server";
 import type { Shelf, ShelfEntry } from "@/lib/perfumes";
 import { HeartIcon, ShelfIcon } from "../icons";
@@ -39,7 +40,8 @@ export async function ShelfView({
 
       {!demo && (
         <RatingsRefresher
-          perfumeIds={entries.filter((entry) => needsParfumoRefresh(entry.perfume)).map((entry) => entry.perfume.id)}
+          ids={entries.filter((entry) => needsParfumoRefresh(entry.perfume)).map((entry) => entry.perfume.id)}
+          refresh={refreshParfumoData}
         />
       )}
 

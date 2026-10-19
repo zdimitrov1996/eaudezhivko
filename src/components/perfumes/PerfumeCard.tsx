@@ -3,8 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { moveEntry, rateEntry, removeEntry } from "@/actions/perfumes";
-import { hasNotes, NOTE_LAYERS, parfumoLink, pazaruvajSearchUrl, type ShelfEntry } from "@/lib/perfumes";
-import { NO_IMAGE_URL } from "@/lib/showcase";
+import { hasNotes, NO_IMAGE_URL, NOTE_LAYERS, parfumoLink, pazaruvajSearchUrl, type ShelfEntry } from "@/lib/perfumes";
 import { ArrowIcon, ExternalIcon, HeartIcon, StarIcon, TagIcon, TrashIcon } from "../icons";
 import { EditPerfumeDialog } from "./EditPerfumeDialog";
 import { ParfumoLinkDialog } from "./ParfumoLinkDialog";
