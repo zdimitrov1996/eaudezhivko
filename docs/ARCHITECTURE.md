@@ -48,11 +48,11 @@ src/
   content/legal.ts         Privacy, Terms, FAQ in both languages; LEGAL_OWNER
   i18n/                    routing (locales), request config, typed navigation
   lib/
-    perfumes.ts            shared types, Parfumo URL validation, Parfumo and Pazaruvaj links
+    perfumes.ts            shared types, NO_IMAGE_URL, Parfumo URL validation, Parfumo and Pazaruvaj links
     parfumo.server.ts      reads a Parfumo page: rating, notes, image
     shelf.server.ts        reads a shelf; row → Perfume mapping (PERFUME_COLUMNS)
-    showcase.ts            carousel types, built-in SHOWCASE list, NO_IMAGE_URL, limits
-    showcase.server.ts     getShowcase() for the home page
+    showcase.ts            carousel type, built-in SHOWCASE list, SHOWCASE_MAX
+    showcase.server.ts     reads the carousel table; the home page's fallback
     admin.server.ts        isAdmin/isOwner/requireAdmin and admin data loaders
     sample-shelf.ts        example perfumes for preview mode
     supabase/              config, server client, proxy client, admin (secret key) client
@@ -110,7 +110,7 @@ A unique index on `(lower(brand), lower(name), coalesce(concentration, ''))` kee
 
 **`feedback`**: `user_id` (null for guests; set null on user delete), `category` (`idea` | `bug` | `other`), `message` (5–2000), `contact_email`, `page`, `locale`, `user_agent`, `status` (`new` | `done`), `created_at`.
 
-**`showcase_perfumes`**: the home carousel. `perfume_id` (PK, cascades), `position`, `added_by`, `created_at`.
+**`showcase`**: the home carousel, independent of the catalogue. `id`, `position`, `brand`, `name`, `concentration`, `parfumo_url` (required, Parfumo only), `image_url` (required, a Parfumo host, never the no-image marker), `parfumo_rating`, `parfumo_read_at` (when Parfumo was last read), `updated_by`, `created_at`.
 
 ### RLS and grants
 
@@ -118,7 +118,7 @@ A unique index on `(lower(brand), lower(name), coalesce(concentration, ''))` kee
 | --- | --- | --- | --- |
 | `perfumes` | select all | select all; insert with `created_by = auth.uid()`; update only rows they created | No delete. Parfumo fields are written through `set_parfumo_data`, links filled through `fill_perfume_links` |
 | `user_perfumes` | none | select/insert/update/delete own rows (`user_id = auth.uid()`) | |
-| `showcase_perfumes` | select all | select all | Only through `admin_showcase_*` |
+| `showcase` | select all | select all | Only through `admin_showcase_*` |
 | `admins` | none | none | RLS on, no policies, all privileges revoked. Only security-definer functions touch it |
 | `admin_audit_log` | none | none | Same; written by the admin functions that log |
 | `feedback` | none | none | Same; written by `submit_feedback`, read by `admin_feedback` |
@@ -148,14 +148,14 @@ All are `security definer` with `set search_path = ''` unless noted. "Grant" is 
 | `admin_list_admins()` | authenticated | `is_admin()` | Owners first, then admins by date added, with who added them | `/admin/admins`, owner's view of `/admin/users/[id]` |
 | `admin_grant_admin(email)` | authenticated | `is_owner()`; user exists; email confirmed; not already admin | Inserts role `admin`, logs `grant_admin` | `grantAdmin`, `grantAdminToUser` |
 | `admin_revoke_admin(user_id)` | authenticated | `is_owner()`; target is an admin; not an owner | Deletes the row, logs `revoke_admin` | `revokeAdmin` |
-| `admin_showcase_add(perfume_id)` | authenticated | `is_admin()`; perfume has a Parfumo link and an image; fewer than 12 slides | Appends at the end; a perfume already in is a no-op | `addToShowcase` |
-| `admin_showcase_remove(perfume_id)` | authenticated | `is_admin()`; more than 1 slide | Deletes the slide | `removeFromShowcase` |
-| `admin_showcase_move(perfume_id, offset)` | authenticated | `is_admin()` | Swaps position with the previous (`offset < 0`) or next slide | `moveInShowcase` |
+| `admin_showcase_save(id, brand, name, concentration, parfumo_url, image_url, rating)` | authenticated | `is_admin()`; fewer than 12 slides when adding; the id exists when editing | With a null id, appends a slide; otherwise edits it. Stamps `parfumo_read_at` and `updated_by`. The app passes the picture and rating it has just read | Carousel dialog save, weekly carousel refresh |
+| `admin_showcase_remove(id)` | authenticated | `is_admin()`; more than 1 slide | Deletes the slide | Carousel "Remove" |
+| `admin_showcase_move(id, offset)` | authenticated | `is_admin()` | Swaps position with the previous (`offset < 0`) or next slide | Carousel arrows |
 | `perfume_stats(ids)` | anon, authenticated | | Aggregate collectors, wishers and average personal rating per perfume | Unused |
 | `set_external_ratings(…)` | authenticated | signed in | Legacy manual Fragrantica/Parfumo ratings | Unused |
 | `set_updated_at()` | trigger | | Keeps `updated_at` current on `perfumes` and `user_perfumes` | Triggers |
 
-Error codes the app maps to messages: `42501` not authorized, `P0002` not found, `55000` email not confirmed, `23505` already exists, `54000` carousel full, `22023` needs Parfumo link and picture, `23514` last slide.
+Error codes the app maps to messages: `42501` not authorized, `P0002` not found, `55000` email not confirmed, `23505` already exists, `54000` carousel full, `23514` last slide.
 
 ## 5. Auth and roles
 
@@ -212,17 +212,17 @@ Error codes the app maps to messages: `42501` not authorized, `P0002` not found,
 
 - the rating, or null (keeps the old one);
 - the notes, or `{}` when none were found, meaning "read, nothing listed";
-- the image URL, or **`NO_IMAGE_URL`** (`https://parfumo.com/no-image`, in `lib/showcase.ts`) when the page has no picture.
+- the image URL, or **`NO_IMAGE_URL`** (`https://parfumo.com/no-image`) when the page has no picture.
 
-The no-image marker exists so a perfume without a Parfumo picture isn't re-read on every visit. Everything that shows a picture treats the marker as "no picture": cards show the brand's initial, the carousel and its suggestions skip it (`canShowcase`). A later read that finds no picture or no notes stores the marker or `{}` in place of what was there.
+The no-image marker exists so a perfume without a Parfumo picture isn't re-read on every visit. Everything that shows a picture treats the marker as "no picture": cards show the brand's initial, and the carousel table refuses it. A later read that finds no picture or no notes stores the marker or `{}` in place of what was there.
 
 **When it's read:**
 
 - When a perfume goes on a shelf, when "Add Parfumo link" is used on a card, and when the edit dialog changes the link. Each calls `syncParfumoIfDue`, which reads the page only if `needsParfumoRefresh` says so.
-- In the background: `ShelfView` renders `RatingsRefresher` with the perfumes that `needsParfumoRefresh` flags. That client component calls the `refreshParfumoData` server action, which takes the first 6 ids it's given, re-checks which are due, reads those, and returns how many changed. If any did, the page refreshes, which hands the next batch to the refresher. The admin carousel page passes all its slides unfiltered, so only the first six slides are covered there. Home-page visitors never trigger a read.
+- In the background: `ShelfView` renders `RatingsRefresher` with the perfumes that `needsParfumoRefresh` flags. That client component calls the `refreshParfumoData` server action, which takes the first 6 ids it's given, re-checks which are due, reads those, and returns how many changed. If any did, the page refreshes, which hands the next batch to the refresher. Home-page visitors never trigger a read. The carousel keeps its own copy of picture and rating and refreshes it separately (section 8).
 - `needsParfumoRefresh` is true when a perfume has a Parfumo link and either notes are null, `ratings_updated_at` is null, the image is missing, or the last read was more than `PARFUMO_REFRESH_DAYS` (7) days ago.
 
-There is no cron: a perfume is re-read only when someone opens a shelf that holds it (or the carousel page) and its data is due.
+There is no cron: a perfume is re-read only when someone opens a shelf that holds it and its data is due.
 
 **Editing:** only the creator can edit a catalogue perfume (RLS update policy, and `updatePerfume` checks `created_by` too). When the Parfumo link changes, rating, notes and `ratings_updated_at` are cleared and the new page is read. `image_url` isn't cleared; a successful read of the new page replaces it.
 
@@ -236,12 +236,15 @@ There is no cron: a perfume is re-read only when someone opens a shelf that hold
 
 ## 8. Home page carousel
 
-- Data: `showcase_perfumes` joined to `perfumes`, ordered by `position` (`getShowcase()` in `lib/showcase.server.ts`). Slides that fail `canShowcase` (no Parfumo link, no image, or the no-image marker) are dropped.
-- Fallback: `SHOWCASE` in `lib/showcase.ts`, eight built-in perfumes with Parfumo links and CDN images. It's used when Supabase isn't configured, when the query errors (for example before the showcase migration has run), or when no usable slide is left.
-- Limits: 1 to `SHOWCASE_MAX` (12) slides. The SQL functions enforce both ends; the admin page disables the matching buttons.
-- Admin page `/admin/showcase`: reorder (up/down swaps), remove, and add from a catalogue search or, without a search, from up to 12 of the newest catalogue perfumes with a Parfumo link and a real picture. Perfumes without one show a "No picture" badge. Changes revalidate the home page.
-- Seed: the showcase migration added the same eight perfumes to the catalogue where missing (inserted with `created_by = null`, so nobody can edit those in the app) and to the carousel.
-- `PerfumeShowcase` (client): scroll-snap track, autoplay every 5 s that pauses on hover and focus, respects `prefers-reduced-motion`, pause/play, arrows, thumbnails. Each slide links to its Parfumo page and the credit line names Parfumo.
+The carousel has its own table, `showcase`, separate from the catalogue: each slide stores its own brand, name, concentration, Parfumo link, picture and rating. Changing a catalogue perfume never touches a slide, and a slide needs no catalogue entry.
+
+- **Home page:** reads `showcase` ordered by `position`. When Supabase isn't configured, the read fails, or the table is empty, it shows `SHOWCASE` from `lib/showcase.ts`: eight built-in perfumes with Parfumo links and CDN images.
+- **Admin page `/admin/showcase`:** lists the slides with picture, concentration and rating. "Add perfume" opens a dialog with brand, name, concentration (optional) and Parfumo link (required); the pencil on a row opens the same dialog filled in. Arrows swap a slide with its neighbour; "Remove" asks first. "Add" is disabled at 12 slides and "Remove" at 1.
+- **Saving** (add or edit): the server validates the link, reads the Parfumo page (section 6), and refuses the save when the page can't be read or has no bottle picture, each with its own message. Otherwise it calls `admin_showcase_save` with the picture and rating it read, so every save re-reads the page, whether or not the link changed.
+- **Weekly refresh:** opening the admin page hands every slide to the refresher, and the server re-reads those not read for `PARFUMO_REFRESH_DAYS` (7) days. If the page now lacks a picture or rating, the old one is kept; if it can't be read, the slide is left as is. Visitors to the home page never trigger a read.
+- **Limits:** 1 to `SHOWCASE_MAX` (12). The SQL functions enforce both ends. The table's checks accept only Parfumo links and Parfumo-hosted pictures, and never the no-image marker.
+- **History:** PR #12 started the carousel as `showcase_perfumes`, a list of catalogue perfumes seeded with the same eight. PR #14 copied those slides into `showcase` and dropped the old table and its functions. The eight perfumes that seed added to the catalogue (with `created_by = null`, so nobody can edit them in the app) are still there.
+- **`PerfumeShowcase`** (client): scroll-snap track, autoplay every 5 s that pauses on hover and focus, respects `prefers-reduced-motion`, pause/play, arrows, thumbnails. Each slide links to its Parfumo page and the credit line names Parfumo. Changes in the admin page revalidate the home page.
 
 ## 9. Feedback
 
@@ -296,7 +299,7 @@ There is no cron: a perfume is re-read only when someone opens a shelf that hold
 
 Files in `supabase/migrations/` are run by hand in Supabase → SQL Editor, once each, in filename order. The repository has no Supabase CLI config and the database keeps no record of which files ran: each file's header names the one it must follow, and PR descriptions say when to run it.
 
-Production received them in this order, each before the code that needed it was merged (per the PR descriptions):
+Production received them in this order, each before the code that needed it was merged (per the PR descriptions). Number 8 arrives with PR #14:
 
 | # | File | Introduced by | What it does |
 | --- | --- | --- | --- |
@@ -306,7 +309,8 @@ Production received them in this order, each before the code that needed it was 
 | 4 | `20261017100000_external_ratings.sql` | PR #3 | `fragrantica_rating`, `parfumo_rating`, `ratings_updated_at/_by`, `set_external_ratings` |
 | 5 | `20261017140000_parfumo_notes.sql` | PR #7 | `parfumo_notes`, `set_parfumo_data` (3 arguments) |
 | 6 | `20261017150000_perfume_image.sql` | commit "Add Parfumo bottle images…" | `image_url`; `set_parfumo_data` replaced by the 4-argument version; perfumes with a link but no image are queued for a re-read |
-| 7 | `20261019120000_showcase_and_admins.sql` | PR #12 | `admins.role` and `added_by` (existing admins become owners), `is_owner`, audit actions `grant_admin`/`revoke_admin`, admin list/grant/revoke, `showcase_perfumes` with its functions and the 8-perfume seed |
+| 7 | `20261019120000_showcase_and_admins.sql` | PR #12 | `admins.role` and `added_by` (existing admins become owners), `is_owner`, audit actions `grant_admin`/`revoke_admin`, admin list/grant/revoke, the first carousel table (`showcase_perfumes`) and its 8-perfume seed |
+| 8 | `20261019160000_showcase_own_entries.sql` | PR #14 | `showcase` with its own brand, name, link, picture and rating; copies the existing slides; drops `showcase_perfumes` and its functions; `admin_showcase_save`, `admin_showcase_remove`, `admin_showcase_move`. Run right before merging PR #14 |
 
 **Adding a migration:** create a new timestamped file, never edit an applied one. Keep RLS on for every new table; give admin functions an `is_admin()` or `is_owner()` check of their own; `revoke … from public, anon` and grant only what's needed. In PL/pgSQL, assign a `case … end` to a variable rather than putting it inside an `if` condition. When the script is final, copy it to the owner's clipboard (`pbcopy < file.sql`) and say in the PR whether to run it before or after merging (usually before, since new code reads new columns).
 
@@ -321,7 +325,5 @@ Production received them in this order, each before the code that needed it was 
 
 - Fragrantica leftovers: `perfumes.fragrantica_url`, `fragrantica_rating`, `ratings_updated_by`, the `set_external_ratings` function, and `fill_perfume_links`' Fragrantica argument (the app always passes `""`). Unused, kept to avoid a destructive migration.
 - `perfume_stats` and `user_perfumes.notes` are unused.
-- `admin_showcase_add` checks only that `image_url` is not null, so the no-image marker would pass in SQL; the app never offers such a perfume.
 - Terms §4 says administrators can correct or remove catalogue entries, but the admin catalogue is read-only and there is no SQL function for it.
 - Removing a perfume's Parfumo link in the edit dialog clears rating and notes but leaves the stored `image_url`.
-- `refreshParfumoData` looks at only the first six ids it receives. Shelves pass only due perfumes, so they work through them in batches, but the admin carousel page passes every slide, so slides 7–12 are never refreshed from there.
