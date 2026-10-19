@@ -97,9 +97,24 @@ async function seedBeforeRoles() {
   ]);
 }
 
+// Two names arrived in production garbled by the clipboard (UTF-8 read as Mac Roman)
+const GARBLED = { lancome: "Lanc\u221a\u00a5me", n5: "N\u00ac\u221e5" };
+
+async function seedGarbledNames() {
+  await db.exec(`
+    insert into public.perfumes (brand, name, concentration) values
+      ('${GARBLED.lancome}', 'Hypnose', 'edp'),
+      ('Chanel', '${GARBLED.n5}', 'parfum'),
+      ('${GARBLED.lancome}', 'La Vie est Belle', 'edp');
+    insert into public.showcase (position, brand, name, parfumo_url, image_url)
+      values (99, 'Chanel', '${GARBLED.n5}', 'https://www.parfumo.com/x', 'https://media.parfumo.com/x.jpg');
+  `);
+}
+
 console.log("migrations");
 for (const file of readdirSync(MIGRATIONS).filter((name) => name.endsWith(".sql")).sort()) {
   if (file === "20261019120000_showcase_and_admins.sql") await seedBeforeRoles();
+  if (file === "20261019170000_parfumo_images_only.sql") await seedGarbledNames();
   try {
     await db.exec(readFileSync(new URL(file, MIGRATIONS), "utf8"));
     pass(file);
@@ -108,6 +123,24 @@ for (const file of readdirSync(MIGRATIONS).filter((name) => name.endsWith(".sql"
     process.exit(1);
   }
 }
+
+console.log("\nnames garbled by the clipboard");
+const names = async (sql) => (await db.query(sql)).rows.map((r) => r.v).sort().join(", ");
+expect(
+  "Lancome and N 5 are repaired in the catalogue",
+  (await names("select brand || ' ' || name || ' ' || concentration as v from public.perfumes where brand in ('Lancôme', 'Chanel') or name = 'Hypnose'")) ===
+    "Chanel N°5 edp, Chanel N°5 parfum, Lancôme Hypnose edp, Lancôme La Vie est Belle edp",
+  await names("select brand || ' ' || name || ' ' || concentration as v from public.perfumes"),
+);
+expect(
+  "a garbled duplicate of a correct entry is left alone",
+  (await names(`select name as v from public.perfumes where brand = '${GARBLED.lancome}'`)) === "La Vie est Belle",
+);
+expect(
+  "the carousel name is repaired",
+  (await names(`select name as v from public.showcase where position = 99`)) === "N°5",
+);
+await db.exec("delete from public.showcase where position = 99");
 
 // ---------------------------------------------------------------------------
 console.log("\nshelves and catalogue");
