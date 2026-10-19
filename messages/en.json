@@ -32,12 +32,12 @@
         "body": "Save what you want to try or buy next, then move it to your collection the day it arrives."
       },
       "ratings": {
-        "title": "Ratings and notes",
-        "body": "Every perfume shows its Parfumo rating and its top, heart and base notes, filled in automatically from the link."
+        "title": "Ratings, notes and pictures",
+        "body": "Every perfume shows its Parfumo rating, its top, heart and base notes, and a bottle picture, filled in automatically from the link."
       },
       "prices": {
-        "title": "Best price in Bulgaria",
-        "body": "Coming soon: the lowest current price across Bulgarian shops for every perfume on your wishlist."
+        "title": "Prices in Bulgaria",
+        "body": "Compare a perfume's prices across Bulgarian online shops in one click, through Pazaruvaj."
       }
     },
     "previewNote": "Example perfumes. Numbers are for illustration."
@@ -113,7 +113,6 @@
     "yourRating": "Your rating",
     "notRated": "Not rated",
     "bestPrice": "Best price in Bulgaria",
-    "comingSoon": "Coming soon",
     "checkOnPazaruvaj": "Check on Pazaruvaj",
     "pazaruvajHint": "Compare prices on Pazaruvaj.com",
     "moveToWishlist": "Move to wishlist",
@@ -182,7 +181,7 @@
   },
   "Footer": {
     "tagline": "Your perfume collection, beautifully kept.",
-    "disclaimer": "Ratings and notes from Parfumo. Not affiliated with Parfumo.",
+    "disclaimer": "Ratings, notes and pictures from Parfumo; prices on Pazaruvaj. Not affiliated with Parfumo or Pazaruvaj.",
     "privacy": "Privacy",
     "terms": "Terms of use",
     "faq": "FAQ",

@@ -14,7 +14,7 @@ export const LEGAL_OWNER: { name: Record<Locale, string>; email: string } = {
   email: "jivko.dimitrov96@gmail.com",
 };
 
-const UPDATED = { en: "17 October 2026", bg: "17 октомври 2026 г." } as const;
+const UPDATED = { en: "19 October 2026", bg: "19 октомври 2026 г." } as const;
 
 export const privacy: Record<Locale, LegalDoc> = {
   bg: {
@@ -69,10 +69,11 @@ export const privacy: Record<Locale, LegalDoc> = {
         ],
       },
       {
-        heading: "6. Данни от Parfumo",
+        heading: "6. Parfumo и Pazaruvaj",
         paragraphs: [
-          "Когато добавиш линк към страница на парфюм в Parfumo, сървърът ни прочита от тази публична страница оценката и нотките на парфюма и ги обновява най-много веднъж седмично. На Parfumo не изпращаме никакви твои лични данни.",
-          "Линковете към Parfumo се отварят в техния сайт, където важи тяхната политика за поверителност.",
+          "Когато добавиш линк към страница на парфюм в Parfumo, сървърът ни прочита от тази публична страница оценката, нотките и адреса на снимката на флакона и ги обновява най-много веднъж седмично. При това четене не изпращаме твои лични данни.",
+          "Снимките на флаконите се зареждат директно от сървърите на Parfumo (media.parfumo.com). Затова, когато разглеждаш карта със снимка, браузърът ти се свързва с Parfumo и те получават IP адреса ти и данни за браузъра, но не и коя страница от нашия сайт гледаш. Обработката на тези данни от Parfumo е по тяхната политика за поверителност: https://www.parfumo.com/Privacy_Policy",
+          "Бутоните „Parfumo“ и „Pazaruvaj“ отварят съответния сайт в нов раздел, където важат неговите правила. Докато не натиснеш бутона, на Pazaruvaj не се изпраща нищо.",
         ],
       },
       {
@@ -170,10 +171,11 @@ export const privacy: Record<Locale, LegalDoc> = {
         ],
       },
       {
-        heading: "6. Data from Parfumo",
+        heading: "6. Parfumo and Pazaruvaj",
         paragraphs: [
-          "When you add a link to a perfume's page on Parfumo, our server reads that public page for the perfume's rating and notes, and refreshes them at most once a week. We never send your personal data to Parfumo.",
-          "Links to Parfumo open on their site, where their privacy policy applies.",
+          "When you add a link to a perfume's page on Parfumo, our server reads that public page for the perfume's rating, notes and bottle image address, and refreshes them at most once a week. That reading doesn't send any of your personal data.",
+          "Bottle images load directly from Parfumo's servers (media.parfumo.com). So when you view a card with a picture, your browser connects to Parfumo, which receives your IP address and browser details, but not which page of our site you're on. Parfumo handles that data under its own privacy policy: https://www.parfumo.com/Privacy_Policy",
+          "The “Parfumo” and “Pazaruvaj” buttons open those sites in a new tab, where their rules apply. Nothing is sent to Pazaruvaj until you press its button.",
         ],
       },
       {
@@ -227,7 +229,7 @@ export const terms: Record<Locale, LegalDoc> = {
       {
         heading: "1. Какво предлагаме",
         paragraphs: [
-          "Eau de Fragrances е безплатен сайт, в който можеш да подреждаш колекцията си от парфюми, да водиш списък с желани и да виждаш оценката и нотките на всеки парфюм според Parfumo.",
+          "Eau de Fragrances е безплатен сайт, в който можеш да подреждаш колекцията си от парфюми, да водиш списък с желани и да виждаш оценката, нотките и снимката на всеки парфюм според Parfumo, както и да сравняваш цените в българските магазини чрез Pazaruvaj.",
         ],
       },
       {
@@ -257,7 +259,8 @@ export const terms: Record<Locale, LegalDoc> = {
       {
         heading: "5. Данни от трети страни",
         paragraphs: [
-          "Оценката и нотките на парфюмите идват от публичните страници на Parfumo и посочваме Parfumo като източник. Не сме свързани с Parfumo и не гарантираме, че тези данни са точни или актуални. Те се обновяват най-много веднъж седмично.",
+          "Оценката, нотките и снимките на флаконите идват от публичните страници на Parfumo и посочваме Parfumo като източник. Снимките принадлежат на съответните им притежатели на права и се показват само като илюстрация, с линк към източника. Не сме свързани с Parfumo и не гарантираме, че тези данни са точни или актуални. Те се обновяват най-много веднъж седмично.",
+          "Бутонът „Pazaruvaj“ отваря търсене в Pazaruvaj.com. Цените и наличностите са на Pazaruvaj и на магазините там. Не ги проверяваме и не отговаряме за тях, а покупките стават при съответния магазин.",
           "Линковете към други сайтове се отварят в нов раздел. За съдържанието им отговарят техните собственици.",
         ],
       },
@@ -297,7 +300,7 @@ export const terms: Record<Locale, LegalDoc> = {
       {
         heading: "1. What we offer",
         paragraphs: [
-          "Eau de Fragrances is a free site where you can catalogue your perfume collection, keep a wishlist and see each perfume's rating and notes according to Parfumo.",
+          "Eau de Fragrances is a free site where you can catalogue your perfume collection, keep a wishlist, see each perfume's rating, notes and picture according to Parfumo, and compare prices in Bulgarian shops through Pazaruvaj.",
         ],
       },
       {
@@ -327,7 +330,8 @@ export const terms: Record<Locale, LegalDoc> = {
       {
         heading: "5. Third-party data",
         paragraphs: [
-          "Perfume ratings and notes come from Parfumo's public pages and are credited to Parfumo. We aren't affiliated with Parfumo and don't guarantee that this data is accurate or current; it's refreshed at most once a week.",
+          "Perfume ratings, notes and bottle pictures come from Parfumo's public pages and are credited to Parfumo. The pictures belong to their rights holders and are shown only for illustration, with a link to the source. We aren't affiliated with Parfumo and don't guarantee that this data is accurate or current; it's refreshed at most once a week.",
+          "The “Pazaruvaj” button opens a search on Pazaruvaj.com. Prices and availability are Pazaruvaj's and its shops'; we don't check them and aren't responsible for them, and purchases are made with the shop.",
           "Links to other sites open in a new tab; their owners are responsible for their content.",
         ],
       },
@@ -367,12 +371,12 @@ export const faq: Record<Locale, Faq> = {
     items: [
       {
         q: "Какво е Eau de Fragrances?",
-        a: "Сайт, в който подреждаш парфюмите, които имаш, и водиш списък с тези, които искаш да купиш. За всеки парфюм виждаш оценката и нотките му от Parfumo.",
+        a: "Сайт, в който подреждаш парфюмите, които имаш, и водиш списък с тези, които искаш да купиш. За всеки парфюм виждаш оценката, нотките и снимката му от Parfumo и можеш да сравниш цените в Pazaruvaj.",
       },
       { q: "Безплатно ли е?", a: "Да, сайтът е напълно безплатен." },
       {
-        q: "Откъде идват оценката и нотките?",
-        a: "От Parfumo. Когато добавиш линк към страницата на парфюма в Parfumo, сайтът сам прочита оценката и нотките (връх, сърце, база) и ги обновява веднъж седмично.",
+        q: "Откъде идват оценката, нотките и снимката?",
+        a: "От Parfumo. Когато добавиш линк към страницата на парфюма в Parfumo, сайтът сам прочита оценката, нотките (връх, сърце, база) и снимката на флакона и ги обновява веднъж седмично.",
       },
       {
         q: "Защо някой парфюм няма оценка или нотки?",
@@ -407,8 +411,8 @@ export const faq: Record<Locale, Faq> = {
         a: "Отвори „Профил“ (иконката горе вдясно) и натисни „Изтрий профила ми“. Колекцията и списъкът ти с желани се изтриват заедно с профила.",
       },
       {
-        q: "Ще има ли цени?",
-        a: "Работим по това: най-добрата текуща цена в българските магазини за парфюмите от списъка с желани.",
+        q: "Къде да видя цените?",
+        a: "Натисни бутона „Pazaruvaj“ в картата на парфюма. В нов раздел ще се отвори сравнение на цените в българските онлайн магазини в Pazaruvaj.com.",
       },
     ],
   },
@@ -418,12 +422,12 @@ export const faq: Record<Locale, Faq> = {
     items: [
       {
         q: "What is Eau de Fragrances?",
-        a: "A site to catalogue the perfumes you own and keep a wishlist of the ones you want. For each perfume you see its rating and notes from Parfumo.",
+        a: "A site to catalogue the perfumes you own and keep a wishlist of the ones you want. For each perfume you see its rating, notes and picture from Parfumo, and can compare prices on Pazaruvaj.",
       },
       { q: "Is it free?", a: "Yes, completely." },
       {
-        q: "Where do the rating and notes come from?",
-        a: "From Parfumo. When you add a link to the perfume's Parfumo page, the site reads its rating and notes (top, heart, base) by itself and refreshes them weekly.",
+        q: "Where do the rating, notes and picture come from?",
+        a: "From Parfumo. When you add a link to the perfume's Parfumo page, the site reads its rating, notes (top, heart, base) and bottle picture by itself and refreshes them weekly.",
       },
       {
         q: "Why does a perfume have no rating or notes?",
@@ -455,8 +459,8 @@ export const faq: Record<Locale, Faq> = {
         a: "Open Account (the icon at the top right) and press “Delete my account”. Your collection and wishlist are deleted with it.",
       },
       {
-        q: "Will there be prices?",
-        a: "We're working on it: the lowest current price in Bulgarian shops for the perfumes on your wishlist.",
+        q: "Where can I see prices?",
+        a: "Press the “Pazaruvaj” button on a perfume's card. It opens a price comparison across Bulgarian online shops on Pazaruvaj.com in a new tab.",
       },
     ],
   },
