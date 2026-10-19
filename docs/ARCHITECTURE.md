@@ -44,9 +44,11 @@ src/
     perfumes.ts            search, add, move, rate, remove, edit, Parfumo link + refresh
     feedback.ts            submitFeedback
     admin.ts               support sign-in, delete user, feedback status, carousel, admins
-  components/              UI; perfumes/, auth/, admin/, home/ subfolders
+  components/              UI; perfumes/, auth/, admin/, home/ subfolders. Modal is the one dialog
+                           shell; perfumes/ShelfPage serves both shelf pages
   content/legal.ts         Privacy, Terms, FAQ in both languages; LEGAL_OWNER
-  i18n/                    routing (locales), request config, typed navigation
+  i18n/                    routing (locales, plus a helper that picks this locale's value or
+                           the default's), request config, typed navigation
   lib/
     perfumes.ts            shared types, NO_IMAGE_URL, Parfumo URL validation, Parfumo and Pazaruvaj links
     parfumo.server.ts      reads a Parfumo page: rating, notes, image
@@ -59,6 +61,8 @@ src/
     theme.ts, impersonation.ts, feedback.ts, site-url.ts
 messages/en.json, bg.json  every UI string (legal texts excepted)
 supabase/migrations/       schema, RLS, SQL functions; run by hand in order
+supabase/tests/run.mjs     database tests (`npm run test:db`)
+.github/workflows/checks.yml  typecheck, lint, database tests, build on every PR and on main
 docs/                      this file, the owner's guide, setup guide, Parfumo letter draft
 ```
 
@@ -94,7 +98,7 @@ All tables live in `public` and have RLS enabled. Users are Supabase's `auth.use
 | `parfumo_url` | must match `https://(sub.)parfumo.<tld>/…` |
 | `parfumo_rating` | numeric(3,1), 0–10, read from Parfumo |
 | `parfumo_notes` | jsonb object ≤ 8000 bytes: `{top, heart, base}` arrays, or `{notes}` for perfumes without a pyramid; `{}` means "read, none listed" |
-| `image_url` | `http(s)://…`; a Parfumo CDN URL or the no-image marker (section 6) |
+| `image_url` | a Parfumo-hosted `https://` picture or the no-image marker, nothing else (section 6) |
 | `ratings_updated_at` | when Parfumo was last read; null means "read again" |
 | `created_by` | defaults to `auth.uid()`; set null when that user is deleted |
 | `created_at`, `updated_at` | `updated_at` maintained by the `set_updated_at` trigger |
@@ -164,7 +168,7 @@ Error codes the app maps to messages: `42501` not authorized, `P0002` not found,
 - Sign-up passes `emailRedirectTo = <site>/auth/callback?next=/<locale>/collection`. If Supabase has email confirmation off, the user is signed in straight away.
 - Google: `signInWithOAuth` → Google → Supabase → `/auth/callback?code=…&next=…`, which exchanges the code for a session.
 - Password reset: `resetPasswordForEmail` with `redirectTo = /auth/callback?next=/<locale>/reset-password`. The response never reveals whether an account exists. `/auth/confirm` handles the `token_hash` links from the custom email templates in SETUP.md, which work in any browser.
-- `next` parameters go through `safeNextPath`, so redirects stay on-site. `getSiteUrl()` uses `NEXT_PUBLIC_SITE_URL` when set, otherwise the request's host.
+- `next` parameters go through `safeNextPath`, which resolves the path against a dummy origin and falls back unless the origin is unchanged, so redirects stay on-site (`//host`, `/\host` and paths with tabs or newlines included). `getSiteUrl()` uses `NEXT_PUBLIC_SITE_URL` when set, otherwise the request's host.
 - Sign-out uses `scope: "local"` and clears the support-mode cookie.
 - Account deletion calls `delete_my_account()`. Shelves cascade; catalogue entries stay with `created_by = null`; feedback stays with `user_id = null`.
 
@@ -206,7 +210,7 @@ Error codes the app maps to messages: `42501` not authorized, `P0002` not found,
 
 - Rating: schema.org `AggregateRating` (`itemprop="ratingValue"`, scaled by `bestRating`), rounded to one decimal, 0–10.
 - Notes: elements with `data-nt` = `t` (top), `m` (heart), `b` (base), `n` (flat list). Note names only (Parfumo's note images aren't used), de-duplicated, at most 30 per layer.
-- Image: the main bottle image (`p-main-img` or `itemprop="image"`), else a Parfumo CDN `/perfumes/` image, else `og:image` / `twitter:image`. The host must end in `parfumo.<tld>`; the URL is forced to https.
+- Image: the main bottle image (`p-main-img` or `itemprop="image"`), else a Parfumo CDN `/perfumes/` image, else `og:image` / `twitter:image`. The host must end in `parfumo.<tld>`; the URL is forced to https. The database itself accepts only a Parfumo-hosted picture or the no-image marker in `perfumes.image_url`, because signed-in users can write that column (on entries they created, and through `set_parfumo_data` on any entry).
 
 **Saving** (`syncParfumo` in `actions/perfumes.ts`) calls `set_parfumo_data` with:
 
@@ -252,7 +256,7 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 ## 10. i18n, theming, preview mode
 
-**i18n:** `src/i18n/routing.ts` defines `en` (default) and `bg`. Every page is under `/<locale>/…`. Strings are in `messages/en.json` and `messages/bg.json`, and every user-facing string goes in both. Bulgarian copy uses informal "ти" and gender-neutral phrasing. Dates are formatted in `Europe/Sofia` (`i18n/request.ts`). `LocaleSwitcher` keeps the path and query when switching. Legal texts are the exception: they live in `src/content/legal.ts`, not in `messages/`.
+**i18n:** `src/i18n/routing.ts` defines `en` (default) and `bg`. Every page is under `/<locale>/…`. Strings are in `messages/en.json` and `messages/bg.json`, and every user-facing string goes in both. Bulgarian copy uses informal "ти" and gender-neutral phrasing. Dates are formatted in `Europe/Sofia` (`i18n/request.ts`). `LocaleSwitcher` keeps the path and query when switching. Legal texts are the exception: they live in `src/content/legal.ts`, not in `messages/`, and pages pick the current locale's version (the default's for an unknown locale).
 
 **Theme:** dark by default. `ThemeToggle` sets the `edf_theme` cookie (1 year) and `data-theme` on `<html>`; the layout reads the cookie on the server, so there's no flash. `globals.css` defines the tokens `ink`, `smoke`, `moss`, `ember`, `veil`, `stage` in `@theme` and overrides them under `:root[data-theme="light"]`. Use those tokens, never raw white or black overlays.
 
@@ -264,7 +268,7 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 **Other cookies:** Supabase's session cookies, `NEXT_LOCALE` (next-intl) and `edf_support_session` (section 5).
 
-**Forms:** forms that use `useActionState` submit through `submitKeepingValues`, so a failed submission keeps what the user typed. Destructive buttons use `ConfirmSubmit` (a `window.confirm` before submit).
+**Dialogs and forms:** every dialog (add perfume, edit perfume, Parfumo link, feedback, carousel) uses one `Modal` component: a trigger button, a title, a close button, and a body that remounts on close, which clears unsaved input and old results. Forms that use `useActionState` submit through `submitKeepingValues`, so a failed submission keeps what the user typed. Destructive buttons use `ConfirmSubmit` (a `window.confirm` before submit).
 
 ## 11. Legal pages and the features they describe
 
@@ -291,7 +295,7 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 | `NEXT_PUBLIC_SITE_URL` | optional | Absolute site URL for auth redirect links; falls back to the request host |
 | `SUPABASE_SECRET_KEY` | Vercel only (set by the Supabase integration) | Server-only, read in `lib/supabase/admin.ts` for support mode. Never give it a `NEXT_PUBLIC_` prefix, never put it in code, never ask for it in chat |
 
-`.env.example` lists the public ones. Everything except support mode works with the publishable key and RLS alone.
+`.env.example` lists the public ones. Everything except support mode works with the publishable key and RLS alone. There is one Supabase project: with `.env.local` filled in, `npm run dev` reads and writes the live data, so don't submit test forms there.
 
 ## 13. Migrations and deploy
 
@@ -299,7 +303,7 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 Files in `supabase/migrations/` are run by hand in Supabase → SQL Editor, once each, in filename order. The repository has no Supabase CLI config and the database keeps no record of which files ran: each file's header names the one it must follow, and PR descriptions say when to run it.
 
-Production received them in this order, each before the code that needed it was merged (per the PR descriptions). Number 8 arrives with PR #14:
+Production received them in this order, each before the code that needed it was merged (per the PR descriptions). Number 8 arrives with PR #14 and number 9 with PR #16:
 
 | # | File | Introduced by | What it does |
 | --- | --- | --- | --- |
@@ -311,13 +315,15 @@ Production received them in this order, each before the code that needed it was 
 | 6 | `20261017150000_perfume_image.sql` | commit "Add Parfumo bottle images…" | `image_url`; `set_parfumo_data` replaced by the 4-argument version; perfumes with a link but no image are queued for a re-read |
 | 7 | `20261019120000_showcase_and_admins.sql` | PR #12 | `admins.role` and `added_by` (existing admins become owners), `is_owner`, audit actions `grant_admin`/`revoke_admin`, admin list/grant/revoke, the first carousel table (`showcase_perfumes`) and its 8-perfume seed |
 | 8 | `20261019160000_showcase_own_entries.sql` | PR #14 | `showcase` with its own brand, name, link, picture and rating; copies the existing slides; drops `showcase_perfumes` and its functions; `admin_showcase_save`, `admin_showcase_remove`, `admin_showcase_move`. Run right before merging PR #14 |
+| 9 | `20261019170000_parfumo_images_only.sql` | PR #16 | Clears any `perfumes.image_url` that isn't a Parfumo picture or the no-image marker (and its `ratings_updated_at`, so it's read again), then makes the column accept only those |
 
-**Adding a migration:** create a new timestamped file, never edit an applied one. Keep RLS on for every new table; give admin functions an `is_admin()` or `is_owner()` check of their own; `revoke … from public, anon` and grant only what's needed. In PL/pgSQL, assign a `case … end` to a variable rather than putting it inside an `if` condition. When the script is final, copy it to the owner's clipboard (`pbcopy < file.sql`) and say in the PR whether to run it before or after merging (usually before, since new code reads new columns).
+**Adding a migration:** create a new timestamped file, never edit an applied one. Keep RLS on for every new table; give admin functions an `is_admin()` or `is_owner()` check of their own; `revoke … from public, anon` and grant only what's needed. In PL/pgSQL, assign a `case … end` to a variable rather than putting it inside an `if` condition. Add checks for it to `supabase/tests/run.mjs`. When the script is final, copy it to the owner's clipboard (`pbcopy < file.sql`) and say in the PR whether to run it before or after merging (usually before, since new code reads new columns).
 
 ### Deploy
 
 - Work happens on a branch and goes to `main` through a PR. Vercel builds and deploys `main` to https://eaudezhivko.vercel.app.
-- Before committing: `npx tsc --noEmit`, `npm run lint`, `npm run build`. There's no automated test suite.
+- Checks: `npm run typecheck`, `npm run lint`, `npm run test:db`, `npm run build`. GitHub runs the same four on every pull request and on pushes to `main` (`.github/workflows/checks.yml`); the build there runs without Supabase settings, in preview mode.
+- `npm run test:db` runs every migration, in order, on an in-memory Postgres (PGlite) with stand-ins for Supabase's roles and `auth.uid()`, then checks who may read and change what. It exits 1 on a failure. There are no UI tests.
 - Commits use the GitHub noreply email (local git config).
 - The domain eaudefragrances.com isn't bought yet. When it is, update Supabase's Site URL and redirect URLs, Google's authorized origins (see SETUP.md), `NEXT_PUBLIC_SITE_URL`, and the legal texts that name the address.
 

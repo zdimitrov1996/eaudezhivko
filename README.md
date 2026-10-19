@@ -21,7 +21,7 @@ npm run dev
 
 Open http://localhost:3000. Without Supabase settings the site runs in **preview mode** with example perfumes and sign-in switched off. To connect the database, follow [docs/SETUP.md](docs/SETUP.md).
 
-Before committing: `npx tsc --noEmit`, `npm run lint`, `npm run build`.
+Checks: `npm run typecheck`, `npm run lint`, `npm run test:db` (database rules on an in-memory Postgres), `npm run build`. GitHub runs them on every pull request.
 
 ## Stack
 
