@@ -3,12 +3,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { addToShowcase, moveInShowcase, removeFromShowcase } from "@/actions/admin";
 import { AdminShell, Badge, Notice } from "@/components/admin/AdminShell";
 import { ConfirmSubmit } from "@/components/ConfirmSubmit";
-import { ChevronLeftIcon, ChevronRightIcon, ExternalIcon } from "@/components/icons";
+import { ChevronLeftIcon, ChevronRightIcon, ExternalIcon, PlusIcon } from "@/components/icons";
 import { RatingsRefresher } from "@/components/perfumes/RatingsRefresher";
 import { Link } from "@/i18n/navigation";
-import { getAdminShowcase, requireAdmin, searchCatalogue } from "@/lib/admin.server";
+import { getAdminShowcase, getPicturedPerfumes, requireAdmin, searchCatalogue } from "@/lib/admin.server";
 import type { Perfume } from "@/lib/perfumes";
-import { SHOWCASE_MAX } from "@/lib/showcase";
+import { canShowcase, NO_IMAGE_URL, SHOWCASE_MAX } from "@/lib/showcase";
 
 const NOTICES = new Set(["showcaseAdded", "showcaseRemoved"]);
 const ERRORS = new Set(["showcaseFull", "showcaseNeedsPicture", "showcaseLast", "showcaseFailed"]);
@@ -25,7 +25,7 @@ export async function generateMetadata({
 function Thumb({ perfume }: { perfume: Perfume }) {
   return (
     <span className="stage isolate grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg border border-ink-600 p-0.5">
-      {perfume.imageUrl ? (
+      {perfume.imageUrl && perfume.imageUrl !== NO_IMAGE_URL ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={perfume.imageUrl}
@@ -53,15 +53,20 @@ export default async function AdminShowcasePage({ params, searchParams }: PagePr
   const notice = typeof query.notice === "string" && NOTICES.has(query.notice) ? query.notice : null;
   const error = typeof query.error === "string" && ERRORS.has(query.error) ? query.error : null;
 
-  const [t, tc, showcase, results] = await Promise.all([
+  const searching = search.trim().length >= 2;
+  const [t, tc, showcase, results, pictured] = await Promise.all([
     getTranslations("Admin"),
     getTranslations("Concentration"),
     getAdminShowcase(),
     searchCatalogue(search),
+    // Without a search, suggest the newest perfumes that could go in
+    searching ? Promise.resolve([]) : getPicturedPerfumes(SHOWCASE_MAX * 2),
   ]);
 
   const inShowcase = new Set(showcase.map((perfume) => perfume.id));
   const full = showcase.length >= SHOWCASE_MAX;
+  const suggestions = pictured.filter((perfume) => !inShowcase.has(perfume.id)).slice(0, SHOWCASE_MAX);
+  const candidates = searching ? results : suggestions;
   const details = (perfume: Perfume) =>
     [
       perfume.concentration ? tc(perfume.concentration) : null,
@@ -82,10 +87,16 @@ export default async function AdminShowcasePage({ params, searchParams }: PagePr
             {t("showcaseIntro", { count: showcase.length, max: SHOWCASE_MAX })}
           </p>
         </div>
-        <Link href="/" target="_blank" className="btn btn-secondary btn-sm">
-          {t("showcaseViewHome")}
-          <ExternalIcon className="text-smoke-400" />
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <a href="#add" className="btn btn-primary btn-sm">
+            <PlusIcon width="16" height="16" />
+            {t("showcaseAddTitle")}
+          </a>
+          <Link href="/" target="_blank" className="btn btn-secondary btn-sm">
+            {t("showcaseViewHome")}
+            <ExternalIcon className="text-smoke-400" />
+          </Link>
+        </div>
       </div>
 
       {showcase.length === 0 ? (
@@ -142,7 +153,9 @@ export default async function AdminShowcasePage({ params, searchParams }: PagePr
         </ol>
       )}
 
-      <h3 className="mt-12 font-serif text-2xl font-semibold">{t("showcaseAddTitle")}</h3>
+      <h3 id="add" className="mt-12 scroll-mt-24 font-serif text-2xl font-semibold">
+        {t("showcaseAddTitle")}
+      </h3>
       <p className="mt-1 max-w-2xl text-sm text-smoke-400">{t("showcaseAddHint")}</p>
       <form role="search" className="mt-4 flex w-full gap-2 sm:w-auto">
         <label htmlFor="showcase-search" className="sr-only">
@@ -166,37 +179,43 @@ export default async function AdminShowcasePage({ params, searchParams }: PagePr
         )}
       </form>
 
-      {search.trim().length >= 2 && (
-        <ul className="card mt-4 divide-y divide-ink-700">
-          {results.length === 0 && <li className="px-5 py-4 text-sm text-smoke-400">{t("showcaseNoResults")}</li>}
-          {results.map((perfume) => {
-            const usable = Boolean(perfume.parfumoUrl && perfume.imageUrl);
-            return (
-              <li key={perfume.id} className="flex items-center gap-3 px-4 py-3 sm:gap-4">
-                <Thumb perfume={perfume} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-semibold tracking-[0.12em] text-smoke-400 uppercase">
-                    {perfume.brand}
-                  </p>
-                  <p className="truncate font-medium text-smoke-100">{perfume.name}</p>
-                  <p className="truncate text-xs text-smoke-400">{details(perfume)}</p>
-                </div>
-                {inShowcase.has(perfume.id) ? (
-                  <Badge tone="moss">{t("showcaseInCarousel")}</Badge>
-                ) : !usable ? (
-                  <Badge>{t("showcaseNoPicture")}</Badge>
-                ) : (
-                  <form action={addToShowcase.bind(null, perfume.id, search)}>
-                    <button type="submit" disabled={full} className="btn btn-secondary btn-sm">
-                      {t("showcaseAdd")}
-                    </button>
-                  </form>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      {full && <p className="mt-4 text-sm text-ember-400">{t("showcaseFull")}</p>}
+      <p className="mt-6 text-sm font-medium text-smoke-300">
+        {searching ? t("showcaseResults") : t("showcaseSuggestions")}
+      </p>
+      <ul className="card mt-3 divide-y divide-ink-700">
+        {candidates.length === 0 && (
+          <li className="px-5 py-4 text-sm text-smoke-400">
+            {searching ? t("showcaseNoResults") : t("showcaseNoSuggestions")}
+          </li>
+        )}
+        {candidates.map((perfume) => {
+          const usable = canShowcase(perfume);
+          return (
+            <li key={perfume.id} className="flex items-center gap-3 px-4 py-3 sm:gap-4">
+              <Thumb perfume={perfume} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold tracking-[0.12em] text-smoke-400 uppercase">
+                  {perfume.brand}
+                </p>
+                <p className="truncate font-medium text-smoke-100">{perfume.name}</p>
+                <p className="truncate text-xs text-smoke-400">{details(perfume)}</p>
+              </div>
+              {inShowcase.has(perfume.id) ? (
+                <Badge tone="moss">{t("showcaseInCarousel")}</Badge>
+              ) : !usable ? (
+                <Badge>{t("showcaseNoPicture")}</Badge>
+              ) : (
+                <form action={addToShowcase.bind(null, perfume.id, search)}>
+                  <button type="submit" disabled={full} className="btn btn-secondary btn-sm">
+                    {t("showcaseAdd")}
+                  </button>
+                </form>
+              )}
+            </li>
+          );
+        })}
+      </ul>
 
       {/* Fills in missing or week-old Parfumo ratings for the slides */}
       <RatingsRefresher perfumeIds={showcase.map((perfume) => perfume.id)} />

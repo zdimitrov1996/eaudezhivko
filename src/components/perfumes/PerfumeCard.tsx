@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { moveEntry, rateEntry, removeEntry } from "@/actions/perfumes";
 import { hasNotes, NOTE_LAYERS, parfumoLink, pazaruvajSearchUrl, type ShelfEntry } from "@/lib/perfumes";
+import { NO_IMAGE_URL } from "@/lib/showcase";
 import { ArrowIcon, ExternalIcon, HeartIcon, StarIcon, TagIcon, TrashIcon } from "../icons";
 import { EditPerfumeDialog } from "./EditPerfumeDialog";
 import { ParfumoLinkDialog } from "./ParfumoLinkDialog";
@@ -57,7 +58,7 @@ export function PerfumeCard({
       aria-busy={isPending}
     >
       <div className="flex items-start gap-4 p-5 pb-4">
-        {perfume.imageUrl && perfume.imageUrl !== "https://parfumo.com/no-image" && !imageError ? (
+        {perfume.imageUrl && perfume.imageUrl !== NO_IMAGE_URL && !imageError ? (
           <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-moss-800/80 bg-ink-900/60 p-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

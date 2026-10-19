@@ -14,6 +14,14 @@ export type ShowcasePerfume = {
 /** Most perfumes the carousel holds (the database enforces it too). */
 export const SHOWCASE_MAX = 12;
 
+/** Stored when Parfumo has no bottle picture, so the page isn't read again for one. */
+export const NO_IMAGE_URL = "https://parfumo.com/no-image";
+
+/** A slide needs a Parfumo page to link to and a real bottle picture. */
+export function canShowcase(perfume: { parfumoUrl: string | null; imageUrl: string | null }): boolean {
+  return Boolean(perfume.parfumoUrl && perfume.imageUrl && perfume.imageUrl !== NO_IMAGE_URL);
+}
+
 // The carousel is chosen in the admin panel (showcase_perfumes). This list is
 // what it started with, and what the homepage shows without a database.
 // Images are hotlinked from Parfumo (credited, each slide links to its page).

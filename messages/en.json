@@ -342,7 +342,10 @@
     "powersNot": "They can't add or remove admins. Only the owner can.",
     "rightsTitle": "Admin rights",
     "rightsOwner": "This is the site owner.",
-    "rightsGrantHint": "They'll see every account and all feedback, can sign in to accounts in support mode, and can change the carousel."
+    "rightsGrantHint": "They'll see every account and all feedback, can sign in to accounts in support mode, and can change the carousel.",
+    "showcaseResults": "Search results",
+    "showcaseSuggestions": "Newest perfumes with a picture",
+    "showcaseNoSuggestions": "There are no other perfumes with a picture in the catalogue yet."
   },
   "Support": {
     "banner": "Support mode: you're signed in as {email}.",
