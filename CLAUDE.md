@@ -24,6 +24,7 @@ Perfume collection site: users keep a collection (owned) and a wishlist, each pe
 - Node and gh are installed in `~/.local/bin` (no Homebrew on this Mac).
 
 - Legal pages (`/privacy`, `/terms`, `/faq`) live in `src/content/legal.ts` (both languages). They describe the real data flows: when a feature, provider, cookie or admin power changes, update them and the "updated" date. `LEGAL_OWNER` holds the data controller's name and contact email, published on purpose at the owner's request.
+- Bottle images are hotlinked from media.parfumo.com, so visitors' browsers contact Parfumo (IP address); the Privacy policy says so. If images start being proxied or stored by us, or new third-party embeds are added, update the legal pages.
 - Only the person who added a catalogue perfume can edit it (RLS + `updatePerfume`); a changed Parfumo link clears and re-reads rating and notes.
 
 ## Admin panel and feedback
