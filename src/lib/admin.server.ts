@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { redirect } from "@/i18n/navigation";
 import type { FeedbackCategory } from "./feedback";
-import type { Concentration, Shelf } from "./perfumes";
+import type { Concentration, Perfume, Shelf } from "./perfumes";
+import { PERFUME_COLUMNS, toPerfume, type PerfumeRow } from "./shelf.server";
 import { isSupabaseConfigured } from "./supabase/config";
 import { createClient, getCurrentUser } from "./supabase/server";
 
@@ -15,6 +16,15 @@ export const isAdmin = cache(async (): Promise<boolean> => {
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("is_admin");
+  return !error && data === true;
+});
+
+/** The owner is the one admin who may add and remove other admins. */
+export const isOwner = cache(async (): Promise<boolean> => {
+  if (!(await isAdmin())) return false;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("is_owner");
   return !error && data === true;
 });
 
@@ -212,7 +222,7 @@ export async function getAdminPerfumes(): Promise<AdminPerfume[]> {
 export type AdminAction = {
   id: number;
   adminEmail: string | null;
-  action: "impersonate" | "delete_user";
+  action: "impersonate" | "delete_user" | "grant_admin" | "revoke_admin";
   targetUserId: string | null;
   targetEmail: string | null;
   createdAt: string;
@@ -288,4 +298,59 @@ export async function getAdminFeedback(): Promise<AdminFeedback[]> {
     userAgent: row.user_agent,
     createdAt: row.created_at,
   }));
+}
+
+export type AdminAccount = {
+  userId: string;
+  email: string | null;
+  role: "owner" | "admin";
+  addedAt: string;
+  addedByEmail: string | null;
+};
+
+/** Owner first, then admins in the order they were added. */
+export async function getAdminAccounts(): Promise<AdminAccount[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_list_admins");
+  if (error) throw error;
+
+  return (
+    (data ?? []) as {
+      user_id: string;
+      email: string | null;
+      role: AdminAccount["role"];
+      added_at: string;
+      added_by_email: string | null;
+    }[]
+  ).map((row) => ({
+    userId: row.user_id,
+    email: row.email,
+    role: row.role,
+    addedAt: row.added_at,
+    addedByEmail: row.added_by_email,
+  }));
+}
+
+/** The homepage carousel in order, as catalogue perfumes. */
+export async function getAdminShowcase(): Promise<Perfume[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("showcase_perfumes")
+    .select(`position, perfume:perfumes (${PERFUME_COLUMNS})`)
+    .order("position");
+  if (error) throw error;
+
+  return (data as unknown as { perfume: PerfumeRow | null }[]).flatMap(({ perfume }) =>
+    perfume ? [toPerfume(perfume)] : [],
+  );
+}
+
+/** Catalogue search for perfumes to add to the carousel. */
+export async function searchCatalogue(query: string): Promise<Perfume[]> {
+  if (query.trim().length < 2) return [];
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("search_perfumes", { q: query.trim() });
+  if (error) throw error;
+  return ((data ?? []) as PerfumeRow[]).map(toPerfume);
 }

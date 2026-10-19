@@ -47,7 +47,7 @@ export const privacy: Record<Locale, LegalDoc> = {
         paragraphs: [],
         list: [
           "За да ти предоставим сайта: профил, вход, колекция и списък с желани. Основание: договор, тоест използването на сайта (чл. 6, ал. 1, буква „б“ от GDPR).",
-          "За сигурност, предотвратяване на злоупотреби и поправяне на грешки, включително достъп на администратора за поддръжка (виж т. 5). Основание: легитимен интерес (чл. 6, ал. 1, буква „е“ от GDPR).",
+          "За сигурност, предотвратяване на злоупотреби и поправяне на грешки, включително достъп на администраторите за поддръжка (виж т. 5). Основание: легитимен интерес (чл. 6, ал. 1, буква „е“ от GDPR).",
           "За да отговорим на обратна връзка и да подобряваме сайта. Основание: легитимен интерес.",
           "Не използваме данните ти за реклама, не правим профилиране и не продаваме данни на никого.",
         ],
@@ -62,10 +62,11 @@ export const privacy: Record<Locale, LegalDoc> = {
         ],
       },
       {
-        heading: "5. Достъп на администратора",
+        heading: "5. Достъп на администраторите",
         paragraphs: [
-          "Администраторът на сайта може да вижда регистрираните профили (имейл, дата на регистрация и последен вход), техните колекции и списъци с желани, както и изпратената обратна връзка.",
-          "За да провери проблем, администраторът може временно да влезе в профила ти в режим на поддръжка, както и да изтрие профил при злоупотреба. Всяко такова действие се записва в дневник.",
+          "Администратори на сайта са собственикът и хората, на които собственикът е дал администраторски достъп. Те действат от името на администратора на личните данни (т. 1), само за поддръжката на сайта.",
+          "Администраторите могат да виждат регистрираните профили (имейл, дата на регистрация и последен вход), техните колекции и списъци с желани, както и изпратената обратна връзка.",
+          "За да провери проблем, администратор може временно да влезе в профила ти в режим на поддръжка, както и да изтрие профил при злоупотреба. Всяко такова действие, както и всяко даване или отнемане на администраторски достъп, се записва в дневник.",
         ],
       },
       {
@@ -85,7 +86,7 @@ export const privacy: Record<Locale, LegalDoc> = {
           "Бисквитки за вход (Supabase): поддържат сесията ти, докато използваш профила си.",
           "Език (NEXT_LOCALE): запомня избрания от теб език.",
           "Тема (edf_theme): запомня светлата или тъмната тема, до 1 година.",
-          "Режим на поддръжка (edf_support_session): само за администратора, до 4 часа.",
+          "Режим на поддръжка (edf_support_session): само за администраторите, до 4 часа.",
         ],
       },
       {
@@ -166,8 +167,9 @@ export const privacy: Record<Locale, LegalDoc> = {
       {
         heading: "5. Administrator access",
         paragraphs: [
-          "The site administrator can see registered accounts (email, sign-up and last sign-in dates), their collections and wishlists, and submitted feedback.",
-          "To investigate a problem, the administrator can temporarily sign in to your account in support mode, and can delete an account in case of abuse. Every such action is recorded in a log.",
+          "The site's administrators are the owner and the people the owner has given admin access. They act on behalf of the data controller (section 1), only to run and support the site.",
+          "Administrators can see registered accounts (email, sign-up and last sign-in dates), their collections and wishlists, and submitted feedback.",
+          "To investigate a problem, an administrator can temporarily sign in to your account in support mode, and can delete an account in case of abuse. Every such action, and every grant or removal of admin access, is recorded in a log.",
         ],
       },
       {
@@ -185,7 +187,7 @@ export const privacy: Record<Locale, LegalDoc> = {
           "Sign-in cookies (Supabase): keep you signed in.",
           "Language (NEXT_LOCALE): remembers the language you chose.",
           "Theme (edf_theme): remembers light or dark mode, for up to 1 year.",
-          "Support mode (edf_support_session): administrator only, for up to 4 hours.",
+          "Support mode (edf_support_session): administrators only, for up to 4 hours.",
         ],
       },
       {
@@ -253,7 +255,7 @@ export const terms: Record<Locale, LegalDoc> = {
       {
         heading: "4. Общ каталог",
         paragraphs: [
-          "Парфюмите, които добавяш (марка, име, концентрация, година и линк към Parfumo), стават част от общ каталог, достъпен за всички потребители. Можеш да редактираш парфюмите, добавени от теб. Администраторът може да поправя или премахва записи от каталога.",
+          "Парфюмите, които добавяш (марка, име, концентрация, година и линк към Parfumo), стават част от общ каталог, достъпен за всички потребители. Можеш да редактираш парфюмите, добавени от теб. Администраторите могат да поправят или премахват записи от каталога и да избират кои парфюми да се показват на началната страница.",
         ],
       },
       {
@@ -267,7 +269,7 @@ export const terms: Record<Locale, LegalDoc> = {
       {
         heading: "6. Поддръжка и администрация",
         paragraphs: [
-          "За да отстрани проблем, администраторът може временно да влезе в профила ти в режим на поддръжка. Можем да спрем или изтрием профил, който нарушава тези условия.",
+          "За да отстрани проблем, администратор може временно да влезе в профила ти в режим на поддръжка. Можем да спрем или изтрием профил, който нарушава тези условия.",
         ],
       },
       {
@@ -324,7 +326,7 @@ export const terms: Record<Locale, LegalDoc> = {
       {
         heading: "4. Shared catalogue",
         paragraphs: [
-          "Perfumes you add (brand, name, concentration, year and Parfumo link) become part of a shared catalogue that all users can see. You can edit the perfumes you added. The administrator may correct or remove catalogue entries.",
+          "Perfumes you add (brand, name, concentration, year and Parfumo link) become part of a shared catalogue that all users can see. You can edit the perfumes you added. Administrators may correct or remove catalogue entries, and choose which perfumes the homepage shows.",
         ],
       },
       {
@@ -338,7 +340,7 @@ export const terms: Record<Locale, LegalDoc> = {
       {
         heading: "6. Support and administration",
         paragraphs: [
-          "To fix a problem, the administrator can temporarily sign in to your account in support mode. We may suspend or delete accounts that break these terms.",
+          "To fix a problem, an administrator can temporarily sign in to your account in support mode. We may suspend or delete accounts that break these terms.",
         ],
       },
       {
@@ -400,7 +402,7 @@ export const faq: Record<Locale, Faq> = {
       },
       {
         q: "Кой вижда колекцията ми?",
-        a: "Само ти. Администраторът на сайта може да я види при поддръжка. Повече за това има в Политиката за поверителност.",
+        a: "Само ти. Администраторите на сайта могат да я видят при поддръжка. Повече за това има в Политиката за поверителност.",
       },
       {
         q: "Как да сменя езика или темата?",
@@ -448,7 +450,7 @@ export const faq: Record<Locale, Faq> = {
       { q: "What is “Your rating”?", a: "Your personal score from 1 to 10. Other users don't see it." },
       {
         q: "Who can see my collection?",
-        a: "Only you. The site administrator can see it when providing support; see the Privacy policy for details.",
+        a: "Only you. The site's administrators can see it when providing support; see the Privacy policy for details.",
       },
       {
         q: "How do I change the language or theme?",

@@ -4,7 +4,7 @@ import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "@/i18n/navigation";
-import { isAdmin } from "@/lib/admin.server";
+import { isAdmin, isOwner } from "@/lib/admin.server";
 import { SUPPORT_SESSION_COOKIE } from "@/lib/impersonation";
 import { createAdminClient, isAdminApiConfigured } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -86,3 +86,113 @@ export async function setFeedbackStatus(id: number, status: "new" | "done") {
   });
   revalidatePath("/[locale]/admin", "layout");
 }
+
+// ---------------------------------------------------------------------------
+// Homepage carousel (any admin)
+// ---------------------------------------------------------------------------
+
+function revalidateShowcase() {
+  revalidatePath("/[locale]", "page");
+  revalidatePath("/[locale]/admin/showcase", "page");
+}
+
+/** `search` keeps the admin's catalogue search open after adding. */
+export async function addToShowcase(perfumeId: string, search: string) {
+  const locale = await getLocale();
+  if (!(await isAdmin())) return redirect({ href: "/", locale });
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_showcase_add", { p_perfume_id: perfumeId });
+  revalidateShowcase();
+
+  const query: Record<string, string> = search ? { q: search } : {};
+  if (error) {
+    query.error =
+      error.code === "54000" ? "showcaseFull" : error.code === "22023" ? "showcaseNeedsPicture" : "showcaseFailed";
+  } else {
+    query.notice = "showcaseAdded";
+  }
+  return redirect({ href: { pathname: "/admin/showcase", query }, locale });
+}
+
+export async function removeFromShowcase(perfumeId: string) {
+  const locale = await getLocale();
+  if (!(await isAdmin())) return redirect({ href: "/", locale });
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_showcase_remove", { p_perfume_id: perfumeId });
+  revalidateShowcase();
+
+  const query = error
+    ? { error: error.code === "23514" ? "showcaseLast" : "showcaseFailed" }
+    : { notice: "showcaseRemoved" };
+  return redirect({ href: { pathname: "/admin/showcase", query }, locale });
+}
+
+/** Swaps the perfume with its neighbour: -1 earlier, 1 later. */
+export async function moveInShowcase(perfumeId: string, offset: -1 | 1) {
+  if (!(await isAdmin())) return;
+
+  const supabase = await createClient();
+  await supabase.rpc("admin_showcase_move", { p_perfume_id: perfumeId, p_offset: offset < 0 ? -1 : 1 });
+  revalidateShowcase();
+}
+
+// ---------------------------------------------------------------------------
+// Admins (owner only; the database checks it too)
+// ---------------------------------------------------------------------------
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** `error` is a key into Admin.grantErrors. */
+export type GrantAdminState = { ok: true; email: string; at: number } | { ok: false; error: string } | undefined;
+
+function grantError(code: string | undefined) {
+  if (code === "P0002") return "notFound";
+  if (code === "55000") return "notConfirmed";
+  if (code === "23505") return "alreadyAdmin";
+  if (code === "42501") return "notOwner";
+  return "generic";
+}
+
+export async function grantAdmin(_prev: GrantAdminState, formData: FormData): Promise<GrantAdminState> {
+  if (!(await isOwner())) return { ok: false, error: "notOwner" };
+
+  const email = String(formData.get("email") ?? "").trim();
+  if (!EMAIL_PATTERN.test(email)) return { ok: false, error: "invalidEmail" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_grant_admin", { p_email: email });
+  if (error) return { ok: false, error: grantError(error.code) };
+
+  revalidatePath("/[locale]/admin", "layout");
+  return { ok: true, email, at: Date.now() };
+}
+
+/** The same, from a user's page in the panel. */
+export async function grantAdminToUser(userId: string, email: string) {
+  const locale = await getLocale();
+  if (!(await isOwner())) return redirect({ href: "/", locale });
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_grant_admin", { p_email: email });
+  revalidatePath("/[locale]/admin", "layout");
+
+  const query = error ? { error: `grant_${grantError(error.code)}` } : { notice: "adminGranted" };
+  return redirect({ href: { pathname: `/admin/users/${userId}`, query }, locale });
+}
+
+/** `returnTo` is the panel page the button was on. */
+export async function revokeAdmin(userId: string, returnTo: "admins" | "user") {
+  const locale = await getLocale();
+  if (!(await isOwner())) return redirect({ href: "/", locale });
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_revoke_admin", { p_user_id: userId });
+  revalidatePath("/[locale]/admin", "layout");
+
+  const pathname = returnTo === "user" ? `/admin/users/${userId}` : "/admin/admins";
+  const query = error ? { error: "revokeFailed" } : { notice: "adminRevoked" };
+  return redirect({ href: { pathname, query }, locale });
+}
+

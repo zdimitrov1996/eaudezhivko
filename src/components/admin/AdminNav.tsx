@@ -11,6 +11,8 @@ export function AdminNav() {
     { href: "/admin", label: t("navUsers"), active: pathname === "/admin" || pathname.startsWith("/admin/users") },
     { href: "/admin/perfumes", label: t("navCatalogue"), active: pathname.startsWith("/admin/perfumes") },
     { href: "/admin/feedback", label: t("navFeedback"), active: pathname.startsWith("/admin/feedback") },
+    { href: "/admin/showcase", label: t("navShowcase"), active: pathname.startsWith("/admin/showcase") },
+    { href: "/admin/admins", label: t("navAdmins"), active: pathname.startsWith("/admin/admins") },
   ];
 
   return (
