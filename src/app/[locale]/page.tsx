@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { HeartIcon, ShelfIcon, StarIcon, TagIcon } from "@/components/icons";
 import { PerfumeShowcase } from "@/components/home/PerfumeShowcase";
 import { Link } from "@/i18n/navigation";
+import { getShowcase } from "@/lib/showcase.server";
 import { getCurrentUser } from "@/lib/supabase/server";
 
 const FEATURES = [
@@ -17,7 +18,7 @@ export default async function HomePage({ params, searchParams }: PageProps<"/[lo
 
   const t = await getTranslations("Home");
   const tAccount = await getTranslations("Account");
-  const user = await getCurrentUser();
+  const [user, showcase] = await Promise.all([getCurrentUser(), getShowcase()]);
   const { deleted } = await searchParams;
 
   return (
@@ -59,7 +60,7 @@ export default async function HomePage({ params, searchParams }: PageProps<"/[lo
             aria-hidden="true"
             className="absolute inset-x-0 -inset-y-8 -z-10 rounded-[3rem] bg-[radial-gradient(closest-side,rgb(67_173_118/0.16),transparent)]"
           />
-          <PerfumeShowcase />
+          <PerfumeShowcase perfumes={showcase} />
         </div>
       </section>
 

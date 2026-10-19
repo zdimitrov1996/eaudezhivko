@@ -1,17 +1,23 @@
 import type { Concentration } from "./perfumes";
 
 export type ShowcasePerfume = {
+  id: string;
   brand: string;
   name: string;
-  concentration: Concentration;
+  concentration: Concentration | null;
   parfumoUrl: string;
   /** Bottle photo on Parfumo's CDN, as their perfume page shows it */
   imageUrl: string;
+  parfumoRating: number | null;
 };
 
-// Well-known perfumes for the landing page carousel: women's, men's and unisex.
+/** Most perfumes the carousel holds (the database enforces it too). */
+export const SHOWCASE_MAX = 12;
+
+// The carousel is chosen in the admin panel (showcase_perfumes). This list is
+// what it started with, and what the homepage shows without a database.
 // Images are hotlinked from Parfumo (credited, each slide links to its page).
-export const SHOWCASE: ShowcasePerfume[] = [
+const DEFAULT_SHOWCASE: Omit<ShowcasePerfume, "id" | "parfumoRating">[] = [
   {
     brand: "Maison Francis Kurkdjian",
     name: "Baccarat Rouge 540",
@@ -76,3 +82,9 @@ export const SHOWCASE: ShowcasePerfume[] = [
       "https://media.parfumo.com/perfumes/3b/3b0c61-la-vie-est-belle-l-eau-de-parfum-lancome_1200.jpg?width=720&aspect_ratio=1:1",
   },
 ];
+
+export const SHOWCASE: ShowcasePerfume[] = DEFAULT_SHOWCASE.map((perfume, index) => ({
+  ...perfume,
+  id: `default-${index + 1}`,
+  parfumoRating: null,
+}));

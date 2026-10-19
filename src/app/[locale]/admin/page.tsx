@@ -7,6 +7,7 @@ import {
   getAdminUsers,
   getRecentAdminActions,
   requireAdmin,
+  type AdminAction,
   type AdminOverview,
 } from "@/lib/admin.server";
 import { getCurrentUser } from "@/lib/supabase/server";
@@ -26,6 +27,20 @@ const STATS: (keyof AdminOverview)[] = [
   "wishlistEntries",
   "ratingsGiven",
 ];
+
+const ACTION_LABELS: Record<
+  AdminAction["action"],
+  {
+    badge: "deleteUser" | "impersonate" | "grantBadge" | "revokeBadge";
+    tone: "neutral" | "moss" | "ember";
+    text: "actionDelete" | "actionImpersonate" | "actionGrant" | "actionRevoke";
+  }
+> = {
+  impersonate: { badge: "impersonate", tone: "neutral", text: "actionImpersonate" },
+  delete_user: { badge: "deleteUser", tone: "ember", text: "actionDelete" },
+  grant_admin: { badge: "grantBadge", tone: "moss", text: "actionGrant" },
+  revoke_admin: { badge: "revokeBadge", tone: "neutral", text: "actionRevoke" },
+};
 
 export default async function AdminPage({ params, searchParams }: PageProps<"/[locale]/admin">) {
   const { locale } = await params;
@@ -168,17 +183,12 @@ export default async function AdminPage({ params, searchParams }: PageProps<"/[l
               admin: action.adminEmail ?? t("unknownUser"),
               target: action.targetEmail ?? t("unknownUser"),
             };
+            const { badge, tone, text } = ACTION_LABELS[action.action];
             return (
               <div key={action.id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm">
                 <span className="flex items-center gap-2">
-                  <Badge tone={action.action === "delete_user" ? "ember" : "neutral"}>
-                    {action.action === "delete_user" ? t("deleteUser") : t("impersonate")}
-                  </Badge>
-                  <span className="text-smoke-200">
-                    {action.action === "delete_user"
-                      ? t("actionDelete", values)
-                      : t("actionImpersonate", values)}
-                  </span>
+                  <Badge tone={tone}>{t(badge)}</Badge>
+                  <span className="text-smoke-200">{t(text, values)}</span>
                 </span>
                 <span className="text-smoke-500">{dateTime(action.createdAt)}</span>
               </div>

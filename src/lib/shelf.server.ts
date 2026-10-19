@@ -1,7 +1,7 @@
 import { createClient } from "./supabase/server";
 import { type Concentration, type Perfume, type PerfumeNotes, type Shelf, type ShelfEntry } from "./perfumes";
 
-type PerfumeRow = {
+export type PerfumeRow = {
   id: string;
   brand: string;
   name: string;

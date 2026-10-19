@@ -17,7 +17,7 @@ Perfume collection site: users keep a collection (owned) and a wishlist, each pe
 ## Conventions
 
 - Every user-facing string goes in both `messages/en.json` and `messages/bg.json`. Bulgarian copy uses informal "ти" and gender-neutral phrasing.
-- Database changes go in a new file under `supabase/migrations/`; RLS must stay on for every table. The owner runs SQL in the Supabase SQL Editor.
+- Database changes go in a new file under `supabase/migrations/`; RLS must stay on for every table. The owner runs SQL in the Supabase SQL Editor: when a script is final, copy it to their clipboard (`pbcopy < file.sql`) and say whether to run it before or after merging.
 - Everything except admin support sign-in uses only the publishable key (`NEXT_PUBLIC_*`) and RLS. The secret key is read from the environment in `src/lib/supabase/admin.ts` only; never put it in code or a `NEXT_PUBLIC_` variable, and never ask for it in chat.
 - Without `.env.local` the site runs in preview mode (`isSupabaseConfigured` false): sample shelves, auth disabled.
 - Forms that use `useActionState` submit via `submitKeepingValues` so React doesn't clear fields on errors.
@@ -29,8 +29,9 @@ Perfume collection site: users keep a collection (owned) and a wishlist, each pe
 
 ## Admin panel and feedback
 
-- `/admin` (users, catalogue, feedback) is for rows in `public.admins`. Every `admin_*` SQL function checks `is_admin()` itself; page checks only decide what to render. Non-admins get a 404.
-- Make someone admin with a one-off SQL insert in the Supabase SQL Editor. Don't commit admin grants or other users' emails: the repo is public (the legal contact in `LEGAL_OWNER` is the one intentional exception).
+- `/admin` (users, catalogue, feedback, carousel, admins) is for rows in `public.admins`. Every `admin_*` SQL function checks `is_admin()` (or `is_owner()`) itself; page checks only decide what to render. Non-admins get a 404.
+- `admins.role` is `owner` or `admin`. Only owners add and remove admins (`/admin/admins`, by the email of a confirmed account); owners can't be removed, and no admin can be impersonated or deleted from the panel. Grants and removals go to `admin_audit_log`. The first owner was made with a one-off SQL insert. Don't commit admin grants or other users' emails: the repo is public (the legal contact in `LEGAL_OWNER` is the one intentional exception).
+- The homepage carousel is `showcase_perfumes`: catalogue perfumes with a Parfumo link and picture, 1 to 12, ordered at `/admin/showcase`. `SHOWCASE` in `src/lib/showcase.ts` is the fallback when there's no database.
 - "Sign in as user" uses `SUPABASE_SECRET_KEY` (server-only, set on Vercel by the Supabase integration, absent locally). It's refused for admins and yourself, logged in `admin_audit_log`, and shows a support-mode banner until sign-out. Sign-out is `scope: "local"` so it never logs the user out elsewhere.
 - Feedback goes through `submit_feedback` (rate-limited, honeypot in the form); the `feedback` table has RLS on and no policies.
 - In PL/pgSQL, don't put `case … then … end` inside an `if … then` condition: assign it to a variable first.
