@@ -48,4 +48,4 @@ Perfume collection site: users keep a collection (owned) and a wishlist, each pe
 1. `npm run typecheck`, `npm run lint`, `npm run test:db`, `npm run build` all pass.
 2. Read the whole diff once more for bugs, security (RLS, `is_admin()`/`is_owner()` in every `admin_*` function, auth checks in server actions) and leftovers: unused code, exports, texts or files.
 3. Check anything visible in the browser, phone width and both themes included.
-4. Update the docs in the same PR when behaviour changes: CLAUDE.md, the legal pages, `docs/`.
+4. Docs in the same PR, as in Conventions above: `docs/`, the legal pages, and CLAUDE.md when a decision or convention changes.
