@@ -72,7 +72,7 @@ export const privacy: Record<Locale, LegalDoc> = {
         heading: "6. Parfumo и Pazaruvaj",
         paragraphs: [
           "Когато добавиш линк към страница на парфюм в Parfumo, сървърът ни прочита от тази публична страница оценката, нотките и адреса на снимката на флакона и ги обновява най-много веднъж седмично. При това четене не изпращаме твои лични данни.",
-          "Снимките на флаконите се зареждат директно от сървърите на Parfumo (media.parfumo.com). Затова, когато разглеждаш карта със снимка, браузърът ти се свързва с Parfumo и те получават IP адреса ти и данни за браузъра, но не и коя страница от нашия сайт гледаш. Обработката на тези данни от Parfumo е по тяхната политика за поверителност: https://www.parfumo.com/Privacy_Policy",
+          "Снимките на флаконите се зареждат директно от сървърите на Parfumo (media.parfumo.com). Затова, когато разглеждаш карта със снимка или въртележката с парфюми на началната страница, браузърът ти се свързва с Parfumo и те получават IP адреса ти и данни за браузъра, но не и коя страница от нашия сайт гледаш. Обработката на тези данни от Parfumo е по тяхната политика за поверителност: https://www.parfumo.com/Privacy_Policy",
           "Бутоните „Parfumo“ и „Pazaruvaj“ отварят съответния сайт в нов раздел, където важат неговите правила. Докато не натиснеш бутона, на Pazaruvaj не се изпраща нищо.",
         ],
       },
@@ -174,7 +174,7 @@ export const privacy: Record<Locale, LegalDoc> = {
         heading: "6. Parfumo and Pazaruvaj",
         paragraphs: [
           "When you add a link to a perfume's page on Parfumo, our server reads that public page for the perfume's rating, notes and bottle image address, and refreshes them at most once a week. That reading doesn't send any of your personal data.",
-          "Bottle images load directly from Parfumo's servers (media.parfumo.com). So when you view a card with a picture, your browser connects to Parfumo, which receives your IP address and browser details, but not which page of our site you're on. Parfumo handles that data under its own privacy policy: https://www.parfumo.com/Privacy_Policy",
+          "Bottle images load directly from Parfumo's servers (media.parfumo.com). So when you view a card with a picture, or the perfume carousel on the home page, your browser connects to Parfumo, which receives your IP address and browser details, but not which page of our site you're on. Parfumo handles that data under its own privacy policy: https://www.parfumo.com/Privacy_Policy",
           "The “Parfumo” and “Pazaruvaj” buttons open those sites in a new tab, where their rules apply. Nothing is sent to Pazaruvaj until you press its button.",
         ],
       },

@@ -31,6 +31,10 @@
   --color-veil: rgb(255 255 255 / 0.05);
   --color-veil-soft: rgb(255 255 255 / 0.03);
 
+  /* Light backdrop for bottle photos (Parfumo's sit on white), slightly dimmed on dark */
+  --color-stage: #eef1ec;
+  --color-stage-edge: #d3dad4;
+
   --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
@@ -79,6 +83,9 @@
 
   --color-veil: rgb(31 38 34 / 0.05);
   --color-veil-soft: rgb(31 38 34 / 0.03);
+
+  --color-stage: #ffffff;
+  --color-stage-edge: #e6ebe5;
 }
 
 html {
@@ -198,6 +205,10 @@ body {
     border-radius: 1.25rem;
     background: linear-gradient(180deg, var(--color-ink-800), var(--color-ink-850));
     box-shadow: var(--card-shadow);
+  }
+
+  .stage {
+    background: radial-gradient(closest-side, var(--color-stage), var(--color-stage-edge));
   }
 
   .eyebrow {

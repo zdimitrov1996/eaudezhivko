@@ -20,7 +20,6 @@
     "ctaStart": "Start your collection",
     "ctaSignIn": "I already have an account",
     "ctaOpen": "Open my collection",
-    "previewLabel": "Example shelf",
     "featuresTitle": "Built for the way collectors think",
     "features": {
       "collection": {
@@ -40,7 +39,17 @@
         "body": "Compare a perfume's prices across Bulgarian online shops in one click, through Pazaruvaj."
       }
     },
-    "previewNote": "Example perfumes. Numbers are for illustration."
+    "showcase": {
+      "label": "Well-known perfumes",
+      "slide": "{index} of {count}",
+      "open": "{name} on Parfumo (opens in a new tab)",
+      "show": "Show {name}",
+      "previous": "Previous perfume",
+      "next": "Next perfume",
+      "pause": "Pause the carousel",
+      "play": "Play the carousel",
+      "credit": "Photos and details: Parfumo"
+    }
   },
   "Auth": {
     "signInTitle": "Welcome back",
