@@ -1,8 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { HeartIcon, ShelfIcon, StarIcon, TagIcon } from "@/components/icons";
-import { PerfumeCard } from "@/components/perfumes/PerfumeCard";
+import { PerfumeShowcase } from "@/components/home/PerfumeShowcase";
 import { Link } from "@/i18n/navigation";
-import { sampleShelf } from "@/lib/sample-shelf";
 import { getCurrentUser } from "@/lib/supabase/server";
 
 const FEATURES = [
@@ -20,7 +19,6 @@ export default async function HomePage({ params, searchParams }: PageProps<"/[lo
   const tAccount = await getTranslations("Account");
   const user = await getCurrentUser();
   const { deleted } = await searchParams;
-  const preview = sampleShelf("collection").slice(0, 2);
 
   return (
     <>
@@ -55,19 +53,13 @@ export default async function HomePage({ params, searchParams }: PageProps<"/[lo
           </div>
         </div>
 
-        <div aria-label={t("previewLabel")} role="group" className="relative">
+        {/* min-w-0: the slide track is eight slides wide and mustn't widen the grid column */}
+        <div className="relative min-w-0">
           <div
             aria-hidden="true"
             className="absolute inset-x-0 -inset-y-8 -z-10 rounded-[3rem] bg-[radial-gradient(closest-side,rgb(67_173_118/0.16),transparent)]"
           />
-          <p className="mb-3 text-xs text-smoke-500 sm:mr-12 sm:text-right">{t("previewNote")}</p>
-          <div className="grid gap-4">
-            {preview.map((entry, index) => (
-              <div key={entry.id} className={index === 1 ? "sm:ml-12" : "sm:mr-12"}>
-                <PerfumeCard entry={entry} readOnly />
-              </div>
-            ))}
-          </div>
+          <PerfumeShowcase />
         </div>
       </section>
 
