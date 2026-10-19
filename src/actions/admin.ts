@@ -6,6 +6,10 @@ import { cookies } from "next/headers";
 import { redirect } from "@/i18n/navigation";
 import { isAdmin, isOwner } from "@/lib/admin.server";
 import { SUPPORT_SESSION_COOKIE } from "@/lib/impersonation";
+import { fetchParfumoData, PARFUMO_REFRESH_DAYS } from "@/lib/parfumo.server";
+import { CONCENTRATIONS, normalizeParfumoUrl } from "@/lib/perfumes";
+import { SHOWCASE_MAX } from "@/lib/showcase";
+import { SHOWCASE_COLUMNS, type ShowcaseRow } from "@/lib/showcase.server";
 import { createAdminClient, isAdminApiConfigured } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -96,31 +100,89 @@ function revalidateShowcase() {
   revalidatePath("/[locale]/admin/showcase", "page");
 }
 
-/** `search` keeps the admin's catalogue search open after adding. */
-export async function addToShowcase(perfumeId: string, search: string) {
-  const locale = await getLocale();
-  if (!(await isAdmin())) return redirect({ href: "/", locale });
+/** `error` is a key into the Errors namespace. */
+export type ShowcaseFormState = { ok: true; at: number } | { ok: false; error: string } | undefined;
+
+/**
+ * Adds a carousel perfume, or edits one when the form has an id. Reads the
+ * picture and rating from the Parfumo page first: no picture, no slide.
+ */
+export async function saveShowcasePerfume(
+  _prev: ShowcaseFormState,
+  formData: FormData,
+): Promise<ShowcaseFormState> {
+  if (!(await isAdmin())) return { ok: false, error: "generic" };
+
+  const brand = String(formData.get("brand") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  if (!brand || !name) return { ok: false, error: "brandNameRequired" };
+  const concentration = String(formData.get("concentration") ?? "");
+  const parfumoUrl = normalizeParfumoUrl(formData.get("parfumoUrl"));
+  if (parfumoUrl === "invalid") return { ok: false, error: "invalidUrl" };
+  if (!parfumoUrl) return { ok: false, error: "linkRequired" };
+
+  const parfumo = await fetchParfumoData(parfumoUrl);
+  if (!parfumo) return { ok: false, error: "parfumoUnreachable" };
+  if (!parfumo.imageUrl) return { ok: false, error: "parfumoNoPicture" };
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_showcase_add", { p_perfume_id: perfumeId });
-  revalidateShowcase();
+  const { error } = await supabase.rpc("admin_showcase_save", {
+    p_id: String(formData.get("id") ?? "") || null,
+    p_brand: brand,
+    p_name: name,
+    p_concentration: (CONCENTRATIONS as readonly string[]).includes(concentration) ? concentration : null,
+    p_parfumo_url: parfumoUrl,
+    p_image_url: parfumo.imageUrl,
+    p_rating: parfumo.rating,
+  });
+  if (error) return { ok: false, error: error.code === "54000" ? "showcaseFull" : "generic" };
 
-  const query: Record<string, string> = search ? { q: search } : {};
-  if (error) {
-    query.error =
-      error.code === "54000" ? "showcaseFull" : error.code === "22023" ? "showcaseNeedsPicture" : "showcaseFailed";
-  } else {
-    query.notice = "showcaseAdded";
-  }
-  return redirect({ href: { pathname: "/admin/showcase", query }, locale });
+  revalidateShowcase();
+  return { ok: true, at: Date.now() };
 }
 
-export async function removeFromShowcase(perfumeId: string) {
+/**
+ * Called by the carousel page after it loads: re-reads Parfumo for slides not
+ * read in a week, keeping the old picture or rating if the page lacks one.
+ */
+export async function refreshShowcase(ids: string[]): Promise<number> {
+  if (!(await isAdmin())) return 0;
+
+  const supabase = await createClient();
+  const { data } = await supabase.from("showcase").select(SHOWCASE_COLUMNS).in("id", ids.slice(0, SHOWCASE_MAX));
+  const weekAgo = Date.now() - PARFUMO_REFRESH_DAYS * 24 * 60 * 60 * 1000;
+  const due = ((data ?? []) as ShowcaseRow[]).filter(
+    (row) => !row.parfumo_read_at || new Date(row.parfumo_read_at).getTime() < weekAgo,
+  );
+
+  const results = await Promise.all(
+    due.map(async (row) => {
+      const parfumo = await fetchParfumoData(row.parfumo_url);
+      if (!parfumo) return false;
+      const { error } = await supabase.rpc("admin_showcase_save", {
+        p_id: row.id,
+        p_brand: row.brand,
+        p_name: row.name,
+        p_concentration: row.concentration,
+        p_parfumo_url: row.parfumo_url,
+        p_image_url: parfumo.imageUrl ?? row.image_url,
+        p_rating: parfumo.rating ?? row.parfumo_rating,
+      });
+      return !error;
+    }),
+  );
+
+  const updated = results.filter(Boolean).length;
+  if (updated > 0) revalidateShowcase();
+  return updated;
+}
+
+export async function removeFromShowcase(id: string) {
   const locale = await getLocale();
   if (!(await isAdmin())) return redirect({ href: "/", locale });
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_showcase_remove", { p_perfume_id: perfumeId });
+  const { error } = await supabase.rpc("admin_showcase_remove", { p_id: id });
   revalidateShowcase();
 
   const query = error
@@ -130,11 +192,11 @@ export async function removeFromShowcase(perfumeId: string) {
 }
 
 /** Swaps the perfume with its neighbour: -1 earlier, 1 later. */
-export async function moveInShowcase(perfumeId: string, offset: -1 | 1) {
+export async function moveInShowcase(id: string, offset: -1 | 1) {
   if (!(await isAdmin())) return;
 
   const supabase = await createClient();
-  await supabase.rpc("admin_showcase_move", { p_perfume_id: perfumeId, p_offset: offset < 0 ? -1 : 1 });
+  await supabase.rpc("admin_showcase_move", { p_id: id, p_offset: offset < 0 ? -1 : 1 });
   revalidateShowcase();
 }
 

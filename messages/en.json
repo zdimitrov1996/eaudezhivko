@@ -101,7 +101,10 @@
     "feedbackTooLong": "Please keep it under 2000 characters.",
     "linkRequired": "Please paste a link to the perfume's Parfumo page.",
     "notYourPerfume": "You can only edit perfumes you added.",
-    "perfumeExists": "A perfume with this brand, name and concentration is already in the catalogue."
+    "perfumeExists": "A perfume with this brand, name and concentration is already in the catalogue.",
+    "parfumoUnreachable": "Couldn't open that Parfumo page. Check the link and try again.",
+    "parfumoNoPicture": "That Parfumo page has no bottle picture, and the carousel needs one.",
+    "showcaseFull": "The carousel is full. Remove a perfume first."
   },
   "Shelf": {
     "collectionTitle": "My collection",
@@ -298,17 +301,8 @@
     "removeFromShowcase": "Remove",
     "confirmRemoveShowcase": "Remove {name} from the carousel?",
     "showcaseAddTitle": "Add a perfume",
-    "showcaseAddHint": "Search the site's catalogue. Only perfumes with a Parfumo link and a picture can be added. If it isn't in the catalogue yet, add it to your collection with its Parfumo link first: the picture fills in by itself.",
-    "showcaseSearchLabel": "Search the catalogue",
-    "showcaseSearchPlaceholder": "Brand or name",
-    "showcaseAdd": "Add",
-    "showcaseInCarousel": "In the carousel",
-    "showcaseNoPicture": "No picture",
-    "showcaseNoResults": "No perfumes match your search.",
-    "showcaseAdded": "The perfume was added at the end of the carousel.",
     "showcaseRemoved": "The perfume was removed from the carousel.",
     "showcaseFull": "The carousel is full. Remove a perfume first.",
-    "showcaseNeedsPicture": "This perfume has no Parfumo link or picture.",
     "showcaseLast": "The carousel needs at least one perfume.",
     "showcaseFailed": "Couldn't change the carousel. Please try again.",
     "adminsTitle": "Admins",
@@ -343,9 +337,11 @@
     "rightsTitle": "Admin rights",
     "rightsOwner": "This is the site owner.",
     "rightsGrantHint": "They'll see every account and all feedback, can sign in to accounts in support mode, and can change the carousel.",
-    "showcaseResults": "Search results",
-    "showcaseSuggestions": "Newest perfumes with a picture",
-    "showcaseNoSuggestions": "There are no other perfumes with a picture in the catalogue yet."
+    "showcaseEditTitle": "Edit perfume",
+    "showcaseEdit": "Edit {name}",
+    "showcaseLinkHint": "The picture and rating are read from this page when you save.",
+    "showcaseSave": "Save",
+    "showcaseSaving": "Getting the picture…"
   },
   "Support": {
     "banner": "Support mode: you're signed in as {email}.",

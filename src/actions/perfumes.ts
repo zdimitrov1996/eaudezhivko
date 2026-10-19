@@ -5,6 +5,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import {
   CONCENTRATIONS,
+  NO_IMAGE_URL,
   normalizeParfumoUrl,
   type Concentration,
   type Perfume,
@@ -12,7 +13,6 @@ import {
 } from "@/lib/perfumes";
 import { fetchParfumoData, needsParfumoRefresh } from "@/lib/parfumo.server";
 import { PERFUME_COLUMNS, toPerfume } from "@/lib/shelf.server";
-import { NO_IMAGE_URL } from "@/lib/showcase";
 
 /** `error` is a key into the Errors namespace. */
 export type AddPerfumeState = { ok: true; at: number } | { ok: false; error: string } | undefined;

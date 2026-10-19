@@ -46,6 +46,9 @@ export type ShelfEntry = {
   perfume: Perfume;
 };
 
+/** Stored when Parfumo has no bottle picture, so the page isn't read again for one. */
+export const NO_IMAGE_URL = "https://parfumo.com/no-image";
+
 const PARFUMO_HOST = /^([a-z0-9-]+\.)?parfumo\.[a-z.]{2,6}$/;
 
 /**
