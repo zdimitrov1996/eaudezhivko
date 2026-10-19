@@ -1,15 +1,16 @@
 # Eau de Fragrances
 
-A site for perfume collectors: keep a **collection** of the bottles you own and a **wishlist** of what to buy next. Every perfume links to Parfumo and shows its Parfumo rating and notes, read automatically from the link. English and Bulgarian.
+A site for perfume collectors: keep a **collection** of the bottles you own and a **wishlist** of what to buy next. Every perfume links to Parfumo and shows its Parfumo rating, notes and bottle picture, read automatically from the link, plus a Pazaruvaj link to compare Bulgarian shop prices. English and Bulgarian.
 
-Domain (planned): **eaudefragrances.com**
+Live: https://eaudezhivko.vercel.app (deploys from `main`). Planned domain: **eaudefragrances.com**.
 
-## Stack
+## Documentation
 
-- [Next.js 16](https://nextjs.org) (App Router, Turbopack) + Tailwind CSS 4
-- [Supabase](https://supabase.com): email and Google sign-in, Postgres with Row Level Security
-- [next-intl](https://next-intl.dev): `/en` and `/bg` routes, texts in `messages/*.json`
-- Hosting: Vercel
+- **[docs/guide-bg.md](docs/guide-bg.md)** (Bulgarian): the owner's guide. What each page does, the admin panel, how changes and SQL scripts go live, where the data comes from.
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** (English): for developers. Stack, folders, data model, RLS and SQL functions, auth and roles, Parfumo reading, migrations and deploy.
+- **[docs/SETUP.md](docs/SETUP.md)** (Bulgarian): connecting Supabase and Google sign-in.
+
+Any PR that changes behaviour updates these documents in the same PR.
 
 ## Run locally
 
@@ -18,29 +19,14 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. Without Supabase settings the site runs in **preview mode** with example perfumes and sign-in switched off.
+Open http://localhost:3000. Without Supabase settings the site runs in **preview mode** with example perfumes and sign-in switched off. To connect the database, follow [docs/SETUP.md](docs/SETUP.md).
 
-To connect the database and turn on sign-in, follow **[docs/SETUP.md](docs/SETUP.md)** (in Bulgarian).
+Checks: `npm run typecheck`, `npm run lint`, `npm run test:db` (database rules on an in-memory Postgres), `npm run build`. GitHub runs them on every pull request.
 
-## Project layout
+## Stack
 
-| Path | What's there |
-| --- | --- |
-| `src/app/[locale]/` | Pages: home, collection, wishlist, login, signup, password reset, account, admin |
-| `src/app/auth/` | Supabase auth callbacks (Google, email links) |
-| `src/actions/` | Server actions for auth and shelves |
-| `src/components/` | UI: header, perfume cards, add-perfume dialog, auth forms |
-| `src/lib/` | Supabase clients, perfume types and link helpers |
-| `src/proxy.ts` | Locale routing + Supabase session refresh |
-| `messages/` | English and Bulgarian texts |
-| `supabase/migrations/` | Database schema, RLS policies and SQL functions (run in order) |
-| `docs/` | Setup guide and outreach drafts |
+Next.js 16 (App Router) + Tailwind CSS 4, Supabase (Postgres with Row Level Security, email and Google sign-in), next-intl (`/en`, `/bg`), hosted on Vercel.
 
-## Roadmap
+## Still to do
 
-1. ✅ Design, accounts (email + Google), collection, wishlist, Parfumo links
-2. ✅ Deployed on Vercel (https://eaudezhivko.vercel.app)
-3. ✅ Admin panel (users and their shelves, catalogue, support sign-in, account deletion, audit log) and a Feedback form
-4. Domain eaudefragrances.com, custom SMTP, privacy policy and terms
-5. ✅ Parfumo rating and notes read automatically; light/dark theme
-6. Best prices from Bulgarian shops
+- Domain eaudefragrances.com and custom SMTP for sign-in emails

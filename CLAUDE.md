@@ -16,6 +16,7 @@ Perfume collection site: users keep a collection (owned) and a wishlist, each pe
 
 ## Conventions
 
+- **Docs in the same PR:** any PR that changes behaviour (features, pages, admin powers, data flows, SQL functions, RLS, migrations, deploy steps) updates `docs/guide-bg.md` (owner's guide, Bulgarian) and `docs/ARCHITECTURE.md` (developers, English) in that same PR, and `README.md` if its summary or links change. Describe behaviour and names, not line numbers.
 - Every user-facing string goes in both `messages/en.json` and `messages/bg.json`. Bulgarian copy uses informal "ти" and gender-neutral phrasing.
 - Database changes go in a new file under `supabase/migrations/`; RLS must stay on for every table. The owner runs SQL in the Supabase SQL Editor: when a script is final, copy it to their clipboard with `LC_ALL=en_US.UTF-8 pbcopy < file.sql` and say whether to run it before or after merging. Without the UTF-8 locale pbcopy reads the file as Mac Roman and garbles letters like ô or ° (it happened once), so also keep data in SQL ASCII-only with `U&'...'` escapes.
 - Everything except admin support sign-in uses only the publishable key (`NEXT_PUBLIC_*`) and RLS. The secret key is read from the environment in `src/lib/supabase/admin.ts` only; never put it in code or a `NEXT_PUBLIC_` variable, and never ask for it in chat.
