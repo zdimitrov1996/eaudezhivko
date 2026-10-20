@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
-import { setFeedbackStatus } from "@/actions/admin";
+import { deleteFeedback, setFeedbackStatus } from "@/actions/admin";
 import { AdminShell, Badge } from "@/components/admin/AdminShell";
 import { SubmitButton } from "@/components/auth/FormBits";
+import { ConfirmSubmit } from "@/components/ConfirmSubmit";
 import { Link } from "@/i18n/navigation";
 import { getAdminFeedback, requireAdmin } from "@/lib/admin.server";
 
@@ -99,14 +100,18 @@ export default async function AdminFeedbackPage({ params }: PageProps<"/[locale]
                 )}
               </dl>
 
-              <form
-                action={setFeedbackStatus.bind(null, item.id, item.status === "new" ? "done" : "new")}
-                className="mt-4"
-              >
-                <SubmitButton className="btn btn-secondary btn-sm">
-                  {item.status === "new" ? t("markDone") : t("markNew")}
-                </SubmitButton>
-              </form>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <form action={setFeedbackStatus.bind(null, item.id, item.status === "new" ? "done" : "new")}>
+                  <SubmitButton className="btn btn-secondary btn-sm">
+                    {item.status === "new" ? t("markDone") : t("markNew")}
+                  </SubmitButton>
+                </form>
+                <form action={deleteFeedback.bind(null, item.id)}>
+                  <ConfirmSubmit message={t("confirmDeleteFeedback")} className="btn btn-ghost btn-sm text-ember-400">
+                    {t("deleteFeedback")}
+                  </ConfirmSubmit>
+                </form>
+              </div>
             </article>
           ))}
         </div>

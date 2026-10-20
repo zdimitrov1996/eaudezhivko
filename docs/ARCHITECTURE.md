@@ -43,7 +43,7 @@ src/
     auth.ts                sign in/up, Google, password reset, sign out, delete account
     perfumes.ts            search, add, move, rate, remove, edit, Parfumo link + refresh
     feedback.ts            submitFeedback
-    admin.ts               support sign-in, delete user, feedback status, carousel, admins
+    admin.ts               support sign-in, delete user, feedback status and deletion, carousel, admins
   components/              UI; perfumes/, auth/, admin/, home/ subfolders. Modal is the one dialog
                            shell; perfumes/ShelfPage serves both shelf pages
   content/legal.ts         Privacy, Terms, FAQ in both languages; LEGAL_OWNER
@@ -150,6 +150,7 @@ All are `security definer` with `set search_path = ''` unless noted. "Grant" is 
 | `admin_delete_user(user_id)` | authenticated | `is_admin()`; not yourself; not an admin | Logs `delete_user`, deletes from `auth.users` | `deleteUserAsAdmin` |
 | `admin_feedback()` | authenticated | `is_admin()` | Feedback with the sender's email; new first; 500 rows | `/admin/feedback` |
 | `admin_set_feedback_status(id, status)` | authenticated | `is_admin()` | Sets `new` or `done` | `setFeedbackStatus` |
+| `admin_delete_feedback(id)` | authenticated | `is_admin()` | Deletes the message for good; not logged | `deleteFeedback` |
 | `admin_list_admins()` | authenticated | `is_admin()` | Owners first, then admins by date added, with who added them | `/admin/admins`, owner's view of `/admin/users/[id]` |
 | `admin_grant_admin(email)` | authenticated | `is_owner()`; user exists; email confirmed; not already admin | Inserts role `admin`, logs `grant_admin` | `grantAdmin`, `grantAdminToUser` |
 | `admin_revoke_admin(user_id)` | authenticated | `is_owner()`; target is an admin; not an owner | Deletes the row, logs `revoke_admin` | `revokeAdmin` |
@@ -180,7 +181,7 @@ Error codes the app maps to messages: `42501` not authorized, `P0002` not found,
 - An admin is a row in `public.admins`; `role` is `owner` or `admin`.
 - `requireAdmin(locale, path)` in `lib/admin.server.ts` sends guests to login and calls `notFound()` for signed-in non-admins, so the panel looks like a 404. Admin pages set `robots: noindex`.
 - `isAdmin()` and `isOwner()` only decide what to render. The real check is inside every SQL function, so a missed page check can't leak data.
-- Admins: see all users, shelves, the catalogue and feedback; impersonate and delete non-admin users; mark feedback; edit the carousel.
+- Admins: see all users, shelves, the catalogue and feedback; impersonate and delete non-admin users; mark and delete feedback; edit the carousel.
 - Owners: everything an admin can, plus add admins (by the email of a confirmed account) and remove admins. Owners can't be removed from the panel, and the panel can't create owners.
 - The first owner was created with a one-off SQL insert. The showcase migration turned every admin that existed then into an owner.
 - Don't commit admin grants or other users' emails: the repository is public.
@@ -256,7 +257,7 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 ## 9. Feedback
 
-`FeedbackButton` is rendered by the locale layout on every page except `/admin/*`. The form sends category, message, the current path and (for guests only) an optional contact email; the server adds locale and user agent. A hidden `website` field is a honeypot: when filled, the action reports success and stores nothing. `submit_feedback` rate-limits and inserts. Admins read and mark it at `/admin/feedback`, and the overview tile counts `new` items.
+`FeedbackButton` is rendered by the locale layout on every page except `/admin/*`. The form sends category, message, the current path and (for guests only) an optional contact email; the server adds locale and user agent. A hidden `website` field is a honeypot: when filled, the action reports success and stores nothing. `submit_feedback` rate-limits and inserts. Admins read, mark and delete it ("Delete" asks for confirmation) at `/admin/feedback`, and the overview tile counts `new` items.
 
 ## 10. i18n, theming, preview mode
 
@@ -282,7 +283,7 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 | --- | --- |
 | Data collected: account, Google profile, shelves, catalogue `created_by`, feedback fields (`page`, `locale`, `user_agent`, `contact_email`) | Privacy §2 |
 | Processors: Supabase (EU, Frankfurt), Vercel, Google | Privacy §4 |
-| Admin powers: viewing users, shelves and feedback; support mode; deleting accounts; granting and removing admins; the audit log | Privacy §5, Terms §6, FAQ "Who can see my collection?" |
+| Admin powers: viewing users, shelves and feedback; deleting feedback; support mode; deleting accounts; granting and removing admins; the audit log | Privacy §5, Terms §6, FAQ "Who can see my collection?" |
 | Parfumo reading (rating, notes, image address; weekly), hotlinked images, Pazaruvaj links | Privacy §6, Terms §5, FAQ |
 | Cookies: Supabase session, `NEXT_LOCALE`, `edf_theme` (1 year), `edf_support_session` (4 hours) | Privacy §7 |
 | Account deletion and what survives it | Privacy §8 and §9, Terms §2, FAQ |
@@ -307,7 +308,7 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 Files in `supabase/migrations/` are run by hand in Supabase → SQL Editor, once each, in filename order. The repository has no Supabase CLI config and the database keeps no record of which files ran: each file's header names the one it must follow, and PR descriptions say when to run it.
 
-Production received them in this order, each before the code that needed it was merged (per the PR descriptions). Number 8 arrives with PR #14, number 9 with PR #16 and number 10 with the broken-links PR:
+Production received them in this order, each before the code that needed it was merged (per the PR descriptions). Number 8 arrives with PR #14, number 9 with PR #16, number 10 with PR #18 and number 11 with the feedback-deletion PR:
 
 | # | File | Introduced by | What it does |
 | --- | --- | --- | --- |
@@ -320,7 +321,8 @@ Production received them in this order, each before the code that needed it was 
 | 7 | `20261019120000_showcase_and_admins.sql` | PR #12 | `admins.role` and `added_by` (existing admins become owners), `is_owner`, audit actions `grant_admin`/`revoke_admin`, admin list/grant/revoke, the first carousel table (`showcase_perfumes`) and its 8-perfume seed |
 | 8 | `20261019160000_showcase_own_entries.sql` | PR #14 | `showcase` with its own brand, name, link, picture and rating; copies the existing slides; drops `showcase_perfumes` and its functions; `admin_showcase_save`, `admin_showcase_remove`, `admin_showcase_move`. Run right before merging PR #14 |
 | 9 | `20261019170000_parfumo_images_only.sql` | PR #16 | Clears any `perfumes.image_url` that isn't a Parfumo picture or the no-image marker (and its `ratings_updated_at`, so it's read again), then makes the column accept only those |
-| 10 | `20261020120000_missing_parfumo_links.sql` | broken Parfumo links PR | `remove_missing_parfumo_link`; queues every perfume with a link for a re-read, so broken links are found on the next shelf visit |
+| 10 | `20261020120000_missing_parfumo_links.sql` | PR #18 | `remove_missing_parfumo_link`; queues every perfume with a link for a re-read, so broken links are found on the next shelf visit |
+| 11 | `20261020140000_feedback_delete.sql` | feedback deletion PR | `admin_delete_feedback` |
 
 **Adding a migration:** create a new timestamped file, never edit an applied one. Keep RLS on for every new table; give admin functions an `is_admin()` or `is_owner()` check of their own; `revoke … from public, anon` and grant only what's needed. In PL/pgSQL, assign a `case … end` to a variable rather than putting it inside an `if` condition. Add checks for it to `supabase/tests/run.mjs`. When the script is final, copy it to the owner's clipboard (`pbcopy < file.sql`) and say in the PR whether to run it before or after merging (usually before, since new code reads new columns).
 
