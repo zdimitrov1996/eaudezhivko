@@ -11,7 +11,7 @@ import {
   type Perfume,
   type Shelf,
 } from "@/lib/perfumes";
-import { fetchParfumoData, needsParfumoRefresh } from "@/lib/parfumo.server";
+import { fetchParfumoData, needsParfumoRefresh, type ParfumoData } from "@/lib/parfumo.server";
 import { PERFUME_COLUMNS, toPerfume } from "@/lib/shelf.server";
 
 /** `error` is a key into the Errors namespace. */
@@ -60,17 +60,10 @@ function readPerfumeFields(formData: FormData): PerfumeFields | { ok: false; err
   return { brand, name, concentration, releaseYear };
 }
 
-/**
- * Reads the rating and notes from the perfume's Parfumo page and saves them.
- * Returns true when something was saved; failures leave the perfume as is.
- */
-async function syncParfumo(supabase: Supabase, perfume: Perfume) {
-  if (!perfume.parfumoUrl) return false;
-  const data = await fetchParfumoData(perfume.parfumoUrl);
-  if (!data) return false;
-
+/** Saves the rating, notes and picture read from a perfume's Parfumo page. */
+async function saveParfumoData(supabase: Supabase, perfumeId: string, data: ParfumoData) {
   const { error } = await supabase.rpc("set_parfumo_data", {
-    p_perfume_id: perfume.id,
+    p_perfume_id: perfumeId,
     p_rating: data.rating,
     // {} marks "checked, no notes listed" so we don't re-read it on every visit
     p_notes: data.notes ?? {},
@@ -80,12 +73,50 @@ async function syncParfumo(supabase: Supabase, perfume: Perfume) {
   return !error;
 }
 
-/** Reads Parfumo data for one perfume if it's missing or a week old. */
-async function syncParfumoIfDue(supabase: Supabase, perfumeId: string) {
+/**
+ * Reads the rating and notes from the perfume's Parfumo page and saves them.
+ * A link Parfumo has no perfume for is removed, with what was read from it.
+ * Returns true when something changed; other failures leave the perfume as is.
+ */
+async function syncParfumo(supabase: Supabase, perfume: Perfume) {
+  if (!perfume.parfumoUrl) return false;
+  const data = await fetchParfumoData(perfume.parfumoUrl);
+  if (!data) return false;
+  if (data !== "missing") return saveParfumoData(supabase, perfume.id, data);
+
+  const { error } = await supabase.rpc("remove_missing_parfumo_link", {
+    p_perfume_id: perfume.id,
+    p_parfumo_url: perfume.parfumoUrl,
+  });
+  if (error) console.error("remove_missing_parfumo_link failed", error);
+  return !error;
+}
+
+type NewLinkRead = { url: string; data: ParfumoData | null };
+
+/** Reads a link before it's saved: "missing" when Parfumo has no perfume there. */
+async function readNewParfumoLink(url: string | null): Promise<NewLinkRead | "missing" | undefined> {
+  if (!url) return undefined;
+  const data = await fetchParfumoData(url);
+  return data === "missing" ? "missing" : { url, data };
+}
+
+/**
+ * Reads Parfumo data for one perfume if it's missing or a week old. `read` is
+ * a new link's page, already fetched to check it, used if that link was saved.
+ */
+async function syncParfumoIfDue(supabase: Supabase, perfumeId: string, read?: NewLinkRead) {
   const { data } = await supabase.from("perfumes").select(PERFUME_COLUMNS).eq("id", perfumeId).maybeSingle();
   if (!data) return;
   const perfume = toPerfume(data);
-  if (needsParfumoRefresh(perfume)) await syncParfumo(supabase, perfume);
+  if (!needsParfumoRefresh(perfume)) return;
+
+  if (read && read.url === perfume.parfumoUrl) {
+    // If Parfumo didn't answer just now, the shelf tries again on a later visit
+    if (read.data) await saveParfumoData(supabase, perfume.id, read.data);
+  } else {
+    await syncParfumo(supabase, perfume);
+  }
 }
 
 /** Adds a Parfumo link to a perfume that has none (links already set stay). */
@@ -121,6 +152,8 @@ export async function addPerfume(
 
   const parfumoUrl = normalizeParfumoUrl(formData.get("parfumoUrl"));
   if (parfumoUrl === "invalid") return { ok: false, error: "invalidUrl" };
+  const read = await readNewParfumoLink(parfumoUrl);
+  if (read === "missing") return { ok: false, error: "parfumoNotFound" };
 
   const supabase = await createClient();
   let perfumeId = String(formData.get("perfumeId") ?? "");
@@ -165,7 +198,7 @@ export async function addPerfume(
     }
   }
 
-  await syncParfumoIfDue(supabase, perfumeId);
+  await syncParfumoIfDue(supabase, perfumeId, read);
 
   const { data: onShelf } = await supabase
     .from("user_perfumes")
@@ -230,10 +263,12 @@ export async function addParfumoLink(
   const parfumoUrl = normalizeParfumoUrl(formData.get("parfumoUrl"));
   if (parfumoUrl === "invalid") return { ok: false, error: "invalidUrl" };
   if (!parfumoUrl) return { ok: false, error: "linkRequired" };
+  const read = await readNewParfumoLink(parfumoUrl);
+  if (read === "missing") return { ok: false, error: "parfumoNotFound" };
 
   const supabase = await createClient();
   await fillParfumoLink(supabase, perfumeId, parfumoUrl);
-  await syncParfumoIfDue(supabase, perfumeId);
+  await syncParfumoIfDue(supabase, perfumeId, read);
 
   revalidateShelves();
   return { ok: true, at: Date.now() };
@@ -261,8 +296,8 @@ export async function refreshParfumoData(perfumeIds: string[]): Promise<number> 
 
 /**
  * Edits a catalogue perfume. Only the person who added it may (the database
- * enforces this too). A changed Parfumo link clears the old rating and notes
- * and reads the new page.
+ * enforces this too). A changed Parfumo link clears the old rating, notes and
+ * picture and reads the new page.
  */
 export async function updatePerfume(
   _prev: AddPerfumeState,
@@ -285,6 +320,9 @@ export async function updatePerfume(
   if (before.createdBy !== user.id) return { ok: false, error: "notYourPerfume" };
 
   const linkChanged = (before.parfumoUrl ?? null) !== (parfumoUrl ?? null);
+  const read = linkChanged ? await readNewParfumoLink(parfumoUrl) : undefined;
+  if (read === "missing") return { ok: false, error: "parfumoNotFound" };
+
   const { error } = await supabase
     .from("perfumes")
     .update({
@@ -294,12 +332,14 @@ export async function updatePerfume(
       release_year: fields.releaseYear,
       parfumo_url: parfumoUrl,
       // A different page means different data: read it again
-      ...(linkChanged ? { parfumo_rating: null, parfumo_notes: null, ratings_updated_at: null } : {}),
+      ...(linkChanged
+        ? { parfumo_rating: null, parfumo_notes: null, image_url: null, ratings_updated_at: null }
+        : {}),
     })
     .eq("id", perfumeId);
 
   if (error) return { ok: false, error: error.code === "23505" ? "perfumeExists" : "generic" };
-  if (linkChanged && parfumoUrl) await syncParfumoIfDue(supabase, perfumeId);
+  if (linkChanged && parfumoUrl) await syncParfumoIfDue(supabase, perfumeId, read);
 
   revalidateShelves();
   return { ok: true, at: Date.now() };

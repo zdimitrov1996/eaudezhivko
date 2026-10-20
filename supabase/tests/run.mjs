@@ -111,10 +111,22 @@ async function seedGarbledNames() {
   `);
 }
 
+// A perfume whose Parfumo page was read before broken links were looked for
+const BROKEN_LINK = "https://www.parfumo.com/Perfumes/Dior/sauvage";
+
+async function seedReadLink() {
+  await db.query(
+    `insert into public.perfumes (brand, name, parfumo_url, parfumo_rating, parfumo_notes, image_url, ratings_updated_at)
+     values ('Dior', 'Broken Link', $1, 5, '{}', $2, now())`,
+    [BROKEN_LINK, PARFUMO_IMAGE],
+  );
+}
+
 console.log("migrations");
 for (const file of readdirSync(MIGRATIONS).filter((name) => name.endsWith(".sql")).sort()) {
   if (file === "20261019120000_showcase_and_admins.sql") await seedBeforeRoles();
   if (file === "20261019170000_parfumo_images_only.sql") await seedGarbledNames();
+  if (file === "20261020120000_missing_parfumo_links.sql") await seedReadLink();
   try {
     await db.exec(readFileSync(new URL(file, MIGRATIONS), "utf8"));
     pass(file);
@@ -183,6 +195,22 @@ await allowed("set_parfumo_data takes the no-picture marker", "alice", "select p
   sauvage.id,
 ]);
 await refused("anon can't call set_parfumo_data", "anon", "select public.set_parfumo_data($1, 8, null, null)", [sauvage.id], "42501");
+
+console.log("\nParfumo links that lead to no perfume");
+const brokenRow = () => one("select * from public.perfumes where name = 'Broken Link'");
+const broken = await brokenRow();
+expect("saved links are read again on the next visit", broken.ratings_updated_at === null, broken);
+const removeLink = "select public.remove_missing_parfumo_link($1, $2)";
+await refused("anon can't remove a link", "anon", removeLink, [broken.id, BROKEN_LINK], "42501");
+await allowed("removing a link the perfume no longer has", "alice", removeLink, [broken.id, "https://www.parfumo.com/Perfumes/Dior/other"]);
+expect("leaves the current link alone", (await brokenRow()).parfumo_url === BROKEN_LINK);
+await allowed("a signed-in user's visit removes the broken link", "alice", removeLink, [broken.id, BROKEN_LINK]);
+const removed = await brokenRow();
+expect(
+  "the link and the rating, notes and picture read from it are gone",
+  removed.parfumo_url === null && removed.parfumo_rating === null && removed.parfumo_notes === null && removed.image_url === null,
+  removed,
+);
 
 console.log("\nfeedback");
 await allowed("anon sends feedback", "anon", "select public.submit_feedback('idea', 'Hello there')");

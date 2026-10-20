@@ -135,7 +135,8 @@ All are `security definer` with `set search_path = ''` unless noted. "Grant" is 
 | --- | --- | --- | --- | --- |
 | `search_perfumes(q)` | anon, authenticated | none (security invoker; RLS applies) | Every word of `q` (≥ 2 chars) must appear in "brand name"; ordered by trigram similarity; 10 rows | Add dialog, admin carousel search |
 | `fill_perfume_links(id, fragrantica, parfumo)` | authenticated | signed in | Sets a link only where it is null; never overwrites | `addPerfume`, `addParfumoLink` |
-| `set_parfumo_data(id, rating, notes, image_url)` | authenticated | signed in; rating 0–10 | Saves what was read from Parfumo. A null argument keeps the old value; always sets `ratings_updated_at = now()` | `syncParfumo` in `actions/perfumes.ts` |
+| `set_parfumo_data(id, rating, notes, image_url)` | authenticated | signed in; rating 0–10 | Saves what was read from Parfumo. A null argument keeps the old value; always sets `ratings_updated_at = now()` | `saveParfumoData` in `actions/perfumes.ts` |
+| `remove_missing_parfumo_link(id, parfumo_url)` | authenticated | signed in; only while the perfume still has that link | Clears `parfumo_url`, rating, notes and picture of a link Parfumo has no perfume for; stamps `ratings_updated_at/_by`. Like `set_parfumo_data`, any signed-in user could call it directly; the damage is a link anyone can add again | `syncParfumo` |
 | `delete_my_account()` | authenticated | signed in | Deletes the caller from `auth.users`; shelves cascade | `deleteAccount` |
 | `submit_feedback(…)` | anon, authenticated | rate limit: 5 per 10 min per user, 20 per 10 min for all guests together (`hint = 'rate_limited'`) | Inserts a feedback row, trimming and truncating fields | `submitFeedback` |
 | `is_admin()` | authenticated | | True when the caller has an `admins` row | `isAdmin()`, every `admin_*` function |
@@ -201,10 +202,11 @@ Error codes the app maps to messages: `42501` not authorized, `P0002` not found,
 
 **Fetching** (`fetchParfumoData`):
 
-- URLs are normalised by `normalizeParfumoUrl`: http or https (rewritten to https), host must be `parfumo.<tld>` or a subdomain, hash dropped. The same check validates links users paste.
+- URLs are normalised by `normalizeParfumoUrl`: http or https (rewritten to https), host must be `parfumo.<tld>` or a subdomain, the path must be a perfume's own page (`/Perfumes/<brand>/<perfume>`, or `/Parfums/…` on parfumo.de; a trailing `/` is dropped, since Parfumo answers it with a 404), hash dropped. The same check validates links users paste.
 - Own User-Agent `EauDeFragrances/1.0 (+https://eaudezhivko.vercel.app)`, 6 s timeout, `cache: "no-store"`.
 - Redirects are followed by hand (at most 2), and each hop must stay on Parfumo.
-- Returns null on any failure, or when the page yields no rating, notes or image.
+- Returns **`"missing"`** when Parfumo has no perfume at the address: the link (or a redirect) isn't a perfume page, a 404/410, or the page Parfumo shows for an unknown perfume under a real brand (e.g. `/Perfumes/Dior/sauvage`). That page has an empty perfume name in its `<h1 itemprop="name">` and shows a random perfume, a different one on every visit; `isMissingPerfumePage` only counts a heading it finds empty, so a markup change can't make good links look missing.
+- Returns null on any other failure, when the page yields no rating, notes or image, or when the bottle picture's file name doesn't contain the link's brand (`pictureMatchesBrand`). Parfumo sometimes serves a real perfume page with another perfume's picture, notes and rating (seen on 2026-10-20 from a network it seems to take for a robot; the title stays right). Picture names end with the brand (`…-sauvage-eau-de-toilette-dior_1200.jpg`), so a mismatch marks the whole page as untrustworthy and nothing is saved. Don't try to get around that treatment (other User-Agents, proxies): it's Parfumo's call.
 
 **Parsing:**
 
@@ -212,13 +214,15 @@ Error codes the app maps to messages: `42501` not authorized, `P0002` not found,
 - Notes: elements with `data-nt` = `t` (top), `m` (heart), `b` (base), `n` (flat list). Note names only (Parfumo's note images aren't used), de-duplicated, at most 30 per layer.
 - Image: the main bottle image (`p-main-img` or `itemprop="image"`), else a Parfumo CDN `/perfumes/` image, else `og:image` / `twitter:image`. The host must end in `parfumo.<tld>`; the URL is forced to https. The database itself accepts only a Parfumo-hosted picture or the no-image marker in `perfumes.image_url`, because signed-in users can write that column (on entries they created, and through `set_parfumo_data` on any entry).
 
-**Saving** (`syncParfumo` in `actions/perfumes.ts`) calls `set_parfumo_data` with:
+**Saving** (`syncParfumo` in `actions/perfumes.ts`; `saveParfumoData` does the write) calls `set_parfumo_data` with:
 
 - the rating, or null (keeps the old one);
 - the notes, or `{}` when none were found, meaning "read, nothing listed";
 - the image URL, or **`NO_IMAGE_URL`** (`https://parfumo.com/no-image`) when the page has no picture.
 
 The no-image marker exists so a perfume without a Parfumo picture isn't re-read on every visit. Everything that shows a picture treats the marker as "no picture": cards show the brand's initial, and the carousel table refuses it. A later read that finds no picture or no notes stores the marker or `{}` in place of what was there.
+
+**Links that lead to no perfume:** a new link is read before it's saved (`readNewParfumoLink`), in `addPerfume`, `addParfumoLink` and `updatePerfume` (when the link changes). `"missing"` refuses it with the `parfumoNotFound` error; otherwise what was read is handed to `syncParfumoIfDue`, so the page isn't fetched twice. When a later read of a saved link returns `"missing"`, `syncParfumo` calls `remove_missing_parfumo_link`, which clears the link with its rating, notes and picture; the card then offers "Add Parfumo link" again and its Parfumo button searches by name.
 
 **When it's read:**
 
@@ -228,7 +232,7 @@ The no-image marker exists so a perfume without a Parfumo picture isn't re-read 
 
 There is no cron: a perfume is re-read only when someone opens a shelf that holds it and its data is due.
 
-**Editing:** only the creator can edit a catalogue perfume (RLS update policy, and `updatePerfume` checks `created_by` too). When the Parfumo link changes, rating, notes and `ratings_updated_at` are cleared and the new page is read. `image_url` isn't cleared; a successful read of the new page replaces it.
+**Editing:** only the creator can edit a catalogue perfume (RLS update policy, and `updatePerfume` checks `created_by` too). When the Parfumo link changes, the new link is checked first (see above), then rating, notes, `image_url` and `ratings_updated_at` are cleared and the new page's data is saved.
 
 **Images are hotlinked** from media.parfumo.com with `referrerPolicy="no-referrer"`; nothing is proxied or stored. Visitors' browsers therefore contact Parfumo, which the Privacy policy states. If that changes, update the legal pages (section 11).
 
@@ -244,8 +248,8 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 - **Home page:** reads `showcase` ordered by `position`. When Supabase isn't configured, the read fails, or the table is empty, it shows `SHOWCASE` from `lib/showcase.ts`: eight built-in perfumes with Parfumo links and CDN images.
 - **Admin page `/admin/showcase`:** lists the slides with picture, concentration and rating. "Add perfume" opens a dialog with brand, name, concentration (optional) and Parfumo link (required); the pencil on a row opens the same dialog filled in. Arrows swap a slide with its neighbour; "Remove" asks first. "Add" is disabled at 12 slides and "Remove" at 1.
-- **Saving** (add or edit): the server validates the link, reads the Parfumo page (section 6), and refuses the save when the page can't be read or has no bottle picture, each with its own message. Otherwise it calls `admin_showcase_save` with the picture and rating it read, so every save re-reads the page, whether or not the link changed.
-- **Weekly refresh:** opening the admin page hands every slide to the refresher, and the server re-reads those not read for `PARFUMO_REFRESH_DAYS` (7) days. If the page now lacks a picture or rating, the old one is kept; if it can't be read, the slide is left as is. Visitors to the home page never trigger a read.
+- **Saving** (add or edit): the server validates the link, reads the Parfumo page (section 6), and refuses the save when Parfumo has no perfume at the link, when the page can't be read, or when it has no bottle picture, each with its own message. Otherwise it calls `admin_showcase_save` with the picture and rating it read, so every save re-reads the page, whether or not the link changed.
+- **Weekly refresh:** opening the admin page hands every slide to the refresher, and the server re-reads those not read for `PARFUMO_REFRESH_DAYS` (7) days. If the page now lacks a picture or rating, the old one is kept; if it can't be read or Parfumo no longer has the perfume, the slide is left as is. Visitors to the home page never trigger a read.
 - **Limits:** 1 to `SHOWCASE_MAX` (12). The SQL functions enforce both ends. The table's checks accept only Parfumo links and Parfumo-hosted pictures, and never the no-image marker.
 - **History:** PR #12 started the carousel as `showcase_perfumes`, a list of catalogue perfumes seeded with the same eight. PR #14 copied those slides into `showcase` and dropped the old table and its functions. The eight perfumes that seed added to the catalogue (with `created_by = null`, so nobody can edit them in the app) are still there.
 - **`PerfumeShowcase`** (client): scroll-snap track, autoplay every 5 s that pauses on hover and focus, respects `prefers-reduced-motion`, pause/play, arrows, thumbnails. Each slide links to its Parfumo page and the credit line names Parfumo. Changes in the admin page revalidate the home page.
@@ -303,7 +307,7 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 Files in `supabase/migrations/` are run by hand in Supabase → SQL Editor, once each, in filename order. The repository has no Supabase CLI config and the database keeps no record of which files ran: each file's header names the one it must follow, and PR descriptions say when to run it.
 
-Production received them in this order, each before the code that needed it was merged (per the PR descriptions). Number 8 arrives with PR #14 and number 9 with PR #16:
+Production received them in this order, each before the code that needed it was merged (per the PR descriptions). Number 8 arrives with PR #14, number 9 with PR #16 and number 10 with the broken-links PR:
 
 | # | File | Introduced by | What it does |
 | --- | --- | --- | --- |
@@ -316,6 +320,7 @@ Production received them in this order, each before the code that needed it was 
 | 7 | `20261019120000_showcase_and_admins.sql` | PR #12 | `admins.role` and `added_by` (existing admins become owners), `is_owner`, audit actions `grant_admin`/`revoke_admin`, admin list/grant/revoke, the first carousel table (`showcase_perfumes`) and its 8-perfume seed |
 | 8 | `20261019160000_showcase_own_entries.sql` | PR #14 | `showcase` with its own brand, name, link, picture and rating; copies the existing slides; drops `showcase_perfumes` and its functions; `admin_showcase_save`, `admin_showcase_remove`, `admin_showcase_move`. Run right before merging PR #14 |
 | 9 | `20261019170000_parfumo_images_only.sql` | PR #16 | Clears any `perfumes.image_url` that isn't a Parfumo picture or the no-image marker (and its `ratings_updated_at`, so it's read again), then makes the column accept only those |
+| 10 | `20261020120000_missing_parfumo_links.sql` | broken Parfumo links PR | `remove_missing_parfumo_link`; queues every perfume with a link for a re-read, so broken links are found on the next shelf visit |
 
 **Adding a migration:** create a new timestamped file, never edit an applied one. Keep RLS on for every new table; give admin functions an `is_admin()` or `is_owner()` check of their own; `revoke … from public, anon` and grant only what's needed. In PL/pgSQL, assign a `case … end` to a variable rather than putting it inside an `if` condition. Add checks for it to `supabase/tests/run.mjs`. When the script is final, copy it to the owner's clipboard (`pbcopy < file.sql`) and say in the PR whether to run it before or after merging (usually before, since new code reads new columns).
 

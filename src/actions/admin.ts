@@ -123,6 +123,7 @@ export async function saveShowcasePerfume(
   if (!parfumoUrl) return { ok: false, error: "linkRequired" };
 
   const parfumo = await fetchParfumoData(parfumoUrl);
+  if (parfumo === "missing") return { ok: false, error: "parfumoNotFound" };
   if (!parfumo) return { ok: false, error: "parfumoUnreachable" };
   if (!parfumo.imageUrl) return { ok: false, error: "parfumoNoPicture" };
 
@@ -159,7 +160,8 @@ export async function refreshShowcase(ids: string[]): Promise<number> {
   const results = await Promise.all(
     due.map(async (row) => {
       const parfumo = await fetchParfumoData(row.parfumo_url);
-      if (!parfumo) return false;
+      // A slide whose page Parfumo no longer has keeps its picture and rating
+      if (!parfumo || parfumo === "missing") return false;
       const { error } = await supabase.rpc("admin_showcase_save", {
         p_id: row.id,
         p_brand: row.brand,
