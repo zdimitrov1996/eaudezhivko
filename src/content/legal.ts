@@ -36,7 +36,7 @@ export const privacy: Record<Locale, LegalDoc> = {
         list: [
           "Профил: имейл адрес и парола. Паролата се пази само в криптиран вид (hash) от доставчика ни за вход Supabase и не я виждаме.",
           "Вход с Google: ако влизаш с Google, получаваме имейла ти и основните данни от профила в Google (име и снимка), които Google ни предоставя.",
-          "Колекция и списък с желани: парфюмите, които добавяш, личната ти оценка за тях и датите на добавяне.",
+          "Колекция, списък с желани и изпръскани флакони: парфюмите, които добавяш, личната ти оценка за тях, колко е пълен всеки флакон и датите на добавяне.",
           "Общ каталог: парфюмите, които добавяш, стават част от общия каталог и се виждат от други потребители. Пазим кой ги е добавил, но не го показваме публично.",
           "Обратна връзка: съобщението, категорията, страницата, от която е изпратено, езикът и данни за браузъра (user agent). Ако пишеш без профил, по желание и имейл за отговор.",
           "Технически данни: доставчиците на хостинг и база данни (Vercel и Supabase) водят технически логове, например IP адрес и час на заявката, за сигурност и работа на услугата.",
@@ -139,7 +139,7 @@ export const privacy: Record<Locale, LegalDoc> = {
         list: [
           "Account: your email address and password. The password is stored only in encrypted (hashed) form by our sign-in provider Supabase; we can't see it.",
           "Google sign-in: if you sign in with Google, we receive your email and the basic profile details Google shares (name and picture).",
-          "Collection and wishlist: the perfumes you add, your personal rating of them and when you added them.",
+          "Collection, wishlist and finished bottles: the perfumes you add, your personal rating of them, how full each bottle is and when you added them.",
           "Shared catalogue: perfumes you add become part of the shared catalogue that other users see. We keep who added them but don't show it publicly.",
           "Feedback: your message, its category, the page it was sent from, the language and your browser details (user agent). If you aren't signed in, optionally an email for our reply.",
           "Technical data: our hosting and database providers (Vercel and Supabase) keep technical logs, such as IP address and request time, for security and to run the service.",
@@ -401,6 +401,10 @@ export const faq: Record<Locale, Faq> = {
         a: "Твоята лична оценка от 1 до 10. Не се показва на други потребители.",
       },
       {
+        q: "Какво е „Изпръскани“?",
+        a: "Във всяка карта от колекцията можеш да отбележиш колко е пълен флаконът (от 100% до 10%). Когато избереш 0%, парфюмът отива в раздела „Изпръскани“. Оттам можеш да го върнеш в колекцията или да го преместиш в желани, ако искаш да си го купиш пак.",
+      },
+      {
         q: "Кой вижда колекцията ми?",
         a: "Само ти. Администраторите на сайта могат да я видят при поддръжка. Повече за това има в Политиката за поверителност.",
       },
@@ -448,6 +452,10 @@ export const faq: Record<Locale, Faq> = {
         a: "Collection is what you own; Wishlist is what you want to buy or try. When you buy something from your wishlist, press “I bought it” to move it to your collection.",
       },
       { q: "What is “Your rating”?", a: "Your personal score from 1 to 10. Other users don't see it." },
+      {
+        q: "What is “Finished”?",
+        a: "On each card in your collection you can mark how full the bottle is (100% down to 10%). Choose 0% and the perfume moves to Finished. From there you can move it back to your collection, or to your wishlist if you want to buy it again.",
+      },
       {
         q: "Who can see my collection?",
         a: "Only you. The site's administrators can see it when providing support; see the Privacy policy for details.",

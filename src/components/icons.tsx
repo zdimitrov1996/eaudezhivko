@@ -32,6 +32,12 @@ export const HeartIcon = (p: SVGProps<SVGSVGElement>) => (
   </Icon>
 );
 
+export const DropIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Icon {...p}>
+    <path d="M12 21.5a6.5 6.5 0 0 0 6.5-6.5c0-1.9-.9-3.6-2.8-5.2C13.9 8.3 12.6 6.2 12 3.5c-.6 2.7-1.9 4.8-3.7 6.3C6.4 11.4 5.5 13.1 5.5 15a6.5 6.5 0 0 0 6.5 6.5z" />
+  </Icon>
+);
+
 export const UserIcon = (p: SVGProps<SVGSVGElement>) => (
   <Icon {...p}>
     <circle cx="12" cy="8" r="4" />

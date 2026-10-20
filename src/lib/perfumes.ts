@@ -11,7 +11,11 @@ export const CONCENTRATIONS = [
 ] as const;
 
 export type Concentration = (typeof CONCENTRATIONS)[number];
-export type Shelf = "collection" | "wishlist";
+/** "finished": bottles from the collection that reached 0% */
+export type Shelf = "collection" | "wishlist" | "finished";
+
+/** How full a collection bottle can be marked, in %; 0 moves it to "finished". */
+export const FILL_LEVELS = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0] as const;
 
 /** Note pyramid from Parfumo; "notes" is for perfumes listed without a pyramid. */
 export type PerfumeNotes = {
@@ -43,6 +47,8 @@ export type ShelfEntry = {
   id: string;
   shelf: Shelf;
   rating: number | null;
+  /** % left in the bottle, collection only; null when not set */
+  fillLevel: number | null;
   perfume: Perfume;
 };
 

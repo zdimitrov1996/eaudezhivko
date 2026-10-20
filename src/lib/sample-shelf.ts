@@ -5,6 +5,7 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
   {
     id: "sample-1",
     rating: 9,
+    fillLevel: 80,
     perfume: {
       id: "p1",
       brand: "Tom Ford",
@@ -22,6 +23,7 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
   {
     id: "sample-2",
     rating: 8,
+    fillLevel: 40,
     perfume: {
       id: "p2",
       brand: "Dior",
@@ -38,7 +40,8 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
   },
   {
     id: "sample-3",
-    rating: null,
+    rating: 7,
+    fillLevel: null,
     perfume: {
       id: "p3",
       brand: "Le Labo",
@@ -56,6 +59,7 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
   {
     id: "sample-4",
     rating: null,
+    fillLevel: null,
     perfume: {
       id: "p4",
       brand: "Maison Francis Kurkdjian",
@@ -73,6 +77,7 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
   {
     id: "sample-5",
     rating: null,
+    fillLevel: null,
     perfume: {
       id: "p5",
       brand: "Creed",
@@ -90,10 +95,11 @@ const SAMPLES: Omit<ShelfEntry, "shelf">[] = [
 ];
 
 export function sampleShelf(shelf: Shelf): ShelfEntry[] {
-  const picked = shelf === "collection" ? SAMPLES.slice(0, 3) : SAMPLES.slice(3);
+  const picked = { collection: SAMPLES.slice(0, 2), finished: SAMPLES.slice(2, 3), wishlist: SAMPLES.slice(3) }[shelf];
   return picked.map((entry) => ({
     ...entry,
     shelf,
-    rating: shelf === "collection" ? entry.rating : null,
+    rating: shelf === "wishlist" ? null : entry.rating,
+    fillLevel: shelf === "collection" ? entry.fillLevel : null,
   }));
 }

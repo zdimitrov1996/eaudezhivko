@@ -68,6 +68,7 @@ export default async function AdminUserPage({
   const email = user.email ?? user.id;
   const collection = entries.filter((entry) => entry.shelf === "collection");
   const wishlist = entries.filter((entry) => entry.shelf === "wishlist");
+  const finished = entries.filter((entry) => entry.shelf === "finished");
 
   const shelfTable = (rows: AdminShelfEntry[]) => {
     if (rows.length === 0) {
@@ -208,6 +209,11 @@ export default async function AdminUserPage({
         {t("wishlistTitle", { count: wishlist.length })}
       </h3>
       {shelfTable(wishlist)}
+
+      <h3 className="mt-10 mb-4 font-serif text-2xl font-semibold">
+        {t("finishedTitle", { count: finished.length })}
+      </h3>
+      {shelfTable(finished)}
     </AdminShell>
   );
 }

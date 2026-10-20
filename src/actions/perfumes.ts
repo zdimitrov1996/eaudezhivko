@@ -5,6 +5,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import {
   CONCENTRATIONS,
+  FILL_LEVELS,
   NO_IMAGE_URL,
   normalizeParfumoUrl,
   type Concentration,
@@ -20,9 +21,11 @@ export type AddPerfumeState = { ok: true; at: number } | { ok: false; error: str
 function revalidateShelves() {
   revalidatePath("/[locale]/collection", "page");
   revalidatePath("/[locale]/wishlist", "page");
+  revalidatePath("/[locale]/finished", "page");
 }
 
-function parseShelf(value: unknown): Shelf {
+/** Shelves a perfume can be added or moved to; "finished" is reached by marking a bottle 0%. */
+function parseShelf(value: unknown): "collection" | "wishlist" {
   return value === "wishlist" ? "wishlist" : "collection";
 }
 
@@ -207,10 +210,12 @@ export async function addPerfume(
     .maybeSingle();
 
   if (onShelf) {
-    return {
-      ok: false,
-      error: onShelf.shelf === "collection" ? "alreadyInCollection" : "alreadyInWishlist",
+    const errors: Record<Shelf, string> = {
+      collection: "alreadyInCollection",
+      wishlist: "alreadyInWishlist",
+      finished: "alreadyFinished",
     };
+    return { ok: false, error: errors[onShelf.shelf as Shelf] ?? "generic" };
   }
 
   const { error } = await supabase
@@ -222,13 +227,28 @@ export async function addPerfume(
   return { ok: true, at: Date.now() };
 }
 
+/** Moves a perfume to the collection or wishlist; how full the bottle was is cleared. */
 export async function moveEntry(entryId: string, shelf: Shelf) {
   if (!isSupabaseConfigured) return;
   const supabase = await createClient();
   await supabase
     .from("user_perfumes")
-    .update({ shelf: parseShelf(shelf) })
+    .update({ shelf: parseShelf(shelf), fill_level: null })
     .eq("id", entryId);
+  revalidateShelves();
+}
+
+/** How full a collection bottle is (null: not set); 0 moves it to the finished shelf. */
+export async function setFillLevel(entryId: string, level: number | null) {
+  if (!isSupabaseConfigured) return;
+  if (level !== null && !(FILL_LEVELS as readonly number[]).includes(level)) return;
+
+  const supabase = await createClient();
+  await supabase
+    .from("user_perfumes")
+    .update(level === 0 ? { fill_level: 0, shelf: "finished" } : { fill_level: level })
+    .eq("id", entryId)
+    .eq("shelf", "collection");
   revalidateShelves();
 }
 

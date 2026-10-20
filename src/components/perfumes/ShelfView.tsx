@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { refreshParfumoData } from "@/actions/perfumes";
 import { needsParfumoRefresh } from "@/lib/parfumo.server";
 import type { Shelf, ShelfEntry } from "@/lib/perfumes";
-import { HeartIcon, ShelfIcon } from "../icons";
+import { DropIcon, HeartIcon, ShelfIcon } from "../icons";
 import { AddPerfumeDialog } from "./AddPerfumeDialog";
 import { PerfumeCard } from "./PerfumeCard";
 import { RatingsRefresher } from "./RatingsRefresher";
@@ -20,22 +20,17 @@ export async function ShelfView({
   currentUserId?: string | null;
 }) {
   const t = await getTranslations("Shelf");
-  const isCollection = shelf === "collection";
+  const EmptyIcon = { collection: ShelfIcon, wishlist: HeartIcon, finished: DropIcon }[shelf];
 
   return (
     <section className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 sm:pt-14">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-serif text-4xl font-semibold sm:text-5xl">
-            {isCollection ? t("collectionTitle") : t("wishlistTitle")}
-          </h1>
-          <p className="mt-2 text-smoke-400">
-            {isCollection
-              ? t("collectionSubtitle", { count: entries.length })
-              : t("wishlistSubtitle", { count: entries.length })}
-          </p>
+          <h1 className="font-serif text-4xl font-semibold sm:text-5xl">{t(`${shelf}Title`)}</h1>
+          <p className="mt-2 text-smoke-400">{t(`${shelf}Subtitle`, { count: entries.length })}</p>
         </div>
-        <AddPerfumeDialog shelf={shelf} />
+        {/* Bottles get to "finished" from the collection, by marking them 0% */}
+        {shelf !== "finished" && <AddPerfumeDialog shelf={shelf} />}
       </div>
 
       {!demo && (
@@ -65,14 +60,10 @@ export async function ShelfView({
       ) : (
         <div className="card mt-8 flex flex-col items-center px-6 py-16 text-center">
           <div className="grid h-14 w-14 place-items-center rounded-2xl bg-moss-900 text-moss-300">
-            {isCollection ? <ShelfIcon width="26" height="26" /> : <HeartIcon width="26" height="26" />}
+            <EmptyIcon width="26" height="26" />
           </div>
-          <h2 className="mt-5 font-serif text-3xl font-semibold">
-            {isCollection ? t("emptyCollectionTitle") : t("emptyWishlistTitle")}
-          </h2>
-          <p className="mt-2 max-w-md text-smoke-400">
-            {isCollection ? t("emptyCollectionBody") : t("emptyWishlistBody")}
-          </p>
+          <h2 className="mt-5 font-serif text-3xl font-semibold">{t(`empty.${shelf}.title`)}</h2>
+          <p className="mt-2 max-w-md text-smoke-400">{t(`empty.${shelf}.body`)}</p>
         </div>
       )}
     </section>
