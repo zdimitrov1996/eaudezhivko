@@ -3,7 +3,8 @@ import { normalizeParfumoUrl, type PerfumeNotes } from "./perfumes";
 // Parfumo's robots.txt allows perfume pages. Each page carries its score as
 // schema.org AggregateRating markup and lists the note pyramid. We read a page
 // when its link is saved and refresh it at most weekly. Note images belong to
-// Parfumo, so we keep the note names only.
+// Parfumo, so we keep the note names only. A link Parfumo has no perfume for
+// is refused when it's saved, and removed if a later read finds it gone.
 
 const USER_AGENT = "EauDeFragrances/1.0 (+https://eaudezhivko.vercel.app)";
 const TIMEOUT_MS = 6000;
@@ -106,13 +107,56 @@ function parseParfumoImage(html: string): string | null {
   }
 }
 
-/** Fetches a Parfumo perfume page; null on any failure. */
-export async function fetchParfumoData(url: string): Promise<ParfumoData | null> {
+/**
+ * Parfumo answers an address with an unknown perfume under a real brand with a
+ * page that has an empty perfume name and shows a random perfume, a different
+ * one on every visit. Only a name heading found empty counts, so a change in
+ * their markup can't make good links look broken.
+ */
+function isMissingPerfumePage(html: string) {
+  const name = html.match(/<h1[^>]*itemprop="name"[^>]*>([^<]*)</)?.[1];
+  return name !== undefined && decodeEntities(name) === "";
+}
+
+/** "Maison_Francis_Kurkdjian" or "Lanc%C3%B4me" as in picture names: "maison-francis-kurkdjian", "lancome". */
+function slugify(text: string) {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/**
+ * Parfumo sometimes answers a real perfume page with someone else's bottle,
+ * notes and rating (it seems to do this to visitors it takes for robots). A
+ * bottle picture's file name ends with the brand, as in
+ * "…-sauvage-eau-de-toilette-dior_1200.jpg", so a picture without the brand
+ * of the link means the whole page can't be trusted.
+ */
+function pictureMatchesBrand(imageUrl: string, pageUrl: string) {
+  const brand = new URL(pageUrl).pathname.split("/")[2];
+  const file = new URL(imageUrl).pathname.split("/").pop() ?? "";
+  try {
+    return slugify(file).includes(slugify(decodeURIComponent(brand)));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fetches a Parfumo perfume page. "missing" when Parfumo has no perfume at
+ * that address; null when the page couldn't be read (worth trying again later).
+ */
+export async function fetchParfumoData(url: string): Promise<ParfumoData | "missing" | null> {
   let next = normalizeParfumoUrl(url);
 
   // Follow redirects by hand so a link can never lead the server off Parfumo
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    if (!next || next === "invalid") return null;
+    // Not a perfume page, or Parfumo sent us somewhere that isn't one
+    if (next === "invalid") return "missing";
+    if (!next) return null;
     try {
       const response = await fetch(next, {
         headers: { "User-Agent": USER_AGENT, Accept: "text/html" },
@@ -125,13 +169,16 @@ export async function fetchParfumoData(url: string): Promise<ParfumoData | null>
         next = location ? normalizeParfumoUrl(new URL(location, next).toString()) : null;
         continue;
       }
+      if (response.status === 404 || response.status === 410) return "missing";
       if (!response.ok) return null;
       const html = await response.text();
+      if (isMissingPerfumePage(html)) return "missing";
       const data = {
         rating: parseParfumoRating(html),
         notes: parseParfumoNotes(html),
         imageUrl: parseParfumoImage(html),
       };
+      if (data.imageUrl && !pictureMatchesBrand(data.imageUrl, next)) return null;
       return data.rating === null && data.notes === null && data.imageUrl === null ? null : data;
     } catch {
       return null;

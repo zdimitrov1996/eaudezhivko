@@ -92,7 +92,7 @@
     "linkInvalid": "That link is invalid or has expired. Please try again.",
     "oauth": "Google sign-in didn't complete. Please try again.",
     "signInRequired": "Please sign in first.",
-    "invalidUrl": "Please paste a full link to a Parfumo page.",
+    "invalidUrl": "Please paste the link to a perfume's own page on Parfumo (parfumo.com/Perfumes/…).",
     "brandNameRequired": "Brand and name are required.",
     "invalidYear": "Year must be between 1700 and 2100.",
     "alreadyInCollection": "This perfume is already in your collection.",
@@ -103,6 +103,7 @@
     "notYourPerfume": "You can only edit perfumes you added.",
     "perfumeExists": "A perfume with this brand, name and concentration is already in the catalogue.",
     "parfumoUnreachable": "Couldn't open that Parfumo page. Check the link and try again.",
+    "parfumoNotFound": "Parfumo has no perfume at this link. Open the perfume on Parfumo and copy the address from there.",
     "parfumoNoPicture": "That Parfumo page has no bottle picture, and the carousel needs one.",
     "showcaseFull": "The carousel is full. Remove a perfume first."
   },

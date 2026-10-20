@@ -50,9 +50,11 @@ export type ShelfEntry = {
 export const NO_IMAGE_URL = "https://parfumo.com/no-image";
 
 const PARFUMO_HOST = /^([a-z0-9-]+\.)?parfumo\.[a-z.]{2,6}$/;
+/** A perfume's own page: /Perfumes/<brand>/<perfume>, or /Parfums/… on parfumo.de */
+const PARFUMO_PERFUME_PATH = /^\/(perfumes|parfums)\/[^/]+\/[^/]+$/i;
 
 /**
- * Validates a pasted Parfumo page link.
+ * Validates a pasted link to a perfume's Parfumo page.
  * Returns the cleaned https URL, null for an empty value, or "invalid".
  */
 export function normalizeParfumoUrl(raw: unknown): string | null | "invalid" {
@@ -68,6 +70,9 @@ export function normalizeParfumoUrl(raw: unknown): string | null | "invalid" {
 
   if (url.protocol !== "https:" && url.protocol !== "http:") return "invalid";
   if (!PARFUMO_HOST.test(url.hostname)) return "invalid";
+  // Parfumo answers a perfume address ending in "/" with a 404
+  url.pathname = url.pathname.replace(/\/+$/, "");
+  if (!PARFUMO_PERFUME_PATH.test(url.pathname)) return "invalid";
 
   url.protocol = "https:";
   url.hash = "";

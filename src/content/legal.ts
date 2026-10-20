@@ -14,7 +14,7 @@ export const LEGAL_OWNER: { name: Record<Locale, string>; email: string } = {
   email: "jivko.dimitrov96@gmail.com",
 };
 
-const UPDATED = { en: "19 October 2026", bg: "19 октомври 2026 г." } as const;
+const UPDATED = { en: "20 October 2026", bg: "20 октомври 2026 г." } as const;
 
 export const privacy: Record<Locale, LegalDoc> = {
   bg: {
@@ -386,7 +386,7 @@ export const faq: Record<Locale, Faq> = {
       },
       {
         q: "Как да намеря линка към Parfumo?",
-        a: "Във формата за добавяне има линк, който отваря търсене в Parfumo в нов раздел. Отвори страницата на парфюма там, копирай адреса ѝ от браузъра и го постави в полето „Линк към Parfumo“.",
+        a: "Във формата за добавяне има линк, който отваря търсене в Parfumo в нов раздел. Отвори страницата на парфюма там, копирай адреса ѝ от браузъра и го постави в полето „Линк към Parfumo“. Сайтът проверява линка: ако в Parfumo няма парфюм на този адрес, линкът не се записва, а вече записан такъв линк се маха.",
       },
       {
         q: "Сбърках името на парфюм. Как да го поправя?",
@@ -437,7 +437,7 @@ export const faq: Record<Locale, Faq> = {
       },
       {
         q: "How do I find the Parfumo link?",
-        a: "The add form has a link that opens a Parfumo search in a new tab. Open the perfume's page there, copy its address from the browser and paste it into “Parfumo link”.",
+        a: "The add form has a link that opens a Parfumo search in a new tab. Open the perfume's page there, copy its address from the browser and paste it into “Parfumo link”. The site checks the link: if Parfumo has no perfume at that address, the link isn't saved, and one already saved is removed.",
       },
       {
         q: "I misspelled a perfume. How do I fix it?",
