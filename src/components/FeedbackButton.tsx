@@ -53,7 +53,7 @@ function FeedbackForm({
     return (
       <div className="px-6 py-8 text-center">
         <p className="font-serif text-2xl font-semibold text-moss-300">{t("thanksTitle")}</p>
-        <p className="mt-2 text-sm text-smoke-400">{t("thanksBody")}</p>
+        <p className="mt-2 text-sm text-smoke-400">{signedIn ? t("thanksSignedIn") : t("thanksBody")}</p>
         <button type="button" onClick={onDone} className="btn btn-secondary mt-6">
           {t("close")}
         </button>

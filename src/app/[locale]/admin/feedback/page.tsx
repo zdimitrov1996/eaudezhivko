@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { deleteFeedback, setFeedbackStatus } from "@/actions/admin";
 import { AdminShell, Badge } from "@/components/admin/AdminShell";
+import { FeedbackDoneDialog } from "@/components/admin/FeedbackDoneDialog";
 import { SubmitButton } from "@/components/auth/FormBits";
 import { ConfirmSubmit } from "@/components/ConfirmSubmit";
 import { Link } from "@/i18n/navigation";
@@ -44,16 +45,16 @@ export default async function AdminFeedbackPage({ params }: PageProps<"/[locale]
           {items.map((item) => (
             <article
               key={item.id}
-              className={`card px-5 py-4 ${item.status === "new" ? "border-moss-800" : "opacity-70"}`}
+              className={`card px-5 py-4 ${
+                item.status === "new" ? "border-moss-800" : item.status === "done" ? "opacity-70" : ""
+              }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge tone={item.category === "bug" ? "ember" : item.category === "idea" ? "moss" : "neutral"}>
                     {tf(`categories.${item.category}`)}
                   </Badge>
-                  <Badge tone={item.status === "new" ? "moss" : "neutral"}>
-                    {item.status === "new" ? t("statusNew") : t("statusDone")}
-                  </Badge>
+                  <Badge tone={item.status === "done" ? "neutral" : "moss"}>{t(`feedbackStatus.${item.status}`)}</Badge>
                 </div>
                 <span className="text-sm text-smoke-500">
                   {format.dateTime(new Date(item.createdAt), { dateStyle: "medium", timeStyle: "short" })}
@@ -100,12 +101,27 @@ export default async function AdminFeedbackPage({ params }: PageProps<"/[locale]
                 )}
               </dl>
 
+              {item.resolutionNote && (
+                <div className="mt-4 rounded-xl border border-ink-600/70 bg-ink-900/40 px-4 py-3 text-sm">
+                  <p className="text-smoke-500">{t("feedbackResolution")}</p>
+                  <p className="mt-1 whitespace-pre-wrap break-words text-smoke-200">{item.resolutionNote}</p>
+                </div>
+              )}
+
               <div className="mt-4 flex flex-wrap gap-2">
-                <form action={setFeedbackStatus.bind(null, item.id, item.status === "new" ? "done" : "new")}>
-                  <SubmitButton className="btn btn-secondary btn-sm">
-                    {item.status === "new" ? t("markDone") : t("markNew")}
-                  </SubmitButton>
-                </form>
+                {item.status === "new" && (
+                  <form action={setFeedbackStatus.bind(null, item.id, "in_progress")}>
+                    <SubmitButton className="btn btn-secondary btn-sm">{t("markInProgress")}</SubmitButton>
+                  </form>
+                )}
+                {item.status !== "done" && (
+                  <FeedbackDoneDialog id={item.id} excerpt={item.message} notifies={Boolean(item.userId)} />
+                )}
+                {item.status !== "new" && (
+                  <form action={setFeedbackStatus.bind(null, item.id, "new")}>
+                    <SubmitButton className="btn btn-ghost btn-sm">{t("markNew")}</SubmitButton>
+                  </form>
+                )}
                 <form action={deleteFeedback.bind(null, item.id)}>
                   <ConfirmSubmit message={t("confirmDeleteFeedback")} className="btn btn-ghost btn-sm text-ember-400">
                     {t("deleteFeedback")}

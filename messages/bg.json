@@ -12,7 +12,9 @@
     "signUp": "Регистрация",
     "signOut": "Изход",
     "language": "Език",
-    "finished": "Изпръскани"
+    "finished": "Изпръскани",
+    "notifications": "Известия",
+    "notificationsUnread": "{count, plural, one {Известия, # ново} other {Известия, # нови}}"
   },
   "Home": {
     "eyebrow": "За колекционери на парфюми",
@@ -107,7 +109,9 @@
     "parfumoNotFound": "В Parfumo няма парфюм на този линк. Отвори парфюма в Parfumo и копирай адреса оттам.",
     "parfumoNoPicture": "Страницата в Parfumo няма снимка на флакона, а каруселът има нужда от нея.",
     "showcaseFull": "Каруселът е пълен. Първо махни някой парфюм.",
-    "alreadyFinished": "Този парфюм е в „Изпръскани“."
+    "alreadyFinished": "Този парфюм е в „Изпръскани“.",
+    "noteRequired": "Напиши какво е направено. Авторът ще го получи като известие.",
+    "noteTooLong": "Моля, до 1000 знака."
   },
   "Shelf": {
     "collectionTitle": "Моята колекция",
@@ -301,9 +305,7 @@
     "feedbackReplyTo": "Отговор на {email}",
     "feedbackPage": "Страница",
     "feedbackBrowser": "Браузър",
-    "statusNew": "Ново",
-    "statusDone": "Прегледано",
-    "markDone": "Отбележи като прегледано",
+    "markDone": "Готово",
     "markNew": "Върни като ново",
     "deleteFeedback": "Изтрий",
     "confirmDeleteFeedback": "Да изтрия ли това съобщение завинаги? Няма връщане назад.",
@@ -364,7 +366,22 @@
     "showcaseLinkHint": "Снимката и оценката се взимат от тази страница при запазване.",
     "showcaseSave": "Запази",
     "showcaseSaving": "Взимам снимката…",
-    "finishedTitle": "Изпръскани ({count})"
+    "finishedTitle": "Изпръскани ({count})",
+    "feedbackStatus": {
+      "new": "Ново",
+      "in_progress": "В прогрес",
+      "done": "Готово"
+    },
+    "markInProgress": "В прогрес",
+    "feedbackResolution": "Какво е направено",
+    "feedbackDoneTitle": "Отбележи като готово",
+    "feedbackDoneNote": "Какво е реализирано?",
+    "feedbackDonePlaceholder": "Например: в картите от колекцията вече има меню „Флакон“, а при 0% парфюмът отива в „Изпръскани“.",
+    "feedbackDoneNotifies": "Авторът ще получи това в „Известия“.",
+    "feedbackDoneGuest": "Изпратено от гост: няма профил, на който да отиде известие, затова остава само тук.",
+    "feedbackDoneSave": "Отбележи като готово",
+    "feedbackDoneSaving": "Запазвам…",
+    "feedbackDoneCancel": "Отказ"
   },
   "Support": {
     "banner": "Режим поддръжка: в момента си в профила на {email}.",
@@ -390,7 +407,8 @@
     "cancel": "Отказ",
     "close": "Затвори",
     "thanksTitle": "Благодарим!",
-    "thanksBody": "Съобщението ти е изпратено."
+    "thanksBody": "Съобщението ти е изпратено.",
+    "thanksSignedIn": "Съобщението ти е изпратено. В „Известия“ ще видиш, когато започнем работа по него и когато е готово."
   },
   "Theme": {
     "toLight": "Светла тема",
@@ -419,5 +437,17 @@
     "updated": "Последна промяна: {date}",
     "contactTitle": "Контакт",
     "contactFeedback": "Можеш да пишеш и чрез бутона „Feedback“ долу вдясно на всяка страница."
+  },
+  "Notifications": {
+    "title": "Известия",
+    "subtitle": "Новини по обратната връзка, която ни изпращаш.",
+    "emptyTitle": "Още няма известия",
+    "emptyBody": "Когато започнем работа по обратната ти връзка или я завършим, ще го видиш тук.",
+    "unread": "Ново",
+    "yourFeedback": "Твоята обратна връзка:",
+    "kind": {
+      "feedback_in_progress": "Работим по обратната ти връзка",
+      "feedback_done": "Обратната ти връзка е реализирана"
+    }
   }
 }
