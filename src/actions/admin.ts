@@ -81,15 +81,37 @@ export async function deleteUserAsAdmin(userId: string) {
   return redirect({ href: { pathname: "/admin", query: { deleted: "1" } }, locale });
 }
 
-export async function setFeedbackStatus(id: number, status: "new" | "done") {
+/** Back to new, or in progress (which tells a signed-in author). Done goes through `completeFeedback`. */
+export async function setFeedbackStatus(id: number, status: "new" | "in_progress") {
   if (!(await isAdmin())) return;
 
   const supabase = await createClient();
   await supabase.rpc("admin_set_feedback_status", {
     p_id: id,
-    p_status: status === "done" ? "done" : "new",
+    p_status: status === "in_progress" ? "in_progress" : "new",
   });
   revalidatePath("/[locale]/admin", "layout");
+}
+
+/** `error` is a key into the Errors namespace. */
+export type FeedbackDoneState = { ok: true; at: number } | { ok: false; error: string } | undefined;
+
+/** Marks feedback done with a note on what was done; a signed-in author gets it as a notification. */
+export async function completeFeedback(_prev: FeedbackDoneState, formData: FormData): Promise<FeedbackDoneState> {
+  if (!(await isAdmin())) return { ok: false, error: "generic" };
+
+  const id = Number(formData.get("id"));
+  const note = String(formData.get("note") ?? "").trim();
+  if (!Number.isInteger(id)) return { ok: false, error: "generic" };
+  if (!note) return { ok: false, error: "noteRequired" };
+  if (note.length > 1000) return { ok: false, error: "noteTooLong" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_feedback_status", { p_id: id, p_status: "done", p_note: note });
+  if (error) return { ok: false, error: error.hint === "note_required" ? "noteRequired" : "generic" };
+
+  revalidatePath("/[locale]/admin", "layout");
+  return { ok: true, at: Date.now() };
 }
 
 /** Deletes a feedback message for good (the page asks for confirmation first). */

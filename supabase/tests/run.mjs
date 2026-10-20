@@ -239,6 +239,40 @@ expect("the message is still there", (await feedbackCount()) === 1);
 await allowed("an admin deletes it", "owner", "select public.admin_delete_feedback($1)", [hello.id]);
 expect("it's gone", (await feedbackCount()) === 0);
 
+console.log("\nfeedback status and notifications");
+await allowed("carol sends feedback", "carol", "select public.submit_feedback('idea', 'Track how full my bottles are')");
+await allowed("a guest sends feedback", "anon", "select public.submit_feedback('bug', 'Guest bug report')");
+const feedbackId = async (message) => (await one("select id from public.feedback where message = $1", [message])).id;
+const carolsIdea = await feedbackId("Track how full my bottles are");
+const guestBug = await feedbackId("Guest bug report");
+const setStatus = "select public.admin_set_feedback_status($1, $2, $3)";
+const notes = async (who) => (await as(who, "select kind, feedback_excerpt, message, read_at from public.notifications order by id")).rows;
+
+await refused("a user can't set a status", "carol", setStatus, [carolsIdea, "done", "x"], "42501");
+await refused("an unknown status is refused", "owner", setStatus, [carolsIdea, "closed", null], "22023");
+await allowed("an admin marks it in progress", "owner", setStatus, [carolsIdea, "in_progress", null]);
+await allowed("marking it in progress again", "owner", setStatus, [carolsIdea, "in_progress", null]);
+let carolNotes = await notes("carol");
+expect(
+  "carol is told once that it's in progress",
+  carolNotes.length === 1 && carolNotes[0].kind === "feedback_in_progress" && carolNotes[0].feedback_excerpt === "Track how full my bottles are",
+  carolNotes,
+);
+await refused("done needs a note", "owner", setStatus, [carolsIdea, "done", "  "], "22023");
+await allowed("an admin marks it done with a note", "owner", setStatus, [carolsIdea, "done", " Added a Bottle select "]);
+carolNotes = await notes("carol");
+expect("carol is told what was done", carolNotes.length === 2 && carolNotes[1].kind === "feedback_done" && carolNotes[1].message === "Added a Bottle select", carolNotes);
+const [listed] = (await as("owner", "select status, resolution_note from public.admin_feedback() where id = $1", [carolsIdea])).rows;
+expect("admins see the status and the note", listed?.status === "done" && listed.resolution_note === "Added a Bottle select", listed);
+expect("alice sees none of carol's notifications", (await notes("alice")).length === 0);
+await refused("anon can't read notifications", "anon", "select * from public.notifications", [], "42501");
+await refused("users can't write notifications", "alice", "insert into public.notifications (user_id, kind) values ($1, 'feedback_done')", [users.carol], "42501");
+await refused("users can't edit notifications", "carol", "update public.notifications set message = 'x'", [], "42501");
+await allowed("carol marks hers as read", "carol", "select public.mark_notifications_read()");
+expect("all read", (await notes("carol")).every((n) => n.read_at !== null));
+await allowed("an admin finishes the guest's report", "owner", setStatus, [guestBug, "done", "Fixed"]);
+expect("guests get no notifications", Number((await one("select count(*) as n from public.notifications")).n) === 2);
+
 // ---------------------------------------------------------------------------
 console.log("\nowner and admins");
 expect("the existing admin became the owner", (await one("select role from public.admins where user_id = $1", [users.owner])).role === "owner");

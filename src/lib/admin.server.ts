@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { redirect } from "@/i18n/navigation";
-import type { FeedbackCategory } from "./feedback";
+import type { FeedbackCategory, FeedbackStatus } from "./feedback";
 import type { Concentration, Shelf } from "./perfumes";
 import { isSupabaseConfigured } from "./supabase/config";
 import { createClient, getCurrentUser } from "./supabase/server";
@@ -255,7 +255,9 @@ export type AdminFeedback = {
   id: number;
   category: FeedbackCategory;
   message: string;
-  status: "new" | "done";
+  status: FeedbackStatus;
+  /** What was done, written when it was marked done */
+  resolutionNote: string | null;
   userId: string | null;
   userEmail: string | null;
   contactEmail: string | null;
@@ -275,7 +277,8 @@ export async function getAdminFeedback(): Promise<AdminFeedback[]> {
       id: number;
       category: FeedbackCategory;
       message: string;
-      status: AdminFeedback["status"];
+      status: FeedbackStatus;
+      resolution_note: string | null;
       user_id: string | null;
       user_email: string | null;
       contact_email: string | null;
@@ -289,6 +292,7 @@ export async function getAdminFeedback(): Promise<AdminFeedback[]> {
     category: row.category,
     message: row.message,
     status: row.status,
+    resolutionNote: row.resolution_note,
     userId: row.user_id,
     userEmail: row.user_email,
     contactEmail: row.contact_email,

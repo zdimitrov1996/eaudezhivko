@@ -36,6 +36,7 @@ src/
       page.tsx             home: hero + carousel + feature cards
       collection/ wishlist/ finished/   the user's three shelves
       login/ signup/ forgot-password/ reset-password/ account/
+      notifications/       the user's notifications about their feedback
       faq/ privacy/ terms/ legal pages, text from src/content/legal.ts
       admin/               overview + users, users/[id], perfumes, feedback, showcase, admins
       [...rest]/           unknown paths → localized 404
@@ -43,6 +44,7 @@ src/
     auth.ts                sign in/up, Google, password reset, sign out, delete account
     perfumes.ts            search, add, move, rate, remove, edit, Parfumo link + refresh
     feedback.ts            submitFeedback
+    notifications.ts       markNotificationsRead
     admin.ts               support sign-in, delete user, feedback status and deletion, carousel, admins
   components/              UI; perfumes/, auth/, admin/, home/ subfolders. Modal is the one dialog
                            shell; perfumes/ShelfPage serves all three shelf pages
@@ -112,7 +114,9 @@ A unique index on `(lower(brand), lower(name), coalesce(concentration, ''))` kee
 
 **`admin_audit_log`**: `admin_id`, `admin_email` (snapshot), `action` (`impersonate`, `delete_user`, `grant_admin`, `revoke_admin`), `target_user_id` (no FK, survives deletion), `target_email` (snapshot), `created_at`.
 
-**`feedback`**: `user_id` (null for guests; set null on user delete), `category` (`idea` | `bug` | `other`), `message` (5–2000), `contact_email`, `page`, `locale`, `user_agent`, `status` (`new` | `done`), `created_at`.
+**`feedback`**: `user_id` (null for guests; set null on user delete), `category` (`idea` | `bug` | `other`), `message` (5–2000), `contact_email`, `page`, `locale`, `user_agent`, `status` (`new` | `in_progress` | `done`), `resolution_note` (≤ 1000, what was done; set when marked done), `created_at`.
+
+**`notifications`**: messages to a user about their feedback. `user_id` (cascades on user delete), `feedback_id` (set null if the feedback is deleted), `kind` (`feedback_in_progress` | `feedback_done`), `feedback_excerpt` (first 300 chars of the feedback, copied because users can't read `feedback`), `message` (the admin's note, `done` only), `created_at`, `read_at`.
 
 **`showcase`**: the home carousel, independent of the catalogue. `id`, `position`, `brand`, `name`, `concentration`, `parfumo_url` (required, Parfumo only), `image_url` (required, a Parfumo host, never the no-image marker), `parfumo_rating`, `parfumo_read_at` (when Parfumo was last read), `updated_by`, `created_at`.
 
@@ -126,6 +130,7 @@ A unique index on `(lower(brand), lower(name), coalesce(concentration, ''))` kee
 | `admins` | none | none | RLS on, no policies, all privileges revoked. Only security-definer functions touch it |
 | `admin_audit_log` | none | none | Same; written by the admin functions that log |
 | `feedback` | none | none | Same; written by `submit_feedback`, read by `admin_feedback` |
+| `notifications` | none | select own rows | Written only by `admin_set_feedback_status`; marked read by `mark_notifications_read` |
 
 ### SQL functions
 
@@ -148,8 +153,9 @@ All are `security definer` with `set search_path = ''` unless noted. "Grant" is 
 | `admin_recent_actions()` | authenticated | `is_admin()` | Last 50 audit log rows | `/admin` |
 | `admin_begin_impersonation(user_id)` | authenticated | `is_admin()`; not yourself; not an admin | Logs `impersonate` and returns the target's email | `impersonateUser` |
 | `admin_delete_user(user_id)` | authenticated | `is_admin()`; not yourself; not an admin | Logs `delete_user`, deletes from `auth.users` | `deleteUserAsAdmin` |
-| `admin_feedback()` | authenticated | `is_admin()` | Feedback with the sender's email; new first; 500 rows | `/admin/feedback` |
-| `admin_set_feedback_status(id, status)` | authenticated | `is_admin()` | Sets `new` or `done` | `setFeedbackStatus` |
+| `admin_feedback()` | authenticated | `is_admin()` | Feedback with the sender's email and resolution note; new, then in progress, then done, newest first in each; 500 rows | `/admin/feedback` |
+| `admin_set_feedback_status(id, status, note)` | authenticated | `is_admin()`; `done` needs a note (`hint = 'note_required'`) | Sets the status (a note is stored as `resolution_note`). A change to `in_progress` or `done` on feedback from a signed-in author inserts a notification; repeating a status or going back to `new` doesn't | `setFeedbackStatus` (new, in progress), `completeFeedback` (done) |
+| `mark_notifications_read()` | authenticated | signed in | Sets `read_at` on the caller's unread notifications | `markNotificationsRead` |
 | `admin_delete_feedback(id)` | authenticated | `is_admin()` | Deletes the message for good; not logged | `deleteFeedback` |
 | `admin_list_admins()` | authenticated | `is_admin()` | Owners first, then admins by date added, with who added them | `/admin/admins`, owner's view of `/admin/users/[id]` |
 | `admin_grant_admin(email)` | authenticated | `is_owner()`; user exists; email confirmed; not already admin | Inserts role `admin`, logs `grant_admin` | `grantAdmin`, `grantAdminToUser` |
@@ -259,7 +265,9 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 ## 9. Feedback
 
-`FeedbackButton` is rendered by the locale layout on every page except `/admin/*`. The form sends category, message, the current path and (for guests only) an optional contact email; the server adds locale and user agent. A hidden `website` field is a honeypot: when filled, the action reports success and stores nothing. `submit_feedback` rate-limits and inserts. Admins read, mark and delete it ("Delete" asks for confirmation) at `/admin/feedback`, and the overview tile counts `new` items.
+`FeedbackButton` is rendered by the locale layout on every page except `/admin/*`. The form sends category, message, the current path and (for guests only) an optional contact email; the server adds locale and user agent. A hidden `website` field is a honeypot: when filled, the action reports success and stores nothing. `submit_feedback` rate-limits and inserts. Admins read, mark and delete it ("Delete" asks for confirmation) at `/admin/feedback`, and the overview tile counts `new` items. "In progress" is a plain form; "Done" opens `FeedbackDoneDialog`, which asks what was done and says whether the author will be notified (guests won't). Signed-in senders are told in the thank-you message to watch Notifications.
+
+**Notifications:** the header shows a bell to signed-in users, with the unread count from `getUnreadNotificationCount` (a `head` count under RLS, on every page render). `/notifications` lists them (`getNotifications`, newest 100); `NotificationList` remembers which were unread on arrival, calls `markNotificationsRead`, and refreshes so the bell clears while the "new" dots stay. On phones the header spacing tightens so theme, language, bell and account fit beside the logo at 375 px.
 
 ## 10. i18n, theming, preview mode
 
@@ -283,9 +291,9 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 | Feature in code | Where the legal text describes it |
 | --- | --- |
-| Data collected: account, Google profile, shelves, catalogue `created_by`, feedback fields (`page`, `locale`, `user_agent`, `contact_email`) | Privacy §2 |
+| Data collected: account, Google profile, shelves, catalogue `created_by`, feedback fields (`page`, `locale`, `user_agent`, `contact_email`), notifications | Privacy §2, FAQ "What are Notifications?" |
 | Processors: Supabase (EU, Frankfurt), Vercel, Google | Privacy §4 |
-| Admin powers: viewing users, shelves and feedback; deleting feedback; support mode; deleting accounts; granting and removing admins; the audit log | Privacy §5, Terms §6, FAQ "Who can see my collection?" |
+| Admin powers: viewing users, shelves and feedback; deleting feedback; notifying feedback authors; support mode; deleting accounts; granting and removing admins; the audit log | Privacy §5, Terms §6, FAQ "Who can see my collection?" |
 | Parfumo reading (rating, notes, image address; weekly), hotlinked images, Pazaruvaj links | Privacy §6, Terms §5, FAQ |
 | Cookies: Supabase session, `NEXT_LOCALE`, `edf_theme` (1 year), `edf_support_session` (4 hours) | Privacy §7 |
 | Account deletion and what survives it | Privacy §8 and §9, Terms §2, FAQ |
@@ -310,7 +318,7 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 Files in `supabase/migrations/` are run by hand in Supabase → SQL Editor, once each, in filename order. The repository has no Supabase CLI config and the database keeps no record of which files ran: each file's header names the one it must follow, and PR descriptions say when to run it.
 
-Production received them in this order, each before the code that needed it was merged (per the PR descriptions). Number 8 arrives with PR #14, number 9 with PR #16, number 10 with PR #18, number 11 with PR #19 and number 12 with PR #20:
+Production received them in this order, each before the code that needed it was merged (per the PR descriptions). Number 8 arrives with PR #14, number 9 with PR #16, number 10 with PR #18, number 11 with PR #19, number 12 with PR #20 and number 13 with the feedback-notifications PR:
 
 | # | File | Introduced by | What it does |
 | --- | --- | --- | --- |
@@ -326,6 +334,7 @@ Production received them in this order, each before the code that needed it was 
 | 10 | `20261020120000_missing_parfumo_links.sql` | PR #18 | `remove_missing_parfumo_link`; queues every perfume with a link for a re-read, so broken links are found on the next shelf visit |
 | 11 | `20261020140000_feedback_delete.sql` | PR #19 | `admin_delete_feedback` |
 | 12 | `20261020160000_finished_shelf.sql` | PR #20 | `shelf` enum gains `finished` (unused in the same script: Postgres only allows a new enum value after commit); `user_perfumes.fill_level` |
+| 13 | `20261020180000_feedback_notifications.sql` | feedback notifications PR | `feedback` gains `in_progress` and `resolution_note`; `notifications` table with RLS; `mark_notifications_read`; `admin_set_feedback_status` takes a note and notifies; `admin_feedback` returns the note |
 
 **Adding a migration:** create a new timestamped file, never edit an applied one. Keep RLS on for every new table; give admin functions an `is_admin()` or `is_owner()` check of their own; `revoke … from public, anon` and grant only what's needed. In PL/pgSQL, assign a `case … end` to a variable rather than putting it inside an `if` condition. Add checks for it to `supabase/tests/run.mjs`. When the script is final, copy it to the owner's clipboard (`pbcopy < file.sql`) and say in the PR whether to run it before or after merging (usually before, since new code reads new columns).
 

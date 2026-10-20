@@ -39,6 +39,7 @@ export const privacy: Record<Locale, LegalDoc> = {
           "Колекция, списък с желани и изпръскани флакони: парфюмите, които добавяш, личната ти оценка за тях, колко е пълен всеки флакон и датите на добавяне.",
           "Общ каталог: парфюмите, които добавяш, стават част от общия каталог и се виждат от други потребители. Пазим кой ги е добавил, но не го показваме публично.",
           "Обратна връзка: съобщението, категорията, страницата, от която е изпратено, езикът и данни за браузъра (user agent). Ако пишеш без профил, по желание и имейл за отговор.",
+          "Известия: ако пишеш с профил, получаваш известие, когато започнем работа по обратната ти връзка и когато е готова. Известието съдържа началото на съобщението ти и, при „готово“, какво е направено.",
           "Технически данни: доставчиците на хостинг и база данни (Vercel и Supabase) водят технически логове, например IP адрес и час на заявката, за сигурност и работа на услугата.",
         ],
       },
@@ -65,7 +66,7 @@ export const privacy: Record<Locale, LegalDoc> = {
         heading: "5. Достъп на администраторите",
         paragraphs: [
           "Администратори на сайта са собственикът и хората, на които собственикът е дал администраторски достъп. Те действат от името на администратора на личните данни (т. 1), само за поддръжката на сайта.",
-          "Администраторите могат да виждат регистрираните профили (имейл, дата на регистрация и последен вход), техните колекции и списъци с желани, както и изпратената обратна връзка, която могат и да изтрият.",
+          "Администраторите могат да виждат регистрираните профили (имейл, дата на регистрация и последен вход), техните колекции и списъци с желани, както и изпратената обратна връзка, която могат и да изтрият. Когато отбележат обратна връзка като „в прогрес“ или „готова“, авторът ѝ получава известие с написаното от тях.",
           "За да провери проблем, администратор може временно да влезе в профила ти в режим на поддръжка, както и да изтрие профил при злоупотреба. Всяко такова действие, както и всяко даване или отнемане на администраторски достъп, се записва в дневник.",
         ],
       },
@@ -93,7 +94,7 @@ export const privacy: Record<Locale, LegalDoc> = {
         heading: "8. Колко дълго пазим данните",
         paragraphs: [
           "Пазим данните на профила ти, докато той съществува. Когато изтриеш профила си от страницата „Профил“, изтриваме профила, колекцията и списъка ти с желани. Парфюмите, добавени от теб в общия каталог, остават в него, но вече не са свързани с теб.",
-          "Пазим обратната връзка, докато е нужна за подобряване на сайта. Можеш да поискаш да я изтрием по-рано. Техническите логове се пазят според сроковете на Vercel и Supabase.",
+          "Пазим обратната връзка, докато е нужна за подобряване на сайта. Можеш да поискаш да я изтрием по-рано. Известията се пазят, докато имаш профил. Техническите логове се пазят според сроковете на Vercel и Supabase.",
         ],
       },
       {
@@ -142,6 +143,7 @@ export const privacy: Record<Locale, LegalDoc> = {
           "Collection, wishlist and finished bottles: the perfumes you add, your personal rating of them, how full each bottle is and when you added them.",
           "Shared catalogue: perfumes you add become part of the shared catalogue that other users see. We keep who added them but don't show it publicly.",
           "Feedback: your message, its category, the page it was sent from, the language and your browser details (user agent). If you aren't signed in, optionally an email for our reply.",
+          "Notifications: if you write while signed in, you get a notification when we start on your feedback and when it's done. It holds the start of your message and, when done, what was done.",
           "Technical data: our hosting and database providers (Vercel and Supabase) keep technical logs, such as IP address and request time, for security and to run the service.",
         ],
       },
@@ -168,7 +170,7 @@ export const privacy: Record<Locale, LegalDoc> = {
         heading: "5. Administrator access",
         paragraphs: [
           "The site's administrators are the owner and the people the owner has given admin access. They act on behalf of the data controller (section 1), only to run and support the site.",
-          "Administrators can see registered accounts (email, sign-up and last sign-in dates), their collections and wishlists, and submitted feedback, which they can also delete.",
+          "Administrators can see registered accounts (email, sign-up and last sign-in dates), their collections and wishlists, and submitted feedback, which they can also delete. When they mark feedback as in progress or done, its author gets a notification with what they wrote.",
           "To investigate a problem, an administrator can temporarily sign in to your account in support mode, and can delete an account in case of abuse. Every such action, and every grant or removal of admin access, is recorded in a log.",
         ],
       },
@@ -194,7 +196,7 @@ export const privacy: Record<Locale, LegalDoc> = {
         heading: "8. How long we keep data",
         paragraphs: [
           "We keep your account data for as long as your account exists. When you delete your account on the Account page, we delete the account, your collection and your wishlist. Perfumes you added to the shared catalogue stay in it, no longer linked to you.",
-          "We keep feedback for as long as it helps improve the site; you can ask us to delete it sooner. Technical logs are kept according to Vercel's and Supabase's retention periods.",
+          "We keep feedback for as long as it helps improve the site; you can ask us to delete it sooner. Notifications are kept for as long as you have an account. Technical logs are kept according to Vercel's and Supabase's retention periods.",
         ],
       },
       {
@@ -405,6 +407,10 @@ export const faq: Record<Locale, Faq> = {
         a: "Във всяка карта от колекцията можеш да отбележиш колко е пълен флаконът (от 100% до 10%). Когато избереш 0%, парфюмът отива в раздела „Изпръскани“. Оттам можеш да го върнеш в колекцията или да го преместиш в желани, ако искаш да си го купиш пак.",
       },
       {
+        q: "Какво са „Известия“?",
+        a: "Камбанката горе вдясно. Ако изпратиш обратна връзка, докато си с профил, там ще видиш, когато започнем работа по нея и когато е готова, заедно с това какво сме направили. Числото на камбанката показва непрочетените.",
+      },
+      {
         q: "Кой вижда колекцията ми?",
         a: "Само ти. Администраторите на сайта могат да я видят при поддръжка. Повече за това има в Политиката за поверителност.",
       },
@@ -455,6 +461,10 @@ export const faq: Record<Locale, Faq> = {
       {
         q: "What is “Finished”?",
         a: "On each card in your collection you can mark how full the bottle is (100% down to 10%). Choose 0% and the perfume moves to Finished. From there you can move it back to your collection, or to your wishlist if you want to buy it again.",
+      },
+      {
+        q: "What are Notifications?",
+        a: "The bell at the top right. If you send feedback while signed in, you'll see there when we start on it and when it's done, along with what we did. The number on the bell counts unread ones.",
       },
       {
         q: "Who can see my collection?",

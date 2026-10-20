@@ -12,7 +12,9 @@
     "signUp": "Create account",
     "signOut": "Sign out",
     "language": "Language",
-    "finished": "Finished"
+    "finished": "Finished",
+    "notifications": "Notifications",
+    "notificationsUnread": "{count, plural, one {Notifications, # new} other {Notifications, # new}}"
   },
   "Home": {
     "eyebrow": "For fragrance collectors",
@@ -107,7 +109,9 @@
     "parfumoNotFound": "Parfumo has no perfume at this link. Open the perfume on Parfumo and copy the address from there.",
     "parfumoNoPicture": "That Parfumo page has no bottle picture, and the carousel needs one.",
     "showcaseFull": "The carousel is full. Remove a perfume first.",
-    "alreadyFinished": "This perfume is on your Finished list."
+    "alreadyFinished": "This perfume is on your Finished list.",
+    "noteRequired": "Write what was done; the author gets it as a notification.",
+    "noteTooLong": "Please keep it under 1000 characters."
   },
   "Shelf": {
     "collectionTitle": "My collection",
@@ -301,9 +305,7 @@
     "feedbackReplyTo": "Reply to {email}",
     "feedbackPage": "Page",
     "feedbackBrowser": "Browser",
-    "statusNew": "New",
-    "statusDone": "Done",
-    "markDone": "Mark as done",
+    "markDone": "Done",
     "markNew": "Mark as new",
     "deleteFeedback": "Delete",
     "confirmDeleteFeedback": "Delete this message for good? This can't be undone.",
@@ -364,7 +366,22 @@
     "showcaseLinkHint": "The picture and rating are read from this page when you save.",
     "showcaseSave": "Save",
     "showcaseSaving": "Getting the picture…",
-    "finishedTitle": "Finished ({count})"
+    "finishedTitle": "Finished ({count})",
+    "feedbackStatus": {
+      "new": "New",
+      "in_progress": "In progress",
+      "done": "Done"
+    },
+    "markInProgress": "In progress",
+    "feedbackResolution": "What was done",
+    "feedbackDoneTitle": "Mark as done",
+    "feedbackDoneNote": "What was done?",
+    "feedbackDonePlaceholder": "e.g. Collection cards now have a Bottle select, and 0% moves a perfume to Finished.",
+    "feedbackDoneNotifies": "The author gets this in their Notifications.",
+    "feedbackDoneGuest": "Sent by a guest: there's no account to notify, so it's only kept here.",
+    "feedbackDoneSave": "Mark as done",
+    "feedbackDoneSaving": "Saving…",
+    "feedbackDoneCancel": "Cancel"
   },
   "Support": {
     "banner": "Support mode: you're signed in as {email}.",
@@ -390,7 +407,8 @@
     "cancel": "Cancel",
     "close": "Close",
     "thanksTitle": "Thank you!",
-    "thanksBody": "Your feedback is on its way to us."
+    "thanksBody": "Your feedback is on its way to us.",
+    "thanksSignedIn": "Your message has been sent. You'll see in Notifications when we start on it and when it's done."
   },
   "Theme": {
     "toLight": "Switch to light mode",
@@ -419,5 +437,17 @@
     "updated": "Last updated: {date}",
     "contactTitle": "Contact",
     "contactFeedback": "You can also write to us with the “Feedback” button at the bottom right of any page."
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "subtitle": "News about the feedback you've sent.",
+    "emptyTitle": "No notifications yet",
+    "emptyBody": "When we start working on your feedback, or finish it, you'll see it here.",
+    "unread": "New",
+    "yourFeedback": "Your feedback:",
+    "kind": {
+      "feedback_in_progress": "We're working on your feedback",
+      "feedback_done": "Your feedback is done"
+    }
   }
 }
