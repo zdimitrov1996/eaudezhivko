@@ -286,6 +286,8 @@
     "statusDone": "Прегледано",
     "markDone": "Отбележи като прегледано",
     "markNew": "Върни като ново",
+    "deleteFeedback": "Изтрий",
+    "confirmDeleteFeedback": "Да изтрия ли това съобщение завинаги? Няма връщане назад.",
     "navShowcase": "Карусел",
     "navAdmins": "Администратори",
     "ownerBadge": "Собственик",

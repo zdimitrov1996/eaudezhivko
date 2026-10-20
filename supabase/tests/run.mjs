@@ -217,6 +217,13 @@ await allowed("anon sends feedback", "anon", "select public.submit_feedback('ide
 await refused("anon can't read feedback", "anon", "select * from public.feedback", [], "42501");
 await refused("users can't read feedback", "carol", "select * from public.feedback", [], "42501");
 await refused("users can't read it through the admin function", "carol", "select * from public.admin_feedback()", [], "42501");
+const feedbackCount = async () => Number((await one("select count(*) as n from public.feedback")).n);
+const [hello] = (await db.query("select id from public.feedback where message = 'Hello there'")).rows;
+await refused("anon can't delete feedback", "anon", "select public.admin_delete_feedback($1)", [hello.id], "42501");
+await refused("users can't delete feedback", "carol", "select public.admin_delete_feedback($1)", [hello.id], "42501");
+expect("the message is still there", (await feedbackCount()) === 1);
+await allowed("an admin deletes it", "owner", "select public.admin_delete_feedback($1)", [hello.id]);
+expect("it's gone", (await feedbackCount()) === 0);
 
 // ---------------------------------------------------------------------------
 console.log("\nowner and admins");

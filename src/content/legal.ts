@@ -65,7 +65,7 @@ export const privacy: Record<Locale, LegalDoc> = {
         heading: "5. Достъп на администраторите",
         paragraphs: [
           "Администратори на сайта са собственикът и хората, на които собственикът е дал администраторски достъп. Те действат от името на администратора на личните данни (т. 1), само за поддръжката на сайта.",
-          "Администраторите могат да виждат регистрираните профили (имейл, дата на регистрация и последен вход), техните колекции и списъци с желани, както и изпратената обратна връзка.",
+          "Администраторите могат да виждат регистрираните профили (имейл, дата на регистрация и последен вход), техните колекции и списъци с желани, както и изпратената обратна връзка, която могат и да изтрият.",
           "За да провери проблем, администратор може временно да влезе в профила ти в режим на поддръжка, както и да изтрие профил при злоупотреба. Всяко такова действие, както и всяко даване или отнемане на администраторски достъп, се записва в дневник.",
         ],
       },
@@ -168,7 +168,7 @@ export const privacy: Record<Locale, LegalDoc> = {
         heading: "5. Administrator access",
         paragraphs: [
           "The site's administrators are the owner and the people the owner has given admin access. They act on behalf of the data controller (section 1), only to run and support the site.",
-          "Administrators can see registered accounts (email, sign-up and last sign-in dates), their collections and wishlists, and submitted feedback.",
+          "Administrators can see registered accounts (email, sign-up and last sign-in dates), their collections and wishlists, and submitted feedback, which they can also delete.",
           "To investigate a problem, an administrator can temporarily sign in to your account in support mode, and can delete an account in case of abuse. Every such action, and every grant or removal of admin access, is recorded in a log.",
         ],
       },

@@ -286,6 +286,8 @@
     "statusDone": "Done",
     "markDone": "Mark as done",
     "markNew": "Mark as new",
+    "deleteFeedback": "Delete",
+    "confirmDeleteFeedback": "Delete this message for good? This can't be undone.",
     "navShowcase": "Carousel",
     "navAdmins": "Admins",
     "ownerBadge": "Owner",

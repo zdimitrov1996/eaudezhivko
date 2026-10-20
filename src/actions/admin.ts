@@ -92,6 +92,15 @@ export async function setFeedbackStatus(id: number, status: "new" | "done") {
   revalidatePath("/[locale]/admin", "layout");
 }
 
+/** Deletes a feedback message for good (the page asks for confirmation first). */
+export async function deleteFeedback(id: number) {
+  if (!(await isAdmin())) return;
+
+  const supabase = await createClient();
+  await supabase.rpc("admin_delete_feedback", { p_id: id });
+  revalidatePath("/[locale]/admin", "layout");
+}
+
 // ---------------------------------------------------------------------------
 // Homepage carousel (any admin)
 // ---------------------------------------------------------------------------
