@@ -2,8 +2,17 @@
 
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { moveEntry, rateEntry, removeEntry } from "@/actions/perfumes";
-import { hasNotes, NO_IMAGE_URL, NOTE_LAYERS, parfumoLink, pazaruvajSearchUrl, type ShelfEntry } from "@/lib/perfumes";
+import { moveEntry, rateEntry, removeEntry, setFillLevel } from "@/actions/perfumes";
+import {
+  FILL_LEVELS,
+  hasNotes,
+  NO_IMAGE_URL,
+  NOTE_LAYERS,
+  parfumoLink,
+  pazaruvajSearchUrl,
+  type Shelf,
+  type ShelfEntry,
+} from "@/lib/perfumes";
 import { ArrowIcon, ExternalIcon, HeartIcon, StarIcon, TagIcon, TrashIcon } from "../icons";
 import { EditPerfumeDialog } from "./EditPerfumeDialog";
 import { ParfumoLinkDialog } from "./ParfumoLinkDialog";
@@ -21,6 +30,7 @@ export function PerfumeCard({
   const t = useTranslations("Perfume");
   const tc = useTranslations("Concentration");
   const [rating, setRating] = useState(entry.rating);
+  const [fillLevel, setFill] = useState(entry.fillLevel);
   const [imageError, setImageError] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -30,6 +40,8 @@ export function PerfumeCard({
   // Parfumo is read in the background until notes (or {}) and a date are stored
   const awaitingParfumo = Boolean(perfume.parfumoUrl) && (perfume.parfumoNotes === null || !perfume.ratingsUpdatedAt);
   const fullName = `${perfume.brand} ${perfume.name}`;
+  // Bottles used up: greyed out, can go back to the collection or to the wishlist
+  const finished = entry.shelf === "finished";
   const details = [
     perfume.concentration ? tc(perfume.concentration) : null,
     perfume.releaseYear,
@@ -41,8 +53,14 @@ export function PerfumeCard({
     startTransition(() => rateEntry(entry.id, next));
   }
 
-  function onMove() {
-    const target = entry.shelf === "collection" ? "wishlist" : "collection";
+  function onFill(value: string) {
+    const next = value ? Number(value) : null;
+    setFill(next);
+    // 0% moves the bottle to the finished shelf
+    startTransition(() => setFillLevel(entry.id, next));
+  }
+
+  function onMove(target: Shelf) {
     startTransition(() => moveEntry(entry.id, target));
   }
 
@@ -53,7 +71,9 @@ export function PerfumeCard({
 
   return (
     <article
-      className={`card flex flex-col overflow-hidden transition-opacity ${isPending ? "opacity-60" : ""}`}
+      className={`card flex flex-col overflow-hidden transition ${
+        finished ? "opacity-60 grayscale hover:opacity-90 focus-within:opacity-90" : ""
+      } ${isPending ? "!opacity-40" : ""}`}
       aria-busy={isPending}
     >
       <div className="flex items-start gap-4 p-5 pb-4">
@@ -168,23 +188,43 @@ export function PerfumeCard({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-600/70 bg-ink-900/40 px-5 py-3.5">
-        {entry.shelf === "collection" ? (
-          <label className="flex items-center gap-2 text-sm text-smoke-300">
-            {t("yourRating")}
-            <select
-              value={rating ?? ""}
-              onChange={(event) => onRate(event.target.value)}
-              disabled={readOnly}
-              className="field !min-h-9 !w-auto !py-1.5 !pl-3 text-sm"
-            >
-              <option value="">{t("notRated")}</option>
-              {Array.from({ length: 10 }, (_, i) => 10 - i).map((value) => (
-                <option key={value} value={value}>
-                  {value}/10
-                </option>
-              ))}
-            </select>
-          </label>
+        {entry.shelf !== "wishlist" ? (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <label className="flex items-center gap-2 text-sm text-smoke-300">
+              {t("yourRating")}
+              <select
+                value={rating ?? ""}
+                onChange={(event) => onRate(event.target.value)}
+                disabled={readOnly}
+                className="field !min-h-9 !w-auto !py-1.5 !pl-3 text-sm"
+              >
+                <option value="">{t("notRated")}</option>
+                {Array.from({ length: 10 }, (_, i) => 10 - i).map((value) => (
+                  <option key={value} value={value}>
+                    {value}/10
+                  </option>
+                ))}
+              </select>
+            </label>
+            {entry.shelf === "collection" && (
+              <label className="flex items-center gap-2 text-sm text-smoke-300" title={t("fillHint")}>
+                {t("fillLevel")}
+                <select
+                  value={fillLevel ?? ""}
+                  onChange={(event) => onFill(event.target.value)}
+                  disabled={readOnly}
+                  className="field !min-h-9 !w-auto !py-1.5 !pl-3 text-sm"
+                >
+                  <option value="">{t("fillUnset")}</option>
+                  {FILL_LEVELS.map((value) => (
+                    <option key={value} value={value}>
+                      {value === 0 ? t("fillEmpty") : `${value}%`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
         ) : (
           <span className="flex items-center gap-2 text-sm text-smoke-400">
             <TagIcon className="h-4 w-4 text-moss-400" />
@@ -203,21 +243,30 @@ export function PerfumeCard({
         )}
 
         {!readOnly && (
-          <div className="flex items-center gap-1" role="group" aria-label={t("actions", { name: fullName })}>
+          <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t("actions", { name: fullName })}>
             {canEdit && <EditPerfumeDialog perfume={perfume} />}
-            <button type="button" onClick={onMove} disabled={isPending} className="btn btn-ghost btn-sm">
-              {entry.shelf === "collection" ? (
-                <>
-                  <HeartIcon className="h-4 w-4" />
-                  {t("moveToWishlist")}
-                </>
-              ) : (
-                <>
-                  {t("moveToCollection")}
-                  <ArrowIcon className="h-4 w-4" />
-                </>
-              )}
-            </button>
+            {entry.shelf !== "wishlist" && (
+              <button
+                type="button"
+                onClick={() => onMove("wishlist")}
+                disabled={isPending}
+                className="btn btn-ghost btn-sm"
+              >
+                <HeartIcon className="h-4 w-4" />
+                {t("moveToWishlist")}
+              </button>
+            )}
+            {entry.shelf !== "collection" && (
+              <button
+                type="button"
+                onClick={() => onMove("collection")}
+                disabled={isPending}
+                className="btn btn-ghost btn-sm"
+              >
+                {finished ? t("backToCollection") : t("moveToCollection")}
+                <ArrowIcon className="h-4 w-4" />
+              </button>
+            )}
             <button
               type="button"
               onClick={onRemove}

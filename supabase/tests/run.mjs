@@ -172,6 +172,20 @@ expect(
   (await one("select name from public.perfumes where id = $1", [sauvage.id])).name === "SAUVAGE",
 );
 
+console.log("\nbottle fill and the finished shelf");
+const [carolEntry] = (await as("carol", "select id from public.user_perfumes")).rows;
+await allowed("carol sets her bottle to 50%", "carol", "update public.user_perfumes set fill_level = 50 where id = $1", [carolEntry.id]);
+await refused("55% is refused", "carol", "update public.user_perfumes set fill_level = 55 where id = $1", [carolEntry.id], "23514");
+await refused("110% is refused", "carol", "update public.user_perfumes set fill_level = 110 where id = $1", [carolEntry.id], "23514");
+await as("alice", "update public.user_perfumes set fill_level = 10 where id = $1", [carolEntry.id]);
+expect("alice can't change carol's bottle", (await one("select fill_level from public.user_perfumes where id = $1", [carolEntry.id])).fill_level === 50);
+await allowed("at 0% it moves to finished", "carol", "update public.user_perfumes set fill_level = 0, shelf = 'finished' where id = $1", [
+  carolEntry.id,
+]);
+await allowed("and back to the collection", "carol", "update public.user_perfumes set fill_level = null, shelf = 'collection' where id = $1", [
+  carolEntry.id,
+]);
+
 console.log("\ncatalogue pictures come from Parfumo only");
 await refused(
   "creator can't set a picture from another site",

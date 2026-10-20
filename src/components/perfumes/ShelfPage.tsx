@@ -13,7 +13,7 @@ export async function shelfMetadata(shelf: Shelf, locale: string): Promise<Metad
   return { title: t(`${shelf}Title`) };
 }
 
-/** The collection and wishlist pages: sample perfumes without a database, else the user's own shelf. */
+/** The collection, wishlist and finished pages: sample perfumes without a database, else the user's own shelf. */
 export async function ShelfPage({ shelf, locale }: { shelf: Shelf; locale: string }) {
   setRequestLocale(locale);
   if (!isSupabaseConfigured) return <ShelfView shelf={shelf} entries={sampleShelf(shelf)} demo />;

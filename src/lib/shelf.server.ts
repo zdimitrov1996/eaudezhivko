@@ -43,7 +43,7 @@ export async function getShelf(shelf: Shelf): Promise<ShelfEntry[]> {
 
   const { data, error } = await supabase
     .from("user_perfumes")
-    .select(`id, shelf, rating, perfume:perfumes (${PERFUME_COLUMNS})`)
+    .select(`id, shelf, rating, fill_level, perfume:perfumes (${PERFUME_COLUMNS})`)
     .eq("shelf", shelf)
     .order("created_at", { ascending: false });
 
@@ -53,6 +53,7 @@ export async function getShelf(shelf: Shelf): Promise<ShelfEntry[]> {
     id: string;
     shelf: Shelf;
     rating: number | null;
+    fill_level: number | null;
     perfume: PerfumeRow | null;
   }[];
 
@@ -63,6 +64,7 @@ export async function getShelf(shelf: Shelf): Promise<ShelfEntry[]> {
             id: row.id,
             shelf: row.shelf,
             rating: row.rating,
+            fillLevel: row.fill_level,
             perfume: toPerfume(row.perfume),
           },
         ]

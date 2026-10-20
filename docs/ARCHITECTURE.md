@@ -34,7 +34,7 @@ src/
     [locale]/
       layout.tsx           <html lang data-theme>, Header, Footer, FeedbackButton
       page.tsx             home: hero + carousel + feature cards
-      collection/ wishlist/   the user's two shelves
+      collection/ wishlist/ finished/   the user's three shelves
       login/ signup/ forgot-password/ reset-password/ account/
       faq/ privacy/ terms/ legal pages, text from src/content/legal.ts
       admin/               overview + users, users/[id], perfumes, feedback, showcase, admins
@@ -45,7 +45,7 @@ src/
     feedback.ts            submitFeedback
     admin.ts               support sign-in, delete user, feedback status and deletion, carousel, admins
   components/              UI; perfumes/, auth/, admin/, home/ subfolders. Modal is the one dialog
-                           shell; perfumes/ShelfPage serves both shelf pages
+                           shell; perfumes/ShelfPage serves all three shelf pages
   content/legal.ts         Privacy, Terms, FAQ in both languages; LEGAL_OWNER
   i18n/                    routing (locales, plus a helper that picks this locale's value or
                            the default's), request config, typed navigation
@@ -106,7 +106,7 @@ All tables live in `public` and have RLS enabled. Users are Supabase's `auth.use
 
 A unique index on `(lower(brand), lower(name), coalesce(concentration, ''))` keeps one entry per perfume. A trigram GIN index on `brand || ' ' || name` backs `search_perfumes`. Nothing deletes catalogue rows: there is no delete grant or policy.
 
-**`user_perfumes`**: one row per perfume on a user's shelf. `user_id` (default `auth.uid()`, cascades on user delete), `perfume_id` (cascades), `shelf` (enum `collection` | `wishlist`), `rating` (1–10, personal), `notes` (≤ 2000 chars; not used by the UI), timestamps. `unique (user_id, perfume_id)`: a perfume sits on one shelf at a time, and moving it updates `shelf`.
+**`user_perfumes`**: one row per perfume on a user's shelf. `user_id` (default `auth.uid()`, cascades on user delete), `perfume_id` (cascades), `shelf` (enum `collection` | `wishlist` | `finished`), `rating` (1–10, personal), `fill_level` (0–100 in steps of 10, null when not set; kept on collection bottles only), `notes` (≤ 2000 chars; not used by the UI), timestamps. `unique (user_id, perfume_id)`: a perfume sits on one shelf at a time, and moving it updates `shelf`.
 
 **`admins`**: who may open `/admin`. `user_id` (PK, cascades), `role` (`owner` | `admin`, default `admin`), `added_by`, `created_at`.
 
@@ -174,7 +174,9 @@ Error codes the app maps to messages: `42501` not authorized, `P0002` not found,
 - Sign-out uses `scope: "local"` and clears the support-mode cookie.
 - Account deletion calls `delete_my_account()`. Shelves cascade; catalogue entries stay with `created_by = null`; feedback stays with `user_id = null`.
 
-**Pages:** collection, wishlist and account redirect guests to `/login?next=…`. Login and signup redirect signed-in users away.
+**Shelves:** a collection card has a "Bottle" select (`FILL_LEVELS`). `setFillLevel` stores it on collection rows only; 0 also sets `shelf = finished`. The finished page (third link in the header; on phones the header links drop their icons to fit) shows those cards greyed out, with "Move to wishlist" and "Back to collection"; it has no "Add perfume" button. `moveEntry` only moves to collection or wishlist and clears `fill_level`. Adding a perfume that sits on the finished shelf answers `alreadyFinished`. Admin counts (`admin_overview`, `admin_users`, `perfume_stats`) still count collection and wishlist only; the admin user page lists all three shelves.
+
+**Pages:** collection, wishlist, finished and account redirect guests to `/login?next=…`. Login and signup redirect signed-in users away.
 
 **Admin and owner:**
 
@@ -267,7 +269,7 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 **Preview mode:** without `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `isSupabaseConfigured` is false:
 
-- collection and wishlist show read-only sample shelves (`lib/sample-shelf.ts`) with a banner;
+- collection, wishlist and finished show read-only sample shelves (`lib/sample-shelf.ts`) with a banner;
 - the home carousel shows `SHOWCASE`;
 - auth, perfume and feedback actions return `notConfigured`; there's no signed-in user, so `/account` and `/admin` redirect to login.
 
@@ -308,7 +310,7 @@ The carousel has its own table, `showcase`, separate from the catalogue: each sl
 
 Files in `supabase/migrations/` are run by hand in Supabase → SQL Editor, once each, in filename order. The repository has no Supabase CLI config and the database keeps no record of which files ran: each file's header names the one it must follow, and PR descriptions say when to run it.
 
-Production received them in this order, each before the code that needed it was merged (per the PR descriptions). Number 8 arrives with PR #14, number 9 with PR #16, number 10 with PR #18 and number 11 with the feedback-deletion PR:
+Production received them in this order, each before the code that needed it was merged (per the PR descriptions). Number 8 arrives with PR #14, number 9 with PR #16, number 10 with PR #18, number 11 with PR #19 and number 12 with PR #20:
 
 | # | File | Introduced by | What it does |
 | --- | --- | --- | --- |
@@ -322,7 +324,8 @@ Production received them in this order, each before the code that needed it was 
 | 8 | `20261019160000_showcase_own_entries.sql` | PR #14 | `showcase` with its own brand, name, link, picture and rating; copies the existing slides; drops `showcase_perfumes` and its functions; `admin_showcase_save`, `admin_showcase_remove`, `admin_showcase_move`. Run right before merging PR #14 |
 | 9 | `20261019170000_parfumo_images_only.sql` | PR #16 | Clears any `perfumes.image_url` that isn't a Parfumo picture or the no-image marker (and its `ratings_updated_at`, so it's read again), then makes the column accept only those |
 | 10 | `20261020120000_missing_parfumo_links.sql` | PR #18 | `remove_missing_parfumo_link`; queues every perfume with a link for a re-read, so broken links are found on the next shelf visit |
-| 11 | `20261020140000_feedback_delete.sql` | feedback deletion PR | `admin_delete_feedback` |
+| 11 | `20261020140000_feedback_delete.sql` | PR #19 | `admin_delete_feedback` |
+| 12 | `20261020160000_finished_shelf.sql` | PR #20 | `shelf` enum gains `finished` (unused in the same script: Postgres only allows a new enum value after commit); `user_perfumes.fill_level` |
 
 **Adding a migration:** create a new timestamped file, never edit an applied one. Keep RLS on for every new table; give admin functions an `is_admin()` or `is_owner()` check of their own; `revoke … from public, anon` and grant only what's needed. In PL/pgSQL, assign a `case … end` to a variable rather than putting it inside an `if` condition. Add checks for it to `supabase/tests/run.mjs`. When the script is final, copy it to the owner's clipboard (`pbcopy < file.sql`) and say in the PR whether to run it before or after merging (usually before, since new code reads new columns).
 

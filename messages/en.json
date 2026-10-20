@@ -11,7 +11,8 @@
     "signIn": "Sign in",
     "signUp": "Create account",
     "signOut": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "finished": "Finished"
   },
   "Home": {
     "eyebrow": "For fragrance collectors",
@@ -105,7 +106,8 @@
     "parfumoUnreachable": "Couldn't open that Parfumo page. Check the link and try again.",
     "parfumoNotFound": "Parfumo has no perfume at this link. Open the perfume on Parfumo and copy the address from there.",
     "parfumoNoPicture": "That Parfumo page has no bottle picture, and the carousel needs one.",
-    "showcaseFull": "The carousel is full. Remove a perfume first."
+    "showcaseFull": "The carousel is full. Remove a perfume first.",
+    "alreadyFinished": "This perfume is on your Finished list."
   },
   "Shelf": {
     "collectionTitle": "My collection",
@@ -113,11 +115,23 @@
     "wishlistTitle": "Wishlist",
     "wishlistSubtitle": "{count, plural, =0 {Nothing saved yet} one {# perfume to get} other {# perfumes to get}}",
     "add": "Add perfume",
-    "emptyCollectionTitle": "Your shelf is empty",
-    "emptyCollectionBody": "Add the first bottle you own. With a Parfumo link, its rating and notes appear by themselves.",
-    "emptyWishlistTitle": "No wishes yet",
-    "emptyWishlistBody": "Save perfumes you want to buy or try. Move them to your collection when they arrive.",
-    "demoBanner": "Preview mode: the database isn't connected yet, so this shelf shows example perfumes."
+    "empty": {
+      "collection": {
+        "title": "Your shelf is empty",
+        "body": "Add the first bottle you own. With a Parfumo link, its rating and notes appear by themselves."
+      },
+      "wishlist": {
+        "title": "No wishes yet",
+        "body": "Save perfumes you want to buy or try. Move them to your collection when they arrive."
+      },
+      "finished": {
+        "title": "Nothing finished yet",
+        "body": "When a bottle in your collection reaches 0%, it moves here. From here you can move it back to your collection or to your wishlist."
+      }
+    },
+    "demoBanner": "Preview mode: the database isn't connected yet, so this shelf shows example perfumes.",
+    "finishedTitle": "Finished",
+    "finishedSubtitle": "{count, plural, =0 {No empty bottles yet} one {# bottle used up} other {# bottles used up}}"
   },
   "Perfume": {
     "searchHint": "Opens a Parfumo search",
@@ -142,7 +156,12 @@
       "heart": "Heart",
       "base": "Base",
       "notes": "Notes"
-    }
+    },
+    "fillLevel": "Bottle",
+    "fillHint": "How full the bottle is. At 0% it moves to Finished.",
+    "fillUnset": "—",
+    "fillEmpty": "0% (finished)",
+    "backToCollection": "Back to collection"
   },
   "AddPerfume": {
     "title": "Add a perfume",
@@ -344,7 +363,8 @@
     "showcaseEdit": "Edit {name}",
     "showcaseLinkHint": "The picture and rating are read from this page when you save.",
     "showcaseSave": "Save",
-    "showcaseSaving": "Getting the picture…"
+    "showcaseSaving": "Getting the picture…",
+    "finishedTitle": "Finished ({count})"
   },
   "Support": {
     "banner": "Support mode: you're signed in as {email}.",

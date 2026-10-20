@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { Link } from "@/i18n/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
 import type { Theme } from "@/lib/theme";
-import { HeartIcon, ShelfIcon, UserIcon } from "./icons";
+import { DropIcon, HeartIcon, ShelfIcon, UserIcon } from "./icons";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { Logo } from "./Logo";
 import { NavLink } from "./NavLink";
@@ -14,15 +14,20 @@ export async function Header({ theme }: { theme: Theme }) {
   const t = await getTranslations("Nav");
   const user = await getCurrentUser();
 
+  // Icons are left out on phones, where three labels need the whole width
   const nav = (
     <>
       <NavLink href="/collection">
-        <ShelfIcon />
+        <ShelfIcon className="max-sm:hidden" />
         {t("collection")}
       </NavLink>
       <NavLink href="/wishlist">
-        <HeartIcon />
+        <HeartIcon className="max-sm:hidden" />
         {t("wishlist")}
+      </NavLink>
+      <NavLink href="/finished">
+        <DropIcon className="max-sm:hidden" />
+        {t("finished")}
       </NavLink>
     </>
   );
